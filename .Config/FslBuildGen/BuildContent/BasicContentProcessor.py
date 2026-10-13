@@ -36,7 +36,7 @@ import shlex
 import subprocess
 
 from FslBuildGen import IOUtil, TextFileReader
-from FslBuildGen.BuildContent import MakeDependencyFile
+from FslBuildGen.BuildContent import ContentToolTempDirectory, MakeDependencyFile
 from FslBuildGen.BuildContent.ContentProcessor import ContentProcessor
 from FslBuildGen.BuildContent.ContentToolDependencyFile import g_contentToolDependencyFile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
@@ -113,17 +113,10 @@ class BasicContentProcessor(ContentProcessor):
         """outputFileName: the output a build rule names, None for the output the builder names
         toolArguments: the parameters a build rule gives the builder, None for its own
         """
-        # we ask the tool to write to a temporary file so that we can ensure that the output file is only modified
-        # if the content was changed
-        tmpOutputFileName = self.GetTempFileName(contentBuildPath, contentFileRecord)
-        buildCommand = [self.ToolCommand]
-        buildCommand += self.__GetToolParameterList(
-            self.ToolArguments if toolArguments is None else toolArguments, tmpOutputFileName, contentFileRecord.ResolvedPath
-        )
-
+        usedToolArguments = self.ToolArguments if toolArguments is None else toolArguments
         if configDisableWrite:
-            # if write is disabled we do a "tool-command" check directly since the subprocess call can't fail
-            # which would normally trigger the check
+            # Nothing is written, so the tool is not run: its parameters and the tool itself are checked, which a run would have done
+            self.__GetToolParameterList(usedToolArguments, "", contentFileRecord.ResolvedPath)
             self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
             return None
 
@@ -131,28 +124,31 @@ class BasicContentProcessor(ContentProcessor):
             outputFileName = self.GetOutputFileName(log, contentOutputPath, contentFileRecord)
         self.EnsureDirectoryExist(configDisableWrite, outputFileName)
 
-        # Tools that can list the files the content file includes write them to a dependency file
-        tmpDependencyFileName = self.GetTempFileName(contentBuildPath, contentFileRecord, ".d.tmp")
-        dependencyArguments = g_contentToolDependencyFile.TryGetArguments(log, self.ToolCommand, tmpDependencyFileName, self.__DependencyFileOption)
-        if dependencyArguments is not None:
-            buildCommand += dependencyArguments
+        # The tool writes to a temporary file, so the output file is only modified if the tool made something. The file is in a
+        # directory of this run alone: the same source file can be built for several apps at the same time (ContentToolTempDirectory)
+        with ContentToolTempDirectory.Create() as tempPath:
+            tmpOutputFileName = self.GetTempFileName(tempPath, contentFileRecord)
+            buildCommand = [self.ToolCommand]
+            buildCommand += self.__GetToolParameterList(usedToolArguments, tmpOutputFileName, contentFileRecord.ResolvedPath)
 
-        try:
-            result = subprocess.call(buildCommand, cwd=contentBuildPath)
-            if result != 0:
-                self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
-                raise Exception(f"{self.ToolCommand}: Failed to process file '{contentFileRecord.ResolvedPath}' ({self.ToolDescription})")
-            IOUtil.CopySmallFile(tmpOutputFileName, outputFileName)
-            if dependencyArguments is None:
-                return None
-            return self.__ReadDependencyFile(log, tmpDependencyFileName, contentBuildPath, contentFileRecord)
-        except:
-            self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
-            raise
-        finally:
-            IOUtil.RemoveFile(tmpOutputFileName)
+            # Tools that can list the files the content file includes write them to a dependency file
+            tmpDependencyFileName = self.GetTempFileName(tempPath, contentFileRecord, ".d.tmp")
+            dependencyArguments = g_contentToolDependencyFile.TryGetArguments(log, self.ToolCommand, tmpDependencyFileName, self.__DependencyFileOption)
             if dependencyArguments is not None:
-                IOUtil.RemoveFile(tmpDependencyFileName)
+                buildCommand += dependencyArguments
+
+            try:
+                result = subprocess.call(buildCommand, cwd=contentBuildPath)
+                if result != 0:
+                    self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
+                    raise Exception(f"{self.ToolCommand}: Failed to process file '{contentFileRecord.ResolvedPath}' ({self.ToolDescription})")
+                IOUtil.CopySmallFile(tmpOutputFileName, outputFileName)
+                if dependencyArguments is None:
+                    return None
+                return self.__ReadDependencyFile(log, tmpDependencyFileName, contentBuildPath, contentFileRecord)
+            except:
+                self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
+                raise
 
     def __ReadDependencyFile(self, log: Log, dependencyFileName: str, contentBuildPath: str, contentFileRecord: PathRecord) -> list[str] | None:
         """The files the tool listed in its dependency file (relative paths are relative to the directory the tool ran in)"""

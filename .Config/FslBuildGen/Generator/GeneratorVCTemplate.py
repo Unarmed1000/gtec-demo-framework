@@ -129,6 +129,8 @@ class CodeTemplateVC:
         self.FileReferences = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "FileReferences.txt"))
         self.FileReferences_1 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "FileReferences_1.txt"))
 
+        # What the project of an app that has content gets, at '##ADD_APP_CONTENT##' of its master (GeneratorVC)
+        self.AppContent = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "AppContent.txt"), "")
         self.GrpcProtoFilesGroup = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroup.txt"), "")
         self.GrpcProtoFilesGroupEntry = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile.txt"), "")
         self.GrpcProtoFilesGroupEntryGrpcService = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile_GrpcServices.txt"), "")

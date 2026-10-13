@@ -58,7 +58,7 @@ from FslBuildGen.DataTypes import (
 )
 from FslBuildGen.Exceptions import InternalErrorException, UnsupportedException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-from FslBuildGen.Generator import GeneratorVSPlatformTemplate, VSSolutionSlnx, VSSolutionStaleFile
+from FslBuildGen.Generator import GeneratorToolPath, GeneratorVSPlatformTemplate, VSSolutionSlnx, VSSolutionStaleFile
 
 # from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Generator.ExceptionsVC import PackageDuplicatedWindowsVisualStudioProjectIdException
@@ -463,6 +463,9 @@ class GeneratorVC(GeneratorBase):
         build = build.replace("##ADD_PACKAGE_REFERENCES##", packageDepVC)
         build = build.replace("##ADD_FILE_REFERENCES##", fileReferences)
         build = build.replace("##ADD_GENERATE_SECTION##", customGenerateSection)
+        # Before the names below: the section of the template has them too
+        build = build.replace("##ADD_APP_CONTENT##", template.AppContent if GeneratorVC.__HasAppContent(package) else "")
+        build = build.replace(GeneratorToolPath.Token, GeneratorToolPath.GetVisualStudioToolPath(config.ToolConfig))
         build = build.replace("##ADD_EXCLUDE_PACKAGE_DIRS##", excludeDirs)
         build = build.replace("##ADD_SOURCE_GENERATION_PROPERTIES##", sourceGenerationProperties)
         build = build.replace("##ADD_ADDITIONAL_FILES##", additionalFiles)
@@ -1334,6 +1337,13 @@ class GeneratorVC(GeneratorBase):
         except ValueError:
             path = depPath
         return "{}\\{}.{}".format(path.replace("/", "\\"), self.__GetProjectName(entry), projectExtension)
+
+    @staticmethod
+    def __HasAppContent(package: Package) -> bool:
+        """An app that has content, its own or what it inherits from the libraries it uses, has it delivered to its resolved content
+        directory. Its project gets the section that does that for a build that is not started by the tool, and no other project does.
+        """
+        return package.Type == PackageType.Executable and len(package.ResolvedAppContent) > 0
 
     def __GetProjectName(self, package: Package) -> str:
         """The name of the project and the solution of a package on the platform that is generated, without the extension"""
