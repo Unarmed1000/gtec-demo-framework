@@ -24,6 +24,7 @@
 
 
 #include <cstdint>
+#include <string_view>
 
 namespace Fsl
 {
@@ -163,6 +164,21 @@ namespace Fsl
     NoLink,
     //! It is one of the steps a frame goes through: the steps of a frame are linked in the order of their times
     FrameChain,
+  };
+
+
+  //! A argument of a span that is added with its times (ITraceService::AddSpan): a name and a whole number
+  struct TraceArgument
+  {
+    std::string_view Name;
+    int64_t Value{0};
+
+    constexpr TraceArgument() noexcept = default;
+    constexpr TraceArgument(const std::string_view name, const int64_t value) noexcept
+      : Name(name)
+      , Value(value)
+    {
+    }
   };
 }
 

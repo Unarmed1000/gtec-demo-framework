@@ -41,7 +41,7 @@ namespace Fsl
 
   bool TraceWriter::Batch::IsEmpty() const noexcept
   {
-    return !HasThread && !HasProcessName && ZoneNames.empty() && !HasSchema && Events.empty() && Zones.empty() && Frames.empty();
+    return !HasThread && !HasProcessName && ZoneNames.empty() && !HasSchema && Events.empty() && Spans.empty() && Zones.empty() && Frames.empty();
   }
 
 
@@ -52,6 +52,7 @@ namespace Fsl
     ZoneNames.clear();
     HasSchema = false;
     Events.clear();
+    Spans.clear();
     Zones.clear();
     Frames.clear();
   }
@@ -135,6 +136,16 @@ namespace Fsl
     if (!m_failed && !m_stop)
     {
       m_pending.Events.push_back(std::move(event));
+    }
+  }
+
+
+  void TraceWriter::AddSpan(const TraceSpanRecord& span)
+  {
+    const std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_failed && !m_stop)
+    {
+      m_pending.Spans.push_back(span);
     }
   }
 
@@ -256,6 +267,10 @@ namespace Fsl
       for (const TraceEventRecord& event : rScratch.Events)
       {
         m_sink->WriteEvent(event);
+      }
+      for (const TraceSpanRecord& span : rScratch.Spans)
+      {
+        m_sink->WriteSpan(span);
       }
       if (!rScratch.Zones.empty())
       {

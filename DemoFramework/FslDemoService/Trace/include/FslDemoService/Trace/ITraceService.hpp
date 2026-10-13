@@ -30,6 +30,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
 #include <cstdint>
+#include <span>
 #include <string_view>
 
 namespace Fsl
@@ -186,6 +187,20 @@ namespace Fsl
     //! @param name the name of the event.
     //! @param details what happened, by convention "key=value;key=value".
     virtual void AddEvent(const std::string_view name, const std::string_view details) = 0;
+
+    //! @brief Add a span the caller gives the whole form of: its category, its name, when it begins and how long it lasts on the steady
+    //!        clock of the framework, and its arguments. It is for a record a reader outside the framework requires the form of (the
+    //!        frame record of mb-framepacing): the trace adds nothing of its own to it and changes nothing of it.
+    //! @param track the track it is on (RegisterTrack). A span that overlaps the one before it is on a further lane of the track, so
+    //!        none is inside another. A track of such spans is not one for the spans that are declared (DeclareSpan).
+    //! @param category the category of the span, at most 15 characters.
+    //! @param name the name of the span, at most 63 characters.
+    //! @param duration zero or more: zero is a span without a length.
+    //! @param arguments at most 8, each with a name of at most 31 characters. They are written in this order.
+    //! @return false if it was not added (the trace is off, not a track, a text that is empty or too long, a time before the start of
+    //!         the clock, a duration below zero, too many arguments).
+    virtual bool AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
+                         const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept = 0;
 
     //! @brief Write a fact about the run (the graphics API, the present mode, a setting).
     virtual void SetFact(const std::string_view key, const std::string_view value) = 0;

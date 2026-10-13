@@ -319,8 +319,14 @@ def CheckRun(log: FramePacingLog, expectation: RunExpectation) -> RunCheck:
                 check.DisplayReportCounts[key] = values[-1]
 
     firstRow = min(_g_skippedStartFrames, log.RowCount // 4)
-    check.FrameStartColumn = "frameStartTicks" if log.HasColumn("frameStartTicks") else "cpuStartTicks"
-    frameStart = log.GetColumn(check.FrameStartColumn)
+    # A app without a frame start of its own: the CPU start of the marker (in ticks in a trace from before it was in nanoseconds)
+    if log.HasColumn("frameStartTicks"):
+        check.FrameStartColumn = "frameStartTicks"
+        frameStart = log.GetColumn(check.FrameStartColumn)
+    else:
+        # A app without a frame start of its own: the CPU start of its marker, which the trace has in nanoseconds
+        check.FrameStartColumn = "cpuStartNs"
+        frameStart = [None if value is None else value // _g_nanosecondsPerTick for value in log.GetColumn(check.FrameStartColumn)]
     check.FrameStartIntervalMs = _ToDistributionMs(_Deltas(frameStart, firstRow))
 
     if log.HasColumn("firstPixelOutTicks"):

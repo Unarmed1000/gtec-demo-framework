@@ -26,6 +26,8 @@
 #include <FslDemoService/Trace/Impl/TraceLog.hpp>
 #include <fmt/format.h>
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <exception>
 #include <limits>
 #include <span>
@@ -45,6 +47,20 @@ namespace Fsl
         return false;
       }
       rNanoseconds = ticks * NanosecondsPerTick;
+      return true;
+    }
+
+    //! Copy a text to where a record holds it, with the zero that ends it.
+    //! @return false if there is no text or it does not fit.
+    template <std::size_t TSize>
+    bool TryCopyText(std::array<char, TSize>& rDst, const std::string_view text) noexcept
+    {
+      if (text.empty() || text.size() >= TSize)
+      {
+        return false;
+      }
+      std::copy(text.begin(), text.end(), rDst.begin());
+      rDst[text.size()] = 0;
       return true;
     }
   }
@@ -517,6 +533,51 @@ namespace Fsl
   }
 
 
+  bool TraceLog::AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
+                         const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept
+  {
+    if (m_isClosed || !IsTrack(track) || begin.TotalNanoseconds() < 0 || duration.TotalNanoseconds() < 0 ||
+        arguments.size() > TraceSpanRecord::MaxArguments)
+    {
+      return false;
+    }
+    TraceSpanRecord record;
+    record.TrackIndex = track.Value - 1u;
+    record.BeginNanoseconds = begin.TotalNanoseconds();
+    record.DurationNanoseconds = duration.TotalNanoseconds();
+    if (!TryCopyText(record.Category, category) || !TryCopyText(record.Name, name))
+    {
+      return false;
+    }
+    for (std::size_t i = 0; i < arguments.size(); ++i)
+    {
+      if (!TryCopyText(record.ArgumentNames[i], arguments[i].Name))
+      {
+        return false;
+      }
+      record.ArgumentValues[i] = arguments[i].Value;
+    }
+    record.ArgumentCount = static_cast<uint32_t>(arguments.size());
+    try
+    {
+      if (m_schemaWritten)
+      {
+        m_writer.AddSpan(record);
+      }
+      else
+      {
+        // The sink knows the tracks from the schema, which is written with the first frame that is: a while after it began
+        m_spansBeforeSchema.push_back(record);
+      }
+    }
+    catch (const std::exception&)
+    {
+      return false;
+    }
+    return true;
+  }
+
+
   void TraceLog::AddRecord(const std::string_view name, const std::string_view details, const bool isFact)
   {
     if (m_isClosed || name.empty())
@@ -595,6 +656,11 @@ namespace Fsl
       schema.FrameEndIndex = m_frameEnd.Value - 1u;
     }
     m_writer.SetSchema(std::move(schema));
+    for (const TraceSpanRecord& span : m_spansBeforeSchema)
+    {
+      m_writer.AddSpan(span);
+    }
+    m_spansBeforeSchema.clear();
   }
 
 

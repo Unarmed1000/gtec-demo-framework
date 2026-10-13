@@ -45,6 +45,8 @@
 #include <mb/framepacing/marker/FrameMarker.hpp>
 #include <mb/framepacing/marker/payload/MarkerFlags.hpp>
 #include <mb/framepacing/marker/payload/SequenceId.hpp>
+#include <mb/framepacing/trace/FrameRecord.hpp>
+#include <mb/framepacing/trace/FrameRecordUtil.hpp>
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -60,6 +62,7 @@ namespace Fsl
   {
     namespace FP = MB::FramePacing;
     namespace FM = MB::FramePacing::Marker;
+    namespace FT = MB::FramePacing::Trace;
 
     namespace LocalConfig
     {
@@ -344,6 +347,22 @@ namespace Fsl
     }
     markerInfo.SyncMarker = syncMarkerDrawn;
     m_service->SetLastMarker(markerInfo);
+
+    // What a trace of the app has of the frame: the frame record, which the SDK makes from the payload the marker was drawn from, so
+    // the two can not disagree. It is logged as the SDK gives it.
+    FT::FrameRecord traceRecord;
+    if (FT::FrameRecordUtil::TryCreate(payload, traceRecord))
+    {
+      std::array<TraceArgument, FT::FrameRecord::MaxAnnotationCount> arguments{};
+      const std::span<const FT::FrameRecordAnnotation> annotations = traceRecord.Annotations();
+      for (std::size_t i = 0; i < annotations.size(); ++i)
+      {
+        arguments[i] = TraceArgument(annotations[i].Name, annotations[i].Value);
+      }
+      m_service->AddMarkerFrameRecord(traceRecord.Name.View(), NanosecondTickCount(traceRecord.StartTime.Nanoseconds()),
+                                      ToNanosecondTimeSpan(traceRecord.Duration),
+                                      std::span<const TraceArgument>(arguments.data(), annotations.size()));
+    }
   }
 
 

@@ -24,8 +24,11 @@
 #include <FslBase/UnitTest/Helper/TestFixtureFslBase.hpp>
 #include <FslDemoService/Trace/Impl/TraceLog.hpp>
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -42,6 +45,7 @@ namespace
     std::vector<std::pair<uint32_t, std::string>> ZoneNames;
     std::vector<TraceSchema> Schemas;
     std::vector<TraceEventRecord> Events;
+    std::vector<TraceSpanRecord> Spans;
     std::vector<TraceZoneRecord> Zones;
     std::vector<TraceFrameRow> Frames;
     uint64_t ThreadId{0};
@@ -95,6 +99,12 @@ namespace
     {
       m_recorded->Calls.emplace_back("event");
       m_recorded->Events.push_back(event);
+    }
+
+    void WriteSpan(const TraceSpanRecord& span) final
+    {
+      m_recorded->Calls.emplace_back("span");
+      m_recorded->Spans.push_back(span);
     }
 
     void WriteZones(const std::span<const TraceZoneRecord> zones) final
@@ -400,6 +410,108 @@ TEST(Test_TraceLog, Declare_OnlyTimesAreSpansAndMarks)
   EXPECT_EQ(1u, recorded->Schemas[0].Spans.size());
   EXPECT_EQ(1u, recorded->Schemas[0].Marks.size());
   EXPECT_EQ(1u, recorded->Schemas[0].Counters.size());
+}
+
+
+TEST(Test_TraceLog, AddSpan)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceTrack track0 = log->RegisterTrack("Track", TraceTrackKind::Lanes);
+  const TraceTrack track1 = log->RegisterTrack("Records", TraceTrackKind::Sequential);
+  const std::array<TraceArgument, 2> arguments = {TraceArgument("first", 42), TraceArgument("second", -7)};
+
+  EXPECT_TRUE(log->AddSpan(track1, "category", "the name 1 2", NanosecondTickCount(1234567), NanosecondTimeSpan(89), arguments));
+  // No arguments, and no length
+  EXPECT_TRUE(log->AddSpan(track0, "c", "n", NanosecondTickCount(0), NanosecondTimeSpan(0), {}));
+  log->Close();
+
+  // The sink is told of the tracks before it gets a span of one
+  const auto itrSchema = std::find(recorded->Calls.begin(), recorded->Calls.end(), "schema");
+  const auto itrSpan = std::find(recorded->Calls.begin(), recorded->Calls.end(), "span");
+  ASSERT_NE(recorded->Calls.end(), itrSchema);
+  ASSERT_NE(recorded->Calls.end(), itrSpan);
+  EXPECT_LT(itrSchema, itrSpan);
+
+  ASSERT_EQ(2u, recorded->Spans.size());
+  const TraceSpanRecord& span = recorded->Spans[0];
+  EXPECT_EQ(1u, span.TrackIndex);
+  EXPECT_EQ(std::string_view("category"), std::string_view(span.Category.data()));
+  EXPECT_EQ(std::string_view("the name 1 2"), std::string_view(span.Name.data()));
+  EXPECT_EQ(1234567, span.BeginNanoseconds);
+  EXPECT_EQ(89, span.DurationNanoseconds);
+  ASSERT_EQ(2u, span.ArgumentCount);
+  EXPECT_EQ(std::string_view("first"), std::string_view(span.ArgumentNames[0].data()));
+  EXPECT_EQ(42, span.ArgumentValues[0]);
+  EXPECT_EQ(std::string_view("second"), std::string_view(span.ArgumentNames[1].data()));
+  EXPECT_EQ(-7, span.ArgumentValues[1]);
+
+  EXPECT_EQ(0u, recorded->Spans[1].TrackIndex);
+  EXPECT_EQ(0, recorded->Spans[1].DurationNanoseconds);
+  EXPECT_EQ(0u, recorded->Spans[1].ArgumentCount);
+}
+
+
+TEST(Test_TraceLog, AddSpan_AfterTheFirstFrameWasWritten)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceTrack track = log->RegisterTrack("Records", TraceTrackKind::Sequential);
+
+  // Enough frames for the first one to be written, which is when the sink is told of the tracks
+  for (uint64_t i = 0; i < 100u; ++i)
+  {
+    log->BeginFrame(i, 1u);
+    EXPECT_TRUE(log->AddSpan(track, "category", "name", NanosecondTickCount(static_cast<int64_t>(1000u + i)), NanosecondTimeSpan(1), {}));
+  }
+  log->Close();
+
+  // Every span, in the order they were added
+  ASSERT_EQ(100u, recorded->Spans.size());
+  for (uint64_t i = 0; i < 100u; ++i)
+  {
+    EXPECT_EQ(static_cast<int64_t>(1000u + i), recorded->Spans[i].BeginNanoseconds);
+  }
+}
+
+
+TEST(Test_TraceLog, AddSpan_WhatDoesNotFitIsRefused)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceTrack track = log->RegisterTrack("Records", TraceTrackKind::Sequential);
+  const std::string longestCategory(TraceSpanRecord::MaxCategoryLength, 'c');
+  const std::string longestName(TraceSpanRecord::MaxNameLength, 'n');
+  const std::string longestArgumentName(TraceSpanRecord::MaxArgumentNameLength, 'a');
+  const std::array<TraceArgument, TraceSpanRecord::MaxArguments + 1u> tooMany{};
+  const std::array<TraceArgument, 1> noName = {TraceArgument("", 1)};
+  const std::array<TraceArgument, 1> longName = {TraceArgument(std::string_view(longestArgumentName.c_str(), longestArgumentName.size() + 1u), 1)};
+  std::array<TraceArgument, TraceSpanRecord::MaxArguments> most{};
+  most.fill(TraceArgument(longestArgumentName, 1));
+
+  EXPECT_FALSE(log->AddSpan(TraceTrack(), "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), {}));
+  EXPECT_FALSE(log->AddSpan(track, "", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), {}));
+  EXPECT_FALSE(log->AddSpan(track, "category", "", NanosecondTickCount(1), NanosecondTimeSpan(1), {}));
+  EXPECT_FALSE(log->AddSpan(track, longestCategory + "c", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), {}));
+  EXPECT_FALSE(log->AddSpan(track, "category", longestName + "n", NanosecondTickCount(1), NanosecondTimeSpan(1), {}));
+  EXPECT_FALSE(log->AddSpan(track, "category", "name", NanosecondTickCount(-1), NanosecondTimeSpan(1), {}));
+  EXPECT_FALSE(log->AddSpan(track, "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(-1), {}));
+  EXPECT_FALSE(log->AddSpan(track, "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), tooMany));
+  EXPECT_FALSE(log->AddSpan(track, "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), noName));
+  EXPECT_FALSE(log->AddSpan(track, "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), longName));
+
+  // The longest of everything fits
+  EXPECT_TRUE(log->AddSpan(track, longestCategory, longestName, NanosecondTickCount(1), NanosecondTimeSpan(1), most));
+  log->Close();
+
+  ASSERT_EQ(1u, recorded->Spans.size());
+  EXPECT_EQ(std::string_view(longestCategory), std::string_view(recorded->Spans[0].Category.data()));
+  EXPECT_EQ(std::string_view(longestName), std::string_view(recorded->Spans[0].Name.data()));
+  EXPECT_EQ(TraceSpanRecord::MaxArguments, recorded->Spans[0].ArgumentCount);
+  EXPECT_EQ(std::string_view(longestArgumentName), std::string_view(recorded->Spans[0].ArgumentNames[TraceSpanRecord::MaxArguments - 1u].data()));
+
+  // And nothing is added to a trace that is closed
+  EXPECT_FALSE(log->AddSpan(track, "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), {}));
 }
 
 

@@ -25,6 +25,7 @@
 
 #include <FslBase/IO/Path.hpp>
 #include <FslDemoService/Trace/Impl/TraceRecords.hpp>
+#include <FslDemoService/Trace/Impl/TraceSpanRecord.hpp>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -55,6 +56,10 @@ namespace Fsl
     virtual void WriteSchema(const TraceSchema& schema) = 0;
 
     virtual void WriteEvent(const TraceEventRecord& event) = 0;
+
+    //! @brief A span that was added with its times and its texts. It comes after the schema, which has its track. Its times are in
+    //!        nanoseconds.
+    virtual void WriteSpan(const TraceSpanRecord& span) = 0;
 
     //! @brief The begins and the ends of the zones of the thread, in the order they happened.
     virtual void WriteZones(const std::span<const TraceZoneRecord> zones) = 0;

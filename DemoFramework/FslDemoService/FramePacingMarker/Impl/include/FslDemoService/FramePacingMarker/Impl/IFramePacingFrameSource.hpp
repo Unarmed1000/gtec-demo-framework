@@ -22,8 +22,13 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecord.hpp>
+#include <FslDemoService/Trace/TraceTypes.hpp>
+#include <span>
+#include <string_view>
 
 namespace Fsl
 {
@@ -36,6 +41,15 @@ namespace Fsl
     //! @brief Get the marker for the current frame.
     //! @return false if no marker should be drawn.
     virtual bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept = 0;
+
+    //! @brief Called by the overlay with what a trace of the app is to have of the frame whose marker it just drew: the frame record
+    //!        the SDK of the marker makes from the payload of that marker. It is logged as it is given.
+    //! @param name the name of the record.
+    //! @param startTime when the record begins: the CPU start time of the marker.
+    //! @param duration how long it lasts: the CPU busy time of the marker.
+    //! @param arguments the other values of the marker the record has, in its order.
+    virtual void AddMarkerFrameRecord(const std::string_view name, const NanosecondTickCount startTime, const NanosecondTimeSpan duration,
+                                      const std::span<const TraceArgument> arguments) noexcept = 0;
 
     //! @brief Called by the overlay with every value the marker it just drew carried.
     virtual void SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept = 0;

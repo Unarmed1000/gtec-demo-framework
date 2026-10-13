@@ -30,6 +30,7 @@ Track | What is on it
 `Vulkan` | The calls and waits of a Vulkan app as spans of their frame: `wait for present`, `wait for frame slot`, `acquire`, `wait for acquire fence`, `submit`, `present`.
 `Present to display` | Vulkan with present timing: a span from the present call of a frame to the first pixel out. The presents of the frames in flight overlap, so they are drawn in lanes.
 `Display` | Vulkan with present timing: the marks `queue operations end`, `request dequeued`, `first pixel out` and `first pixel visible` of the present of a frame.
+`mbfp frames` | The frame record of mb-framepacing: one span `mbfp frame <runId> <frameIndex>` in the category `mbfp` for every frame whose frame pacing marker was drawn. It begins at the CPU start time of the marker and lasts its CPU busy time. The tools of mb-framepacing find the frame of a marker by it, see [FramePacing.md](FramePacing.md#the-frame-record-the-frame-of-a-marker-in-the-trace-of-the-app).
 `Marker` | The mark `marker drawn` of the frame pacing marker.
 `Pacer plan` | The marks `intended display` (an app with a pacer) and `next frame start` (the FramePacing samples).
 `Sample frame`, `GPU` | The FramePacing samples: `wait for frame start`, `work` and `hold before present`, and the `GPU work` of a frame in lanes.
@@ -49,7 +50,8 @@ There are three kinds of things in a trace:
 
 Some values are drawn as well: two times of a frame as a span, a time as a mark, a count as a graph. That is only for the eye. The
 number to calculate with is the argument of the `Frame` span: a graph in a trace holds numbers with decimals, and a span is only
-drawn when the frame has both of its times.
+drawn when the frame has both of its times. A span that is there to be read is one that was added with its times (`AddSpan`): it
+is in the trace as it was given, to the nanosecond.
 
 A frame is written 64 frames after it began, as some of its values arrive late (the display time of a present is reported a few
 frames later). So a trace of a app that is running lacks its last 64 frames until the app exits, and a app that is killed loses them
@@ -166,6 +168,11 @@ if (m_trace)
 
 - **Which to use.** A scope of the code on the thread is a zone. Something that is not one scope, or does not happen on the thread
   (the work of the GPU, the way of a present to the display), is two time values that are declared as a span.
+- **A span somebody else defines.** `AddSpan(track, category, name, begin, duration, arguments)` adds a span the caller gives the
+  whole form of: the trace adds nothing to it and changes nothing of it. It is for a record a reader outside the framework
+  requires (the frame record of mb-framepacing, which the frame pacing marker service adds for every marker it drew). The texts
+  are copied, nothing is allocated: a category of at most 15 characters, a name of at most 63, at most 8 arguments with names of at
+  most 31. Such a span is on a track of its own kind, not on one with spans that are declared.
 - **Tracks.** The spans of a `Sequential` track follow each other or are inside each other. The spans of a `Lanes` track can overlap
   from frame to frame and are drawn below each other. A span that cuts through another one on a `Sequential` track is drawn on a
   lane below it and gets the argument `overflow`.

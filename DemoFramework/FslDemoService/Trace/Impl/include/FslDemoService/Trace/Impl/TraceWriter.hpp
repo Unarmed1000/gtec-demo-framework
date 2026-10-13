@@ -25,6 +25,7 @@
 
 #include <FslDemoService/Trace/Impl/ITraceSink.hpp>
 #include <FslDemoService/Trace/Impl/TraceRecords.hpp>
+#include <FslDemoService/Trace/Impl/TraceSpanRecord.hpp>
 #include <condition_variable>
 #include <cstdint>
 #include <memory>
@@ -56,6 +57,7 @@ namespace Fsl
       bool HasSchema{false};
       TraceSchema Schema;
       std::vector<TraceEventRecord> Events;
+      std::vector<TraceSpanRecord> Spans;
       std::vector<TraceZoneRecord> Zones;
       std::vector<TraceFrameRow> Frames;
 
@@ -86,6 +88,7 @@ namespace Fsl
     void AddZoneName(const uint32_t zone, const std::string_view name);
     void SetSchema(TraceSchema schema);
     void AddEvent(TraceEventRecord event);
+    void AddSpan(const TraceSpanRecord& span);
     void AddZones(const std::span<const TraceZoneRecord> zones);
     void AddFrame(const TraceFrameRow& row);
 

@@ -34,7 +34,9 @@
 #include <memory>
 #include <optional>
 #include <random>
+#include <span>
 #include <string>
+#include <string_view>
 
 namespace Fsl
 {
@@ -128,6 +130,8 @@ namespace Fsl
     //! The service begins the frames of the trace, so a frame of the trace is the frame its marker carries
     std::shared_ptr<ITraceServiceControl> m_traceControl;
     LogColumns m_logColumns;
+    //! The track of the trace the frame records of the markers are on
+    TraceTrack m_traceRecordTrack;
     bool m_logFactsWritten{false};
     std::shared_ptr<IAppInfoService> m_appInfo;
     std::shared_ptr<IHostInfo> m_hostInfo;
@@ -168,6 +172,8 @@ namespace Fsl
 
     // From IFramePacingFrameSource
     bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept final;
+    void AddMarkerFrameRecord(const std::string_view name, const NanosecondTickCount startTime, const NanosecondTimeSpan duration,
+                              const std::span<const TraceArgument> arguments) noexcept final;
     void SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept final;
 
   private:

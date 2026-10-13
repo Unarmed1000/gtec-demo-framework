@@ -33,11 +33,13 @@
 #include <FslDemoService/Trace/Impl/TraceAnonymiser.hpp>
 #include <FslDemoService/Trace/Impl/TraceFrameTable.hpp>
 #include <FslDemoService/Trace/Impl/TraceRecords.hpp>
+#include <FslDemoService/Trace/Impl/TraceSpanRecord.hpp>
 #include <FslDemoService/Trace/Impl/TraceWriter.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
 #include <array>
 #include <cstdint>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -67,6 +69,8 @@ namespace Fsl
 
     std::vector<std::string> m_zoneNames;
     std::vector<TraceTrackInfo> m_tracks;
+    //! The spans that were added before the sink was told of the tracks (the schema): they follow it
+    std::vector<TraceSpanRecord> m_spansBeforeSchema;
     std::vector<TraceSpanInfo> m_spans;
     std::vector<TraceMarkInfo> m_marks;
     std::vector<TraceCounterInfo> m_counters;
@@ -172,6 +176,8 @@ namespace Fsl
 
     // Events and facts
     void AddEvent(const std::string_view name, const std::string_view details);
+    bool AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
+                 const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept;
     void SetFact(const std::string_view key, const std::string_view value);
     void AddAnonymousText(const std::string_view text, const std::string_view replacement);
     void AddAnonymousDirectory(const std::string_view directory, const std::string_view replacement);

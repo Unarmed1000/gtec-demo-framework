@@ -63,6 +63,8 @@ namespace Fsl
       constexpr uint32_t FlushTimeoutMs = 5000;
       //! The lanes a track is drawn in at most
       constexpr std::size_t MaxLanes = 16;
+      //! A tick of the steady clock of the framework
+      constexpr int64_t NanosecondsPerTick = 100;
 
       constexpr std::string_view TrackFrames("Frames");
       constexpr std::string_view TrackEvents("Events");
@@ -388,6 +390,32 @@ namespace Fsl
           TRACE_EVENT_INSTANT("fsl", "frameBounds", track, time, "begin", m_schema.Values[m_schema.FrameBeginIndex].Name, "end",
                               m_schema.Values[m_schema.FrameEndIndex].Name);
         }
+      }
+
+
+      void WriteSpan(const TraceSpanRecord& span) final
+      {
+        if (span.TrackIndex >= m_tracks.size())
+        {
+          return;
+        }
+        // The lane is found in ticks, as it is for the spans of the frames: a tick the span reaches into is one it has
+        const int64_t endNanoseconds = span.BeginNanoseconds + span.DurationNanoseconds;
+        bool overflow = false;
+        const perfetto::Track track =
+          ToTrack(PlaceSpan(m_tracks[span.TrackIndex], span.BeginNanoseconds / LocalConfig::NanosecondsPerTick,
+                            (endNanoseconds + LocalConfig::NanosecondsPerTick - 1) / LocalConfig::NanosecondsPerTick, overflow));
+        // The span is what its caller gave and nothing else: the category, the name, the times and the arguments
+        const perfetto::DynamicCategory category(span.Category.data());
+        TRACE_EVENT_BEGIN(category, perfetto::DynamicString(span.Name.data()), track, ToTimestampFromNanoseconds(span.BeginNanoseconds),
+                          [&span](perfetto::EventContext context)
+                          {
+                            for (uint32_t i = 0; i < span.ArgumentCount; ++i)
+                            {
+                              context.AddDebugAnnotation(perfetto::DynamicString(span.ArgumentNames[i].data()), span.ArgumentValues[i]);
+                            }
+                          });
+        TRACE_EVENT_END(category, track, ToTimestampFromNanoseconds(endNanoseconds));
       }
 
 

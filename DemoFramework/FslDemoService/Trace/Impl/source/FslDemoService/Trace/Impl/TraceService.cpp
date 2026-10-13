@@ -466,6 +466,13 @@ namespace Fsl
   }
 
 
+  bool TraceService::AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
+                             const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept
+  {
+    return m_log ? m_log->AddSpan(track, category, name, begin, duration, arguments) : false;
+  }
+
+
   void TraceService::SetFact(const std::string_view key, const std::string_view value)
   {
     if (m_log)

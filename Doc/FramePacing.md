@@ -107,6 +107,28 @@ allocate. `--HideMarkerStats` starts with the panel hidden.
   from the step between the CPU start times.
 - **Sync marker**: the run id and the frame index, so the analysis can match it to the main marker of the same run.
 
+## The frame record: the frame of a marker in the trace of the app
+
+The tools of mb-framepacing merge a capture with a trace of the app, and hold what they decode from a marker against what the app
+put into it. For that a trace has to say which of its frames is which frame of the capture: the **frame record**, one span per frame
+whose marker was drawn. mb-framepacing defines it and requires it of a app that integrates the marker (the trace module of its SDK,
+`sdk/doc/trace-frame-record.md` there). The trace of the app (`--Trace`, see [The frame log](#the-frame-log)) has it:
+
+- **The name** is `mbfp frame <runId> <frameIndex>`, both as decimal numbers and the ones the marker of the frame carries:
+  `mbfp frame 1 1234`.
+- **It begins** at the CPU start time of the marker and **lasts** its CPU busy time, to the nanosecond, on the clock of the trace
+  (`CLOCK_MONOTONIC`, Perfetto clock 3). A marker with a CPU busy time that is not known has a span of no length.
+- **One span per frame**, for a frame, a start and a end marker alike, in the category `mbfp` on the track `mbfp frames` of the
+  process, and none inside another. A frame whose marker was not drawn has none.
+- **The other times of the marker** are annotations of the span, in nanoseconds as the marker carries them: `animationNs` always,
+  and `markerPreferredNs`, `markerTargetNs` and `intendedDisplayNs` where the marker knows them.
+
+Nothing of that is decided here. The overlay asks the SDK for the record of the payload the marker was drawn from
+(`FrameRecordUtil::TryCreate`), so the record and the marker can not disagree, and the service logs what it is given with the
+category and the track name the SDK says (`FrameRecordText`), through `ITraceService::AddSpan`. The numbers are the ones the
+`Frame` span of the frame has as `cpuStartNs`, `markerCpuBusyNs`, `animationTimeNs`, `preferredFrameTimeNs`, `targetFrameTimeNs`
+and `intendedDisplayNs`, which the tools of the framework read.
+
 ## The frame pacer of the FramePacing samples (experimental)
 
 The framework has no frame pacer, but the FramePacing samples can pace their frames with the experimental frame pacer of the mb-framepacing
@@ -553,9 +575,8 @@ Every value of a frame is a whole number and nothing is rounded or converted to 
 steady clock of the framework (`HighResolutionTimer`) in 100 ns ticks and a duration (`durationTicks`) is in the same ticks. A value of
 the driver is written as the driver gave it, with its unit in its name (`refreshDurationNs`). A frame does not have a value when the
 app does not supply it, the extension is missing, or the value did not arrive. What a frame pacer gives the marker is written in
-nanoseconds, as the marker carries it (`animationTimeNs`, `intendedDisplayNs`, `targetFrameTimeNs`, `preferredFrameTimeNs`). The
-exceptions to "nothing is rounded" are two times of the marker that are written in ticks, where a app gave them in nanoseconds:
-`cpuStartTicks` is the tick the time lies in and `markerCpuBusyTicks` is rounded to the nearest tick.
+nanoseconds, as the marker carries it (`animationTimeNs`, `intendedDisplayNs`, `targetFrameTimeNs`, `preferredFrameTimeNs`), and so
+are the CPU start time and the CPU busy time of the marker (`cpuStartNs`, `markerCpuBusyNs`).
 
 The trace is written by a thread of its own, the render thread only hands over what it recorded. A frame stays open for 64 frames, as
 the values of a frame arrive over time (the display time of a present is reported a few frames later), and is written when it closes.
@@ -579,7 +600,7 @@ Column | Unit | Description
 `runId` | id | The id of the current (or last) run, as the marker carries it
 `runState` | code | The state of the run: 0 idle, 1 starting, 2 measuring, 3 ending
 `animationTimeNs` | nanoseconds | The time the frame is animated for in nanoseconds, as the marker carries it (the one of the app if it gave a schedule)
-`cpuStartTicks` | ticks | When the CPU started on the frame, as the marker carries it to the tick (the one of the app if it gave a schedule)
+`cpuStartNs` | nanosecondTicks | When the CPU started on the frame, as the marker carries it (the one of the app if it gave a schedule)
 `hostCpuStartTicks` | ticks | When the host started the update of the frame
 `beginFrameTicks` | ticks | When the host told the service the frame begins: after the update and after the frame was prepared for drawing
 `hasSchedule` | flag | 1 if the app gave the pacing values of the frame
@@ -588,7 +609,7 @@ Column | Unit | Description
 `preferredFrameTimeNs` | nanoseconds | The frame time the app wants to run at in nanoseconds, as the marker carries it
 `markerDrawn` | flag | 1 if the marker was drawn on the frame
 `markerDrawTicks` | ticks | When the marker was drawn, the last thing of the frame
-`markerCpuBusyTicks` | durationTicks | How long the CPU worked on the frame before the marker was drawn, as the marker carries it to the tick
+`markerCpuBusyNs` | nanoseconds | How long the CPU worked on the frame before the marker was drawn in nanoseconds, as the marker carries it (0: unknown)
 `markerStatic` | flag | The static after flag of the marker
 `markerStaticBefore` | flag | The static before flag of the marker
 `markerSyncMarker` | flag | 1 if the sync marker was drawn as well
