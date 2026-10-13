@@ -225,6 +225,15 @@
   </xs:complexType>
 
 
+  <xs:complexType name="_T_PlatformTemplate">
+    <xs:annotation>
+      <xs:documentation>The Visual Studio project template the projects of one platform are made from, where the 'DefaultTemplate' of the project is not it. The platform 'Unity' has no default: its projects are made next to the ones of the other platforms, so it needs a template of its own</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Platform" type="xs:string" use="required"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
   <xs:complexType name="_T_CompilerConfiguration">
     <xs:annotation>
       <xs:documentation>The default version of a compiler on a platform. SolutionFormat: the format of the solutions the Visual Studio generator writes, the default is 'sln'</xs:documentation>
@@ -385,6 +394,13 @@
   </xs:group>
 
 
+  <xs:group name="_G_PlatformTemplate">
+    <xs:choice>
+      <xs:element name="PlatformTemplate" type="_T_PlatformTemplate"/>
+    </xs:choice>
+  </xs:group>
+
+
   <xs:group name="_G_CompilerConfiguration">
     <xs:choice>
       <xs:element name="CompilerConfiguration" type="_T_CompilerConfiguration"/>
@@ -483,7 +499,7 @@
 
   <xs:group name="_G_ExtendedProjectCommandList">
     <xs:annotation>
-      <xs:documentation>The elements of a project that extends another one, in any order</xs:documentation>
+      <xs:documentation>The elements of a project that extends another one, in any order. What configures a project as a whole (documentation, formatters, clang tidy, CMake, experimental settings) is an element of the project that is extended</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -491,12 +507,7 @@
         <xs:group ref="_G_AddRootDirectory"/>
         <xs:group ref="_G_AddNewProjectTemplatesRootDirectory"/>
         <xs:group ref="_G_PackageConfiguration"/>
-        <xs:group ref="_G_BuildDocConfiguration"/>
-        <xs:group ref="_G_ClangFormatConfiguration"/>
-        <xs:group ref="_G_ClangTidyConfiguration"/>
-        <xs:group ref="_G_CMakeConfiguration"/>
         <xs:group ref="_G_CompilerConfiguration"/>
-        <xs:group ref="_G_Experimental"/>
         <xs:group ref="_G_GenFileSchema"/>
       </xs:choice>
     </xs:sequence>
@@ -521,6 +532,7 @@
         <xs:group ref="_G_CompilerConfiguration"/>
         <xs:group ref="_G_Experimental"/>
         <xs:group ref="_G_GenFileSchema"/>
+        <xs:group ref="_G_PlatformTemplate"/>
       </xs:choice>
     </xs:sequence>
   </xs:group>
@@ -545,7 +557,7 @@
 
   <xs:complexType name="_T_ExtendedProject">
     <xs:annotation>
-      <xs:documentation>A project that extends another one: it adds its root directories and package locations to that project. It needs at least one AddRootDirectory. Parent: the name of the project it extends. ParentRoot: the absolute directory the Project.gen of that project is in, usually named by an environment variable: $(NAME)</xs:documentation>
+      <xs:documentation>A project that extends another one. It can add root directories (AddRootDirectory), package locations (PackageConfiguration), template directories (AddNewProjectTemplatesRootDirectory) and compilers (CompilerConfiguration) to that project, name base packages for its own packages (AddBasePackage) and have its own schema location (GenFileSchema). It needs at least one AddRootDirectory. Parent: the name of the project it extends. ParentRoot: the absolute directory the Project.gen of that project is in, usually named by an environment variable: $(NAME)</xs:documentation>
     </xs:annotation>
     <xs:group ref="_G_ExtendedProjectCommandList"/>
     <xs:attribute name="Name" type="xs:string" use="required"/>

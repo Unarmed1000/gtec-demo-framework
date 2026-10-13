@@ -80,6 +80,11 @@ def TryGetPlatformDefaultCMakeGenerator(platformName: str, compilerVersion: int)
         return CMakeGeneratorName.Android
     elif platformName == PackageConfig.PlatformNameString.EMSCRIPTEN:
         return CMakeGeneratorName.Ninja
+    elif platformName == PackageConfig.PlatformNameString.UNITY:
+        # Unity projects are C# and never built with CMake: every generator has a CMake configuration, this one gets the one of the host
+        if PlatformUtil.DetectBuildPlatformType() == BuildPlatformType.Windows:
+            return CMakeGeneratorName.FromVisualStudioVersion(compilerVersion)
+        return CMakeGeneratorName.Ninja
     return None
 
     # if generator.Name == PackageConfig.PlatformNameString.ANDROID:

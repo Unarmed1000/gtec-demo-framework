@@ -49,7 +49,7 @@ from FslBuildGen.DataTypes import BuildVariantConfig, BuildVariantType, Generato
 # from FslBuildGen.Exceptions import UnsupportedException
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-from FslBuildGen.Generator import CMakePresetsFile
+from FslBuildGen.Generator import CMakePresetsFile, GeneratorVSPlatformTemplate
 from FslBuildGen.Generator.GeneratorAndroidGradleCMake import GeneratorAndroidGradleCMake, GeneratorAndroidGradleCMakeUtil
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GeneratorCMake import CMakeGeneratorMode, GeneratorCMake
@@ -60,7 +60,6 @@ from FslBuildGen.Generator.GeneratorGNUmakefile import GeneratorGNUmakefile, Gen
 from FslBuildGen.Generator.GeneratorPlugin import GenerateContext, GeneratorPlugin
 from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorVariant
 from FslBuildGen.Generator.GeneratorVC import GeneratorVC, GeneratorVCUtil, GeneratorVSConfig
-from FslBuildGen.Generator.GeneratorVSTemplateInfo import GeneratorVSTemplateInfo
 from FslBuildGen.Generator.PluginConfigContext import PluginConfigContext
 
 # from FslBuildGen.Generator.Report.GeneratorConfigReport import GeneratorConfigReport
@@ -133,6 +132,8 @@ class GeneratorPluginMakefile(GeneratorPlugin):
         super().__init__(log, platformName)
         self.SupportCommandClean = True
         self.SupportCommandInstall = True
+        # The makefile builds the executable into the directory of its package and it is run there
+        self.DeliversAppContent = False
         self.MakeFilename = makeFilename
         if addCoverageVariant:
             self.AddGeneratorVariantConfigOption(ToolAddedVariantConfigOption.Coverage)
@@ -169,8 +170,10 @@ class GeneratorPluginYoctoLegacy(GeneratorPluginMakefile):
 
 
 class GeneratorPluginWindowsLegacy(GeneratorPlugin):
-    def __init__(self, log: Log, platformNameString: str = PackageConfig.PlatformNameString.WINDOWS) -> None:
+    def __init__(self, log: Log, platformNameString: str = PackageConfig.PlatformNameString.WINDOWS, projectNamePostfix: str = "") -> None:
         super().__init__(log, platformNameString)
+        # What the platform adds to the name of its projects and solutions (GeneratorVSPlatformTemplate)
+        self.ProjectNamePostfix = projectNamePostfix
         self.InDevelopment = False
         self.ToolVersion = VisualStudioVersion.DEFAULT
         self.SupportContentBuild = True
@@ -204,7 +207,7 @@ class GeneratorPluginWindowsLegacy(GeneratorPlugin):
         installRootLocation = generateContext.PlatformContext.RecipePathBuilder.InstallRootLocation
         activeThirdPartyLibsDir = installRootLocation.ResolvedPath if installRootLocation is not None else None
         self.__GenerateCSharpGitIgnore(generateContext)
-        generatorConfig = GeneratorVSConfig(self.PlatformName, self.ToolVersion)
+        generatorConfig = GeneratorVSConfig(self.PlatformName, self.ToolVersion, self.ProjectNamePostfix)
         generator = GeneratorVC(generateContext.Config, generateContext.Packages, generatorConfig, generateContext.VariantConstraints, activeThirdPartyLibsDir)
         return self.GenerateDone(generateContext.Config, generateContext.Packages, self.PlatformName, generator)
 
@@ -224,9 +227,9 @@ class GeneratorPluginWindowsLegacy(GeneratorPlugin):
         configVariant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
 
         # vsVersion: int, platformName: str
-        generatorVSConfig = GeneratorVSConfig(self.PlatformName, self.ToolVersion)
-        generatorTemplateInfo = GeneratorVSTemplateInfo(
-            generatorConfig.ToolConfig.ProjectRootConfig.DefaultTemplate, generatorConfig.ToolConfig.TemplateFolder, generatorConfig.SDKConfigTemplatePath
+        generatorVSConfig = GeneratorVSConfig(self.PlatformName, self.ToolVersion, self.ProjectNamePostfix)
+        generatorTemplateInfo = GeneratorVSPlatformTemplate.CreateTemplateInfo(
+            generatorConfig.ToolConfig, generatorConfig.SDKConfigTemplatePath, self.PlatformName, self.ProjectNamePostfix
         )
 
         for package in packageList:
@@ -236,6 +239,18 @@ class GeneratorPluginWindowsLegacy(GeneratorPlugin):
             if buildReport is not None:
                 resultDict[package] = buildReport
         return TheGeneratorBuildReport(resultDict)
+
+
+class GeneratorPluginUnity(GeneratorPluginWindowsLegacy):
+    """The platform 'Unity': the C# packages of a project compiled the way the Unity engine compiles them, to find what only breaks
+    there in a normal build. The projects are made by the Visual Studio generator from the template the project names for the
+    platform (Project.gen, PlatformTemplate), next to the projects of the other platforms: 'Lib.Unity.csproj' next to 'Lib.csproj'.
+    There are no C++ projects for it.
+    """
+
+    def __init__(self, log: Log) -> None:
+        super().__init__(log, PackageConfig.PlatformNameString.UNITY, f".{PackageConfig.PlatformNameString.UNITY}")
+        self.SupportedPackageLanguages = [PackageLanguage.CSharp]
 
 
 class GeneratorPluginCMakeBase(GeneratorPlugin):
@@ -435,6 +450,7 @@ class ActualPluginConfigContext(PluginConfigContext):
             GeneratorPluginFreeRTOS(log),
             GeneratorPluginQNX(log),
             GeneratorPluginEmscripten(log),
+            GeneratorPluginUnity(log),
         ]
         if not allowDevelopmentPlugins:
             self.__GeneratorPlugins = [entry for entry in self.__GeneratorPlugins if not entry.InDevelopment]

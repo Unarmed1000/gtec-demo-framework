@@ -102,12 +102,22 @@ class XmlConfigContentBuilder(XmlBase):
     __AttribParameters = "Parameters"
     __AttribFeatureRequirements = "FeatureRequirements"
     __AttribDescription = "Description"
+    __AttribPlatforms = "Platforms"
+    __AttribDependencyFileOption = "DependencyFileOption"
     __ElementAddExtension = "AddExtension"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes(
-            {self.__AttribName, self.__AttribExecutable, self.__AttribParameters, self.__AttribFeatureRequirements, self.__AttribDescription},
+            {
+                self.__AttribName,
+                self.__AttribExecutable,
+                self.__AttribParameters,
+                self.__AttribFeatureRequirements,
+                self.__AttribDescription,
+                self.__AttribPlatforms,
+                self.__AttribDependencyFileOption,
+            },
             {self.__ElementAddExtension},
         )
         self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
@@ -116,6 +126,10 @@ class XmlConfigContentBuilder(XmlBase):
         self.FeatureRequirements: str = self._ReadAttrib(xmlElement, self.__AttribFeatureRequirements, "")
         self.DefaultExtensions: list[XmlConfigContentBuilderAddExtension] = self.__LoadDefaultExtensions(log, xmlElement)
         self.Description: str = self._ReadAttrib(xmlElement, self.__AttribDescription)
+        # The platforms the builder is for, separated by ';'. Empty: every platform
+        self.Platforms: str = self._ReadAttrib(xmlElement, self.__AttribPlatforms, "")
+        # The option that makes the tool write a make style dependency file ('--depfile'). Empty: what the tool is known to have
+        self.DependencyFileOption: str = self._ReadAttrib(xmlElement, self.__AttribDependencyFileOption, "")
 
     def __LoadDefaultExtensions(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigContentBuilderAddExtension]:
         res = []
@@ -127,10 +141,13 @@ class XmlConfigContentBuilder(XmlBase):
 
 class XmlConfigContentBuilderConfiguration(XmlBase):
     __ElementContentBuilder = "ContentBuilder"
+    __AttribContentDirectory = "ContentDirectory"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes(set(), {self.__ElementContentBuilder})
+        self._CheckAttributes({self.__AttribContentDirectory}, {self.__ElementContentBuilder})
+        # The name of the content directory of a package, None for the default (ContentDirectoryConfig)
+        self.ContentDirectory: str | None = self._TryReadAttrib(xmlElement, self.__AttribContentDirectory)
         self.ContentBuilders: list[XmlConfigContentBuilder] = self.__LoadContentBuilders(log, xmlElement)
 
     def __LoadContentBuilders(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigContentBuilder]:

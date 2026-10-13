@@ -59,6 +59,9 @@ class GeneratorPluginBase2(GeneratorPluginBase):
         super().__init__(platformName)
         self.GeneratorVariants: dict[str, GeneratorVariant] = {}
         self.LastActiveGenerator: GeneratorBase | None = None
+        # The app the build files of the generator make reads its content from the resolved content directory (ContentDelivery), so it
+        # gets the content of the libraries it uses. False for a generator that builds and runs an app in the directory of its package
+        self.DeliversAppContent = True
         self.OriginalPlatformName = self.PlatformName
 
     def GetVariants(self) -> list[GeneratorVariant]:

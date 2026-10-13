@@ -154,7 +154,7 @@ class PackageManager2:
         jsonProjectIdCache = JsonProjectIdCache.TryLoad(createContext.Log, vsProjectIdCacheFilename)
         if jsonProjectIdCache is None:
             jsonProjectIdCache = JsonProjectIdCache({})
-        projectIdCache = ProjectIdCache(jsonProjectIdCache)
+        projectIdCache = ProjectIdCache(jsonProjectIdCache, vsProjectIdCacheFilename, createContext.Log)
         PackageManager2.__UpdateProjectIdCache(createContext.Log, projectIdCache, allPackages)
 
         resolvedInstanceBuildOrder = PackageManager2.Resolve(

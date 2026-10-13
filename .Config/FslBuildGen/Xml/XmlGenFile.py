@@ -38,9 +38,10 @@ import xml.etree.ElementTree as ET
 from collections.abc import Collection
 from typing import Any, cast
 
-from FslBuildGen import IOUtil, PackageConfig, ToolSharedValues, Util
+from FslBuildGen import IOUtil, PackageConfig, Util
 from FslBuildGen.BuildExternal import ConanRecipeUtil
 from FslBuildGen.Config import Config
+from FslBuildGen.ContentDirectoryConfig import ContentDirectoryConfig
 from FslBuildGen.DataTypes import DependencyOutputType, IncludePriority, PackageCreationYearString, PackageLanguage, PackageString, PackageType
 from FslBuildGen.Exceptions import (
     FileNotFoundException,
@@ -363,7 +364,9 @@ class XmlGenFile(XmlCommonFslBuild):
         self.__ValidateBasicDependencyCorrectness()
         self.__ValidateDefines()
 
-        self.__ResolvePaths(configDisableIncludeDirCheck, configDisableSourceDirCheck, packageFile, allowNoInclude, includePriority)
+        self.__ResolvePaths(
+            configDisableIncludeDirCheck, configDisableSourceDirCheck, packageFile, allowNoInclude, includePriority, toolConfig.ContentDirectory
+        )
 
     def __CalcContentHash(self, content: str) -> str:
         encodedContent = content.encode()
@@ -775,6 +778,7 @@ class XmlGenFile(XmlCommonFslBuild):
         packagePath: PackagePath,
         allowNoInclude: bool,
         includePriority: IncludePriority,
+        contentDirectory: ContentDirectoryConfig,
     ) -> None:
         rootRelativeDirPath = packagePath.RootRelativeDirPath
         if not self.IsVirtual:
@@ -788,8 +792,8 @@ class XmlGenFile(XmlCommonFslBuild):
                 raise UnsupportedException(f"Unsupported package language: {self.PackageLanguage}")
             self.SourcePath = PackagePath(IOUtil.Join(rootRelativeDirPath, sourcePath), packagePath.PackageRootLocation)
 
-            self.ContentPath = PackagePath(IOUtil.Join(rootRelativeDirPath, ToolSharedValues.CONTENT_FOLDER_NAME), packagePath.PackageRootLocation)
-            self.ContentSourcePath = PackagePath(IOUtil.Join(rootRelativeDirPath, ToolSharedValues.CONTENT_BUILD_FOLDER_NAME), packagePath.PackageRootLocation)
+            self.ContentPath = PackagePath(IOUtil.Join(rootRelativeDirPath, contentDirectory.Name), packagePath.PackageRootLocation)
+            self.ContentSourcePath = PackagePath(IOUtil.Join(rootRelativeDirPath, contentDirectory.BuildName), packagePath.PackageRootLocation)
 
             if not os.path.isdir(self.SourcePath.AbsoluteDirPath) and not configDisableSourceDirCheck:
                 raise PackageMissingRequiredSourceDirectoryException(self.SourcePath.AbsoluteDirPath)

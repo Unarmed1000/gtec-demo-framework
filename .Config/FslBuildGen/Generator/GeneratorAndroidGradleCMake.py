@@ -38,6 +38,7 @@ from typing import cast
 from FslBuildGen import IOUtil, TemplateIO
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.Build import BuildKeepGoing
+from FslBuildGen.BuildContent import ContentDelivery
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.BuildExternal.State.PackageRecipeUtil import PackageRecipeUtil
 from FslBuildGen.CMakeUtil import CMakeVersion
@@ -254,7 +255,9 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
             if package.ContentPath is None or package.AbsolutePath is None:
                 raise Exception("Invalid package")
             packagePath = CMakeGeneratorUtil.GetSDKBasedPathUsingCMakeVariable(toolConfig, package.AbsolutePath)
-            packageContentPath = CMakeGeneratorUtil.GetSDKBasedPathUsingCMakeVariable(toolConfig, package.ContentPath.AbsoluteDirPath)
+            # What the gradle project puts into the assets: the content of the app with the content of the libraries it uses, which the
+            # content build delivers to the build directory of the app (the 'Content' directory of the package holds its own files only)
+            packageContentPath = CMakeGeneratorUtil.GetSDKBasedPathUsingCMakeVariable(toolConfig, ContentDelivery.GetResolvedContentPath(package))
             buildCMakeFile = buildCMakeFile.replace("##PACKAGE_PATH##", packagePath)
             buildCMakeFile = buildCMakeFile.replace("##PACKAGE_CONTENT_PATH##", packageContentPath)
             buildCMakeFile = buildCMakeFile.replace("##PACKAGE_ANDROID_PROJECT_PATH##", androidProjectDir)

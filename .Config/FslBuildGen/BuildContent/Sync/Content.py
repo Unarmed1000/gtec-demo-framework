@@ -44,15 +44,26 @@ from FslBuildGen.Log import Log
 
 class Content:
     # def __init__(self, log: Log, resolvedSourcePath: ResolvedPath, includeSourcePathContent: bool, additionalFiles: Optional[List[PathRecord]] = None) -> None:
-    def __init__(self, log: Log, sourcePath: str, includeSourcePathContent: bool, additionalFiles: list[PathRecord] | None = None) -> None:
+    def __init__(
+        self,
+        log: Log,
+        sourcePath: str,
+        includeSourcePathContent: bool,
+        additionalFiles: list[PathRecord] | None = None,
+        scanResult: tuple[list[str], list[str]] | None = None,
+    ) -> None:
+        """scanResult: the ScanResult of a Content of the same sourcePath, so the directory is not walked again"""
         super().__init__()
         # sourcePath = resolvedSourcePath.ResolvedPath
         folderRoot = ContentRootRecord(log, sourcePath)
 
         pathDirRecords: list[PathRecord] = []
         pathFileRecords: list[PathRecord] = []
+        # The directories and files found in sourcePath, None if it was not looked into
+        self.ScanResult: tuple[list[str], list[str]] | None = None
         if includeSourcePathContent:
-            dirs, files = self.__GetDirAndFilePaths(sourcePath)
+            self.ScanResult = scanResult if scanResult is not None else self.__GetDirAndFilePaths(sourcePath)
+            dirs, files = self.ScanResult
 
             # rootDict = {}
             # rootDict[folderRoot.Id] = folderRoot

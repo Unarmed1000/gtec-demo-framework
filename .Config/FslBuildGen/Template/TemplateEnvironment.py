@@ -32,7 +32,9 @@
 # ****************************************************************************************************************************************************
 
 
+from FslBuildGen.BuildContent import ContentDelivery
 from FslBuildGen.Config import Config
+from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Packages.Package import Package
 
@@ -60,7 +62,12 @@ class TemplateEnvironment:
         creationYear: str | None = package.CreationYear
         companyName: str = package.CompanyName.Value
 
+        # Where the content of the package is. For an executable that is the resolved content directory: what it is run with, its own
+        # content and the content of the libraries it uses (ContentDelivery)
         packageContentPath = package.ContentPath.AbsoluteDirPath
+        if package.Type == PackageType.Executable and package.ResolvedBuildPath is not None:
+            packageContentPath = ContentDelivery.GetResolvedContentPath(package)
+            self.Dict["##PACKAGE_CONTENT_RELATIVE_PATH##"] = ContentDelivery.GetResolvedContentRelativePath(package)
         # androidProjectDir = buildCMakeFile.replace("##PACKAGE_ANDROID_PROJECT_PATH##", androidProjectDir)
         self.SetPackageValues(
             location,

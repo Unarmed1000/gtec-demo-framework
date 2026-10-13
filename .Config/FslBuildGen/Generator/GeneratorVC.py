@@ -39,6 +39,7 @@ from FslBuildGen import IOUtil, SemanticVersionPatternRender, TemplateIO, Util
 
 # from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Build.DataTypes import CommandType
+from FslBuildGen.BuildContent import ContentDelivery
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.Config import Config
 
@@ -57,7 +58,7 @@ from FslBuildGen.DataTypes import (
 )
 from FslBuildGen.Exceptions import InternalErrorException, UnsupportedException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-from FslBuildGen.Generator import VSSolutionSlnx, VSSolutionStaleFile
+from FslBuildGen.Generator import GeneratorVSPlatformTemplate, VSSolutionSlnx, VSSolutionStaleFile
 
 # from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Generator.ExceptionsVC import PackageDuplicatedWindowsVisualStudioProjectIdException
@@ -109,10 +110,12 @@ from FslBuildGen.Xml.Exceptions import XmlFormatException
 
 
 class GeneratorVSConfig:
-    def __init__(self, platformName: str, vsVersion: int) -> None:
+    def __init__(self, platformName: str, vsVersion: int, projectNamePostfix: str = "") -> None:
+        """projectNamePostfix: what the platform adds to the name of its projects and solutions (GeneratorVSPlatformTemplate)"""
         super().__init__()
         self.PlatformName = platformName
         self.VsVersion = vsVersion
+        self.ProjectNamePostfix = projectNamePostfix
 
 
 class TemplateCache:
@@ -179,6 +182,7 @@ class GeneratorVC(GeneratorBase):
     ) -> None:
         super().__init__()
         self.__ActiveThirdPartyLibsDir = activeThirdPartyLibsDir
+        self.__ProjectNamePostfix = generatorConfig.ProjectNamePostfix
 
         windows10SDKVersion = self.__DetectVS10SDKVersion(config, generatorConfig.VsVersion)
         config.LogPrintVerbose(1, "  Generating Visual Studio build files")
@@ -190,8 +194,8 @@ class GeneratorVC(GeneratorBase):
         self.__SolutionFormat = config.ToolConfig.GetVisualStudioSolutionFormat()
         VSSolutionSlnx.CheckSolutionFormatSupported(self.__SolutionFormat, generatorConfig.VsVersion, packageLanguage)
 
-        generatorTemplateInfo = GeneratorVSTemplateInfo(
-            config.ToolConfig.ProjectRootConfig.DefaultTemplate, config.ToolConfig.TemplateFolder, config.SDKConfigTemplatePath
+        generatorTemplateInfo = GeneratorVSPlatformTemplate.CreateTemplateInfo(
+            config.ToolConfig, config.SDKConfigTemplatePath, generatorConfig.PlatformName, generatorConfig.ProjectNamePostfix
         )
 
         template = g_templateCache.GetTemplate(config, generatorConfig, packageLanguage, generatorTemplateInfo)
@@ -215,6 +219,8 @@ class GeneratorVC(GeneratorBase):
             # if package.Type == PackageType.TopLevel:
             #    self.__GenerateLibraryBuildFile(config, package, generatorConfig.PlatformName, template.GetLibraryTemplate(package),
             #                                    template.GetBatTemplate(), generatorConfig.VsVersion, windows10SDKVersion)
+            if not GeneratorVSPlatformTemplate.HasProject(package.ResolvedPlatformSupported, self.__ProjectNamePostfix):
+                continue
             if package.Type == PackageType.Library:
                 self.__GenerateLibraryBuildFile(
                     config,
@@ -367,6 +373,8 @@ class GeneratorVC(GeneratorBase):
             solutionFolderEntries = self.__GenerateFolderEntries(config, package, template.SLNSnippet4, template.SLNSnippet4_1)
 
             build = template.TemplateSLN
+            # Before the target name: the project file of a platform with a postfix is not named after the target alone
+            build = build.replace("##PACKAGE_PROJECT_FILE_NAME##", f"{self.__GetProjectName(package)}.{template.ProjectExtension}")
             build = build.replace("##PACKAGE_TARGET_NAME##", targetName)
             build = build.replace("##PACKAGE_PLATFORM_PROJECT_ID##", package.CustomInfo.VisualStudioProjectGUID)
             build = build.replace("##PACKAGE_LIBRARY_DEPENDENCIES1##", libDep1SLN)
@@ -473,6 +481,9 @@ class GeneratorVC(GeneratorBase):
         build = build.replace("##PACKAGE_TARGET_NAME##", targetName)
         build = build.replace("##FEATURE_LIST##", strFeatureList)
         build = build.replace("##PLATFORM_NAME##", platformName)
+        if package.Type == PackageType.Executable and package.ResolvedBuildPath is not None:
+            # Where the project picks the content of the app up: the resolved content directory, relative to the project
+            build = build.replace("##PACKAGE_CONTENT_RELATIVE_PATH##", ContentDelivery.GetResolvedContentRelativePath(package))
         build = build.replace("##CURRENT_YEAR##", strCurrentYear)
         build = build.replace("##PACKAGE_CREATION_YEAR##", strPackageCreationYear)
         build = build.replace("##PACKAGE_COMPANY_NAME##", strPackageCompanyName)
@@ -526,7 +537,7 @@ class GeneratorVC(GeneratorBase):
             platformName,
         )
 
-        dstName = package.Name
+        dstName = self.__GetProjectName(package)
         if package.CustomInfo is None or package.CustomInfo.VisualStudioProjectGUID is None:
             raise InternalErrorException("Could not find project name")
             # dstName = 'test'
@@ -809,9 +820,10 @@ class GeneratorVC(GeneratorBase):
         result = strBatTemplate
         result = result.replace("##PLATFORM_NAME##", platformName)
         result = result.replace("##VS_VERSION##", strVersion)
-        result = result.replace("##PROJECT_NAME##", package.Name)
+        projectName = self.__GetProjectName(package)
+        result = result.replace("##PROJECT_NAME##", projectName)
         result = result.replace(
-            VSSolutionSlnx.PROJECT_SOLUTION_FILE_TOKEN, f"{package.Name}.{VisualStudioSolutionFormat.GetFileExtension(self.__SolutionFormat)}"
+            VSSolutionSlnx.PROJECT_SOLUTION_FILE_TOKEN, f"{projectName}.{VisualStudioSolutionFormat.GetFileExtension(self.__SolutionFormat)}"
         )
         result = result.replace("##CONFIG_SCRIPTS##", "\n".join(featureList))
         result = result.replace("##VS_VERSION##", strVersion)
@@ -1262,7 +1274,7 @@ class GeneratorVC(GeneratorBase):
     def __GenerateSlnx(self, config: Config, package: Package, variantHelper: VariantHelper, projectExtension: str) -> str:
         """The .slnx holds the same projects as the .sln: the package project and, in the dependency folder, the projects it depends on"""
         solutionVariantNames = [GeneratorVCUtil.GetVCBuildConfigurationName(entry) for entry in variantHelper.CartesianProduct]
-        projects = [VSSolutionSlnx.SlnxProject(f"{package.Name}.{projectExtension}", None, [])]
+        projects = [VSSolutionSlnx.SlnxProject(f"{self.__GetProjectName(package)}.{projectExtension}", None, [])]
         for entry in package.ResolvedBuildOrder:
             if self.__IsProject(entry) and entry.ResolvedPlatform is not None and package != entry:
                 projectPath = self.__GenerateProjectPath(config, package, entry, projectExtension).replace("\\", "/")
@@ -1321,7 +1333,11 @@ class GeneratorVC(GeneratorBase):
             path = os.path.relpath(depPath, package.AbsolutePath)
         except ValueError:
             path = depPath
-        return "{}\\{}.{}".format(path.replace("/", "\\"), entry.Name, projectExtension)
+        return "{}\\{}.{}".format(path.replace("/", "\\"), self.__GetProjectName(entry), projectExtension)
+
+    def __GetProjectName(self, package: Package) -> str:
+        """The name of the project and the solution of a package on the platform that is generated, without the extension"""
+        return GeneratorVSPlatformTemplate.GetProjectName(package.Name, self.__ProjectNamePostfix)
 
     def __GenerateCustomGenerateSections(self, snippetGroup: str, snippetEntry: str, snippetGrpcService: str, config: Config, package: Package) -> str:
         # The language check has to be done before we decide to emit the group, else we emit a empty ItemGroup for a non C# package
@@ -1843,6 +1859,8 @@ class GeneratorVCUtil:
         configVariantOptions: list[str],
     ) -> PackageGeneratorReport | None:
         if package.IsVirtual and package.Type != PackageType.HeaderLibrary:
+            return None
+        if not GeneratorVSPlatformTemplate.HasProject(package.ResolvedPlatformSupported, generatorVSConfig.ProjectNamePostfix):
             return None
 
         variableReport = GeneratorVariableReport(log, configVariantOptions=configVariantOptions)

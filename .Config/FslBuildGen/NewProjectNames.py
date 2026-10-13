@@ -24,6 +24,7 @@
 # The names FslBuildNew works with.
 #
 # - What the name of a new package may be: what a gen file can name a package.
+# - A project name that repeats the name the directories of the new package give it, which is refused unless it is asked for.
 # - The name of the package the template sanity check creates for a template. It comes from the name of the template, which is the name of a
 #   directory and can hold what a package name can not ('GLES2-UI', 'My Template', 'Lib.Old').
 # - The package names a new package can not have: the names of the packages that are there, but not the one of the package in the directory
@@ -50,6 +51,21 @@ PackageNameRules = (
 def IsValidPackageName(name: str) -> bool:
     """True if a gen file can name a package like this: it is what the loader accepts as the name of a package (XmlBase2._ValidateName)"""
     return Util.IsValidUnresolvedPackageName(name)
+
+
+def TryGetNameWithoutRepeatedParent(parentPackageName: str, projectName: str) -> str | None:
+    """The project name without the part of it that repeats the name its directories give the package, None if nothing is repeated.
+    The directories a package is in are the first part of its name, the project name is the last part: in the directory of 'MB.App' the
+    project name 'MB.App.Adapter' creates 'MB.App.MB.App.Adapter', where 'Adapter' creates 'MB.App.Adapter'.
+    What is repeated is the parent name, or the parts it ends with ('Libs.MB.App' and 'MB.App.Adapter'), followed by a '.'. The longest
+    repeat counts. A project name that is all of the parent name ('Demo' in 'Demo') repeats nothing: there is no name left without it.
+    """
+    parentParts = parentPackageName.split(".") if len(parentPackageName) > 0 else []
+    for index in range(len(parentParts)):
+        repeated = ".".join(parentParts[index:]) + "."
+        if projectName.startswith(repeated) and len(projectName) > len(repeated):
+            return projectName[len(repeated) :]
+    return None
 
 
 def ToPackageNamePart(text: str) -> str:

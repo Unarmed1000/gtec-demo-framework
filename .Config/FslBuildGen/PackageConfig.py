@@ -47,6 +47,8 @@ class PlatformNameString:
     FREERTOS = "FreeRTOS"
     QNX = "QNX"
     EMSCRIPTEN = "Emscripten"
+    # A C# project compiled the way the Unity engine compiles it (Generator/PluginConfig.py, GeneratorPluginUnity)
+    UNITY = "Unity"
 
 
 class PlatformNameIdString:
@@ -60,6 +62,7 @@ class PlatformNameIdString:
     FREERTOS = PlatformNameString.FREERTOS.lower()
     QNX = PlatformNameString.QNX.lower()
     EMSCRIPTEN = PlatformNameString.EMSCRIPTEN.lower()
+    UNITY = PlatformNameString.UNITY.lower()
 
 
 APPROVED_PLATFORM_NAMES = [
@@ -72,4 +75,5 @@ APPROVED_PLATFORM_NAMES = [
     PlatformNameString.FREERTOS,
     PlatformNameString.QNX,
     PlatformNameString.EMSCRIPTEN,
+    PlatformNameString.UNITY,
 ]

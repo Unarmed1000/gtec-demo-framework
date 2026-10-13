@@ -58,15 +58,18 @@
     <xs:attribute name="Executable" type="xs:string" use="required"/>
     <xs:attribute name="Parameters" type="xs:string" use="required"/>
     <xs:attribute name="FeatureRequirements" type="xs:string" use="optional"/>
+    <xs:attribute name="Platforms" type="xs:string" use="optional"/>
+    <xs:attribute name="DependencyFileOption" type="xs:string" use="optional"/>
     <xs:attribute name="Description" type="xs:string" use="required"/>
   </xs:complexType>
 
 
   <xs:complexType name="_T_ContentBuilderConfiguration">
     <xs:annotation>
-      <xs:documentation>Add a content builder configurations</xs:documentation>
+      <xs:documentation>The content of the packages: the content builders, and what the content directory of a package is called. ContentDirectory: the name of the content directory, 'Content' when it is not given; the directory of the content to build is that name with '.bld'. The content an app runs with is in 'Content' of its build area whatever the name is</xs:documentation>
     </xs:annotation>
     <xs:group ref="_G_ContentBuilderConfigurationCommandList"/>
+    <xs:attribute name="ContentDirectory" type="xs:string" use="optional"/>
   </xs:complexType>
   
 

@@ -36,6 +36,10 @@ import json
 from typing import Any
 
 from FslBuildGen import IOUtil, TextFileReader, ToolSharedValues
+from FslBuildGen.BuildContent import ContentBuildRules as ContentBuildRulesModule
+from FslBuildGen.BuildContent import ContentPlatformList as ContentPlatformListModule
+from FslBuildGen.BuildContent.ContentBuildRules import ContentBuildRules
+from FslBuildGen.BuildContent.ContentPlatformList import ContentPlatformList
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
 from FslBuildGen.BuildContent.PathVariables import PathVariables
 from FslBuildGen.BuildContent.Processor.Commands import Command, CommandContentBuildSync, CommandContentSync
@@ -51,6 +55,10 @@ class ContentBuildCommandFile:
         self.__VersionElement = "Version"
         self.__CurrentVersion = "1"
         self.Commands: list[Command] = []
+        # The files of the directory that are not for every platform (version 2 of the file), see ContentPlatformList
+        self.PlatformList: ContentPlatformList | None = None
+        # How the files of the directory are built when it is not the builder of their extension (version 2), see ContentBuildRules
+        self.BuildRules: ContentBuildRules | None = None
 
         # The command file is UTF-8 like any json file. A byte order mark is accepted and a file in the locale encoding is read with a warning.
         # A package without the file has no commands. A file that is there and can not be read is an error: its commands would be left
@@ -75,8 +83,11 @@ class ContentBuildCommandFile:
         childElements = jsonContent[self.__RootElement]
         if self.__VersionElement not in childElements:
             raise Exception(f"The file '{sourceFilename}' did not contain a version element")
-        if childElements[self.__VersionElement] != self.__CurrentVersion:
-            raise Exception(f"The file '{sourceFilename}' is version {childElements[self.__VersionElement]!r} and we expected {self.__CurrentVersion!r}")
+        if childElements[self.__VersionElement] not in (self.__CurrentVersion, ContentPlatformListModule.VersionWithPlatforms):
+            raise Exception(
+                f"The file '{sourceFilename}' is version {childElements[self.__VersionElement]!r} and we expected {self.__CurrentVersion!r} "
+                f"or {ContentPlatformListModule.VersionWithPlatforms!r}"
+            )
 
     def __ParseContent(self, log: Log, jsonContent: Any, sourceFilename: str, pathVariables: PathVariables) -> list[Command]:
         commands: list[Command] = []
@@ -92,6 +103,17 @@ class ContentBuildCommandFile:
                 elif key == "ContentBuild.Sync":
                     newCommand = self.__ParseContentBuildSync(log, jsonContent[key], sourceFilename, key, pathVariables)
                     commands.append(newCommand)
+                elif key in (ContentPlatformListModule.PlatformsElement, ContentBuildRulesModule.RulesElement):
+                    # An older tool does not know the element: the version tells it that it can not read the file
+                    if jsonContent[self.__VersionElement] != ContentPlatformListModule.VersionWithPlatforms:
+                        raise Exception(
+                            f"The element '{key}' in file '{sourceFilename}' needs version {ContentPlatformListModule.VersionWithPlatforms!r} of "
+                            f"the file, it is version {jsonContent[self.__VersionElement]!r}"
+                        )
+                    if key == ContentBuildRulesModule.RulesElement:
+                        self.BuildRules = ContentBuildRules.Parse(jsonContent[key], sourceFilename)
+                    else:
+                        self.PlatformList = ContentPlatformList.Parse(jsonContent[key], sourceFilename)
                 else:
                     raise Exception(f"Unsupported element '{key}' in file '{sourceFilename}'")
 

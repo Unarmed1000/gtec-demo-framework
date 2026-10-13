@@ -48,8 +48,15 @@ g_posixPlatforms = [
     PlatformNameString.FREERTOS,
     PlatformNameString.QNX,
     PlatformNameString.EMSCRIPTEN,
+    PlatformNameString.UNITY,
 ]
-g_ntPlatforms = [PlatformNameString.ANDROID, PlatformNameString.WINDOWS, PlatformNameString.FREERTOS, PlatformNameString.EMSCRIPTEN]
+g_ntPlatforms = [
+    PlatformNameString.ANDROID,
+    PlatformNameString.WINDOWS,
+    PlatformNameString.FREERTOS,
+    PlatformNameString.EMSCRIPTEN,
+    PlatformNameString.UNITY,
+]
 
 g_posixPlatformIds = [name.lower() for name in g_posixPlatforms]
 g_ntPlatformIds = [name.lower() for name in g_ntPlatforms]

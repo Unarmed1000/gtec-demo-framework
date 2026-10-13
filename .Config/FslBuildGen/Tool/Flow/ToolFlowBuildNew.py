@@ -79,6 +79,8 @@ g_projectInclude = "include"
 g_projectSource = "source"
 
 g_allowOverwriteOption = "--AllowOverwrite"
+g_allowRepeatedNameOption = "--AllowRepeatedName"
+g_listOption = "--List"
 
 
 class GlobalStrings:
@@ -178,6 +180,7 @@ class LocalConfig:
         templateDict: dict[str, list[XmlNewTemplateFile]],
         reservedProjectNames: Iterable[str],
         strCurrentLanguage: str,
+        allowRepeatedName: bool = False,
     ) -> None:
         self.CurrentYear = config.CurrentYearString
         self.ValidateProjectName(projectName)
@@ -193,6 +196,8 @@ class LocalConfig:
             self.ProjectPath, projectName, config.ToolConfig.PackageConfiguration[MagicStrings.DefaultSDKConfiguration]
         )
         self.ValidatePackageName(resolvedPackageName, reservedProjectNames)
+        if not allowRepeatedName:
+            self.ValidateNameIsNotRepeated(resolvedPackageName, projectName)
         self.PackageName = resolvedPackageName
 
         # Call this as the last thing since it references member variables
@@ -258,6 +263,18 @@ class LocalConfig:
             )
         if packageName in reservedProjectNames:
             raise ArgumentError(f"The given package name '{packageName}' is reserved")
+
+    def ValidateNameIsNotRepeated(self, packageName: str, projectName: str) -> None:
+        # The package name ends with the project name, what is in front of it is the name the directories give
+        parentPackageName = packageName[: -(len(projectName) + 1)] if len(packageName) > len(projectName) else ""
+        shortName = NewProjectNames.TryGetNameWithoutRepeatedParent(parentPackageName, projectName)
+        if shortName is not None:
+            # A guess at what was meant: the repeated name is a name a package can have, so it can be asked for
+            raise ArgumentError(
+                f"The package would be named '{packageName}': the directories it is in are the first part of its name, the project name is only "
+                f"the last part. Use the project name '{shortName}' to create '{parentPackageName}.{shortName}', or '{g_allowRepeatedNameOption}' to "
+                f"create '{packageName}'."
+            )
 
     def PrepareProjectType(self, genFileName: str, templates: list[XmlNewTemplateFile], projectType: str, forced: bool, packageName: str) -> ConfigVariant:
         templateDict = {template.Id: template for template in templates}
@@ -335,6 +352,7 @@ def DetermineDirAndProjectName(currentDir: str, projectName: str) -> tuple[str, 
 
 class DefaultValue:
     AllowOverwrite = False
+    AllowRepeatedName = False
     # DryRun = False
     GenFileOnly = False
     Force = False
@@ -353,6 +371,7 @@ class LocalToolConfig(ToolAppConfig):
         super().__init__()
 
         self.AllowOverwrite = DefaultValue.AllowOverwrite
+        self.AllowRepeatedName = DefaultValue.AllowRepeatedName
         # self.DryRun = DefaultValue.DryRun
         self.GenFileOnly = DefaultValue.GenFileOnly
         self.Force = DefaultValue.Force
@@ -393,16 +412,22 @@ class ToolFlowBuildNew(AToolAppFlow):
 
         # Configure the local part
         localToolConfig.AllowOverwrite = args.AllowOverwrite
+        localToolConfig.AllowRepeatedName = args.AllowRepeatedName
         localToolConfig.GenFileOnly = args.GenFileOnly
         localToolConfig.Force = args.Force
         localToolConfig.Language = args.Language
         localToolConfig.NoBuildGen = args.NoBuildGen
         localToolConfig.NoParse = args.NoParse
-        localToolConfig.ProjectName = args.projectName
         localToolConfig.SanityCheck = args.SanityCheck
-        localToolConfig.Template = args.template
         localToolConfig.VisualStudioGUID = args.i
         localToolConfig.ListTemplates = args.List
+        # The list of templates is all that needs neither of the two
+        if not localToolConfig.ListTemplates:
+            missing = [name for name, value in (("template", args.template), ("projectName", args.projectName)) if value is None]
+            if len(missing) > 0:
+                raise ArgumentError(f"The following arguments are required: {', '.join(missing)} (only '{g_listOption}' works without them)")
+            localToolConfig.ProjectName = args.projectName
+            localToolConfig.Template = args.template
 
         self.Process(currentDirPath, toolConfig, localToolConfig, templateDict)
 
@@ -497,7 +522,15 @@ class ToolFlowBuildNew(AToolAppFlow):
             reservedProjectNames = NewProjectNames.GetReservedPackageNames(packages, IOUtil.Join(currentDir, projectName))
 
         localConfig = LocalConfig(
-            config, currentDir, projectName, localToolConfig.Template, localToolConfig.Force, templateDict, reservedProjectNames, localToolConfig.Language
+            config,
+            currentDir,
+            projectName,
+            localToolConfig.Template,
+            localToolConfig.Force,
+            templateDict,
+            reservedProjectNames,
+            localToolConfig.Language,
+            localToolConfig.AllowRepeatedName,
         )
         configVariant = localConfig.ConfigVariant
 
@@ -749,8 +782,13 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         templates = ", ".join(templateList)
         defaultLanguage = PackageLanguage.ToString(toolConfig.DefaultPackageLanguage)
 
-        parser.add_argument("template", help=f"The template for the new project: {templates}")
-        parser.add_argument("projectName", help="The name of the new project (if you want to use the existing directory then specify '.' here")
+        parser.add_argument("template", nargs="?", help=f"The template for the new project: {templates}")
+        parser.add_argument(
+            "projectName",
+            nargs="?",
+            help="The name of the directory of the new project, which is the last part of the name of its package: the directories it is in "
+            "are the first part (if you want to use the existing directory then specify '.' here)",
+        )
         parser.add_argument("--NoParse", action="store_true", help="Disable the package parsing and validation")
         parser.add_argument("--NoBuildGen", action="store_true", help="Disable platform build file generation")
         parser.add_argument("--Force", action="store_true", help="Force the project type to be created")
@@ -764,13 +802,20 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         parser.add_argument(
             g_allowOverwriteOption, action="store_true", help="Allow existing files to be overwritten (for example if a directory already exist)"
         )
+        parser.add_argument(
+            g_allowRepeatedNameOption,
+            action="store_true",
+            help="Allow a project name that repeats the name of the directories it is created in ('MB.App.Adapter' in the directory of 'MB.App')",
+        )
         parser.add_argument("--GenFileOnly", action="store_true", help=f"Only write the gen file '{toolConfig.GenFileName}' file")
         parser.add_argument(
             "--SanityCheck",
             default=DefaultValue.SanityCheck,
             help="off = disabled, on=enabled, debug=enabled, leave files behind. Combine this with a project name of '*' to start a template sanity check. If the template is set to '*' all templates of the language are sanity checked",
         )
-        parser.add_argument("--List", action="store_true", help="List all available templates and exit (this ignores the template and projectName)")
+        parser.add_argument(
+            g_listOption, action="store_true", help="List all available templates and exit (this needs no template and no projectName, and ignores them)"
+        )
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowBuildNew(toolAppContext)

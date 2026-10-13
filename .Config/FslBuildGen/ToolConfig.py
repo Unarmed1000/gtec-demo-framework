@@ -34,7 +34,7 @@
 import os
 import os.path
 
-from FslBuildGen import IOUtil, PathUtil, Util
+from FslBuildGen import ContentBuilderPlatforms, IOUtil, PathUtil, Util
 from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.BuildConfig.BuildDocConfiguration import BuildDocConfiguration
 from FslBuildGen.BuildConfig.BuildDocConfigurationRequirement import BuildDocConfigurationRequirement
@@ -48,6 +48,7 @@ from FslBuildGen.BuildConfig.CMakeConfigurationPlatform import CMakeConfiguratio
 from FslBuildGen.BuildConfig.DotnetFormatConfiguration import DotnetFormatConfiguration
 from FslBuildGen.CMakeIgnoreDirUtil import CMakeIgnoreDirUtil
 from FslBuildGen.CMakeUtil import CMakeUtil, CMakeVersion
+from FslBuildGen.ContentDirectoryConfig import ContentDirectoryConfig
 from FslBuildGen.DataTypes import BuildPlatformType, CompilerNames, MagicStrings, PackageRequirementTypeString, VisualStudioVersion
 from FslBuildGen.Exceptions import (
     DuplicatedConfigBasePackage,
@@ -352,6 +353,8 @@ class ToolContentBuilder:
         self.FeatureRequirements = basedUponXML.FeatureRequirements
         self.DefaultExtensions = basedUponXML.DefaultExtensions
         self.Description = basedUponXML.Description
+        self.PlatformNames = ContentBuilderPlatforms.Parse(basedUponXML.Name, basedUponXML.Platforms)
+        self.DependencyFileOption: str | None = basedUponXML.DependencyFileOption if len(basedUponXML.DependencyFileOption) > 0 else None
 
 
 class ToolConfigContentBuilderConfiguration:
@@ -400,6 +403,10 @@ class ToolConfig:
             ToolConfigContentBuilderConfiguration(basedUponXML.ContentBuilderConfiguration, filename)
             if basedUponXML.ContentBuilderConfiguration is not None
             else None
+        )
+        # What the content directories of a package are called
+        self.ContentDirectory = ContentDirectoryConfig.Parse(
+            basedUponXML.ContentBuilderConfiguration.ContentDirectory if basedUponXML.ContentBuilderConfiguration is not None else None, filename
         )
         self.UnitTestPath = self.__TryResolveUnitTestPath()
         self.DefaultPackageLanguage = projectRootConfig.DefaultPackageLanguage

@@ -49,7 +49,7 @@ from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
 from FslBuildGen.Generator.GeneratorDot import GeneratorDot
-from FslBuildGen.Info import InfoSaver, PackageGraphQuery
+from FslBuildGen.Info import InfoSaver, PackageContentQuery, PackageGraphQuery
 from FslBuildGen.Info.PackageGraphQuery import PackageGraphIndex, QueryFormat
 
 # from FslBuildGen.Log import Log
@@ -90,6 +90,7 @@ class DefaultValue:
     UsedBy: str | None = None
     DependencyPath: list[str] | None = None
     DumpGraph = False
+    Content: str | None = None
     Transitive = False
     Format = QueryFormat.Text
 
@@ -118,6 +119,7 @@ class LocalToolConfig(ToolAppConfig):
         self.UsedBy = DefaultValue.UsedBy
         self.DependencyPath = DefaultValue.DependencyPath
         self.DumpGraph = DefaultValue.DumpGraph
+        self.Content = DefaultValue.Content
         self.Transitive = DefaultValue.Transitive
         self.Format = DefaultValue.Format
 
@@ -159,6 +161,7 @@ class ToolFlowBuildInfo(AToolAppFlow):
         localToolConfig.UsedBy = args.UsedBy
         localToolConfig.DependencyPath = args.DependencyPath
         localToolConfig.DumpGraph = args.DumpGraph
+        localToolConfig.Content = args.Content
         localToolConfig.Transitive = args.Transitive
         localToolConfig.Format = args.Format
 
@@ -286,6 +289,7 @@ class ToolFlowBuildInfo(AToolAppFlow):
             or localToolConfig.UsedBy is not None
             or localToolConfig.DependencyPath is not None
             or localToolConfig.DumpGraph
+            or localToolConfig.Content is not None
         )
 
     @staticmethod
@@ -335,6 +339,14 @@ class ToolFlowBuildInfo(AToolAppFlow):
                 jsonResults.append(PackageGraphQuery.BuildGraphDumpResult(adjacency))
             else:
                 PackageGraphQuery.PrintGraphDump(self.Log, adjacency)
+
+        if localToolConfig.Content is not None:
+            package = self.__ResolveQueryPackage(index, localToolConfig.Content, asJson, jsonResults)
+            if package is not None:
+                if asJson:
+                    jsonResults.append(PackageContentQuery.BuildContentResult(package))
+                else:
+                    PackageContentQuery.PrintContent(self.Log, package)
 
         if asJson:
             # What reads the output gets valid json whatever the encoding of the output is
@@ -400,6 +412,11 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
             "--DependencyPath", default=DefaultValue.DependencyPath, nargs=2, metavar=("FROM", "TO"), help="Show the dependency path(s) from FROM to TO"
         )
         parser.add_argument("--DumpGraph", action="store_true", help="Dump the full package graph as an adjacency list")
+        parser.add_argument(
+            "--Content",
+            default=DefaultValue.Content,
+            help="Show the content of the given executable: its own and what it inherits from the libraries it uses, each file with its owner",
+        )
         parser.add_argument(
             "--Transitive", action="store_true", help="Include the full transitive closure for --DependsOn and --UsedBy (default is direct only)"
         )

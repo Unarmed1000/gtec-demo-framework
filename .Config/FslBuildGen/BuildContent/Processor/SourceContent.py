@@ -66,7 +66,7 @@ class SourceContent:
         self.ContentSource = Content(log, contentPath, includeContentPathContent, contentSourceFiles)
         self.ContentBuildSource = Content(log, contentSourcePath, True, contentBuildSourceFiles)
         # All content source files except files from "Content"
-        self.AllContentSource = Content(log, contentSourcePath, True, contentBuildSourceFiles + contentSourceFiles)
+        self.AllContentSource = Content(log, contentSourcePath, True, contentBuildSourceFiles + contentSourceFiles, self.ContentBuildSource.ScanResult)
 
         if removeCommandFilename is not None:
             self.ContentBuildSource.RemoveFileByResolvedSourcePath(removeCommandFilename)

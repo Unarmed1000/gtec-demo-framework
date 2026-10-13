@@ -38,6 +38,7 @@ from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.CMakeUtil import CMakeVersion
 from FslBuildGen.DataTypes import AccessType, ExternalDependencyType, IncludePriority, PackageType, SpecialFiles, VariantType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
+from FslBuildGen.Generator import GeneratorAppContent
 from FslBuildGen.LibUtil import LibUtil
 from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package, PackageDefine, PackageExternalDependency
@@ -580,7 +581,9 @@ def BuildInstallInstructions(
     targetInstallDir = ""
     if package.Type == PackageType.Executable:
         # Content
-        if package.ContentPath is not None and (len(package.ResolvedContentFiles) > 0 or len(package.ResolvedContentBuilderAllOutputFiles) > 0):
+        if package.ContentPath is not None and (
+            len(package.ResolvedContentFiles) > 0 or len(package.ResolvedContentBuilderAllOutputFiles) > 0 or GeneratorAppContent.HasContent(package)
+        ):
             packageContentFolderName = IOUtil.GetFileName(package.ContentPath.AbsoluteDirPath)
             installContent = templateInstallInstructionsContent
             installContent = installContent.replace("##PACKAGE_CONTENT_DIR##", packageContentFolderName)
@@ -701,27 +704,43 @@ def GetCacheVariants(package: Package, snippetCacheVariant: str) -> str:
 
 
 def GetContentSectionOutputFileList(toolConfig: ToolConfig, package: Package, contentInBinaryDirectory: bool) -> list[str]:
-    if package.ResolvedPath is None or len(package.ResolvedContentFiles) <= 0:
+    if package.ResolvedPath is None:
         return []
     outputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentFiles)
     outputContentFiles.sort()
     if contentInBinaryDirectory:
+        # The content of the libraries the app uses is copied next to its own
+        outputContentFiles += [GeneratorAppContent.ToContentRelativePath(entry) for entry in GeneratorAppContent.GetInheritedCopyFiles(package)]
         outputContentFiles = _MakeRelativeToCurrentBinaryDirectory(outputContentFiles)
     return outputContentFiles
 
 
 def GetContentBuilderOutputFileList(toolConfig: ToolConfig, package: Package, contentInBinaryDirectory: bool) -> list[str]:
-    if package.ResolvedPath is None or len(package.ResolvedContentBuilderAllOutputFiles) <= 0:
+    if package.ResolvedPath is None:
         return []
     outputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentBuilderAllOutputFiles)
+    outputContentFiles += _GetInheritedBuilderOutputFiles(package, contentInBinaryDirectory)
     outputContentFiles.sort()
     if contentInBinaryDirectory:
         outputContentFiles = _MakeRelativeToCurrentBinaryDirectory(outputContentFiles)
     return outputContentFiles
 
 
+def _GetInheritedBuilderOutputFiles(package: Package, contentInBinaryDirectory: bool) -> list[str]:
+    """What the content builder delivers for the libraries the app uses. It delivers to the binary directory only: a build in the
+    directory of the package has the content of that package alone
+    """
+    if not contentInBinaryDirectory:
+        return []
+    return [GeneratorAppContent.ToContentRelativePath(entry) for entry in GeneratorAppContent.GetInheritedBuilderFiles(package)]
+
+
 def GetContentDepOutputFile(log: Log, package: Package, contentInBinaryDirectory: bool) -> str:
-    if len(package.ResolvedContentFiles) <= 0 and len(package.ResolvedContentBuilderAllOutputFiles) <= 0:
+    if (
+        len(package.ResolvedContentFiles) <= 0
+        and len(package.ResolvedContentBuilderAllOutputFiles) <= 0
+        and not (contentInBinaryDirectory and GeneratorAppContent.HasContent(package))
+    ):
         return ""
     return "\n  " + _CONTENT_DEP_FILENAME
 
@@ -761,7 +780,9 @@ def GetContentBuilder(
     dependencyFiles = list(package.ResolvedContentBuilderAllInputFiles) if package.ResolvedContentBuilderAllInputFiles is not None else []
     if package.ResolvedContentBuilderCommandFile is not None:
         dependencyFiles.append(package.ResolvedContentBuilderCommandFile)
-    if len(dependencyFiles) <= 0:
+    inheritedOutputFiles = _GetInheritedBuilderOutputFiles(package, contentInBinaryDirectory)
+    inheritedInputFiles = [entry.SourcePath for entry in GeneratorAppContent.GetInheritedBuilderFiles(package)] if len(inheritedOutputFiles) > 0 else []
+    if len(dependencyFiles) <= 0 and len(inheritedInputFiles) <= 0:
         return ""
     if package.ResolvedPath is None:
         raise Exception(f"Package '{package.Name}' is invalid as it is missing a path")
@@ -771,7 +792,9 @@ def GetContentBuilder(
     featureList = ",".join([entry.Name for entry in package.ResolvedAllUsedFeatures])
 
     inputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, dependencyFiles, True)
+    inputContentFiles += _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, inheritedInputFiles, True)
     outputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentBuilderAllOutputFiles)
+    outputContentFiles += inheritedOutputFiles
 
     inputContentFiles.sort()
     outputContentFiles.sort()
@@ -813,7 +836,8 @@ def GetContentSection(
     contentInBinaryDirectory: bool,
     externalVariantConstraints: ExternalVariantConstraints,
 ) -> str:
-    if not contentInBinaryDirectory or package.ResolvedContentFiles is None or len(package.ResolvedContentFiles) <= 0:
+    inheritedFiles = GeneratorAppContent.GetInheritedCopyFiles(package) if contentInBinaryDirectory else []
+    if not contentInBinaryDirectory or package.ResolvedContentFiles is None or (len(package.ResolvedContentFiles) <= 0 and len(inheritedFiles) <= 0):
         return ""
     if package.ResolvedPath is None:
         raise Exception(f"Package '{package.Name}' is invalid as it is missing a path")
@@ -842,6 +866,18 @@ def GetContentSection(
         content = content.replace("##VARIANT_LIST##", strExternalVariantConstraints)
         contentCommands.append(content)
 
+    # The content of the libraries the app uses: each file comes from its owner and lands on its path in the content of the app
+    for entry in inheritedFiles:
+        relativeFile = GeneratorAppContent.ToContentRelativePath(entry)
+        content = snippetContentFile
+        content = content.replace("##PLATFORM_NAME##", platformName)
+        content = content.replace("##PACKAGE_TARGET_NAME##", targetName)
+        content = content.replace("##RELATIVE_INPUT_FILE##", relativeFile)
+        content = content.replace("##INPUT_FILE##", GetSDKBasedPathUsingCMakeVariable(toolConfig, entry.SourcePath))
+        content = content.replace("##OUTPUT_FILE##", _MakeRelativeToCurrentBinaryDirectory([relativeFile])[0])
+        content = content.replace("##VARIANT_LIST##", strExternalVariantConstraints)
+        contentCommands.append(content)
+
     contentSection = snippetContentSection
     contentSection = contentSection.replace("##CONTENT_FILE_COMMANDS##", "\n".join(contentCommands))
     return "\n" + contentSection
@@ -866,7 +902,8 @@ def GetEmscriptenSection(toolConfig: ToolConfig, package: Package, platformName:
     if package.Type != PackageType.Executable:
         return ""
 
-    content = f" {snippetEmscriptenContent}" if len(package.ResolvedContentFiles) > 0 else ""
+    # The content the app has in its binary directory: its own files, what the content builder makes and what it inherits
+    content = f" {snippetEmscriptenContent}" if len(package.ResolvedContentFiles) > 0 or GeneratorAppContent.HasContent(package) else ""
     result = snippetEmscriptenSection
     result = snippetEmscriptenSection.replace("##EMSCRIPTEN_CONTENT##", content)
     return result

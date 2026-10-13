@@ -90,7 +90,7 @@ class PlatformBuildUtil:
             ):
                 PlatformBuildUtil.AddMakeThreadArgument(rArgumentList, numBuildThreads)
                 return True
-            elif platformName == PlatformNameString.WINDOWS:
+            elif platformName == PlatformNameString.WINDOWS or platformName == PlatformNameString.UNITY:
                 PlatformBuildUtil.AddVisualStudioThreadArgument(rArgumentList, numBuildThreads)
                 return True
             return False

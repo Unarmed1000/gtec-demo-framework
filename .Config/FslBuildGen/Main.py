@@ -39,7 +39,7 @@ from typing import cast
 
 # from FslBuildGen import PackageListUtil
 # from FslBuildGen import PackageUtil
-from FslBuildGen import IOUtil, PackageConfig, PluginSharedValues, Util
+from FslBuildGen import IOUtil, PackageConfig, PlatformPackageTypes, PluginSharedValues, Util
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BasicConfig import BasicConfig
 
@@ -235,6 +235,9 @@ def __ResolveAndGenerate(
 
     if not isSDKBuild:
         for package in process.Packages:
+            if not PlatformPackageTypes.IsForPlatform(package.Type, platformGeneratorPlugin.PlatformName):
+                # Nobody marked it: the platform has no packages of its kind
+                continue
             if not package.ResolvedPlatformSupported and package.Type != PackageType.TopLevel:
                 notSupported = LocalUtil.BuildListOfDirectlyNotSupported(package)
                 notSupportedNames = Util.ExtractNames(notSupported)
@@ -442,6 +445,9 @@ def __TestGenerateBuildFilesAllPlatforms(
             None,
             False,
         )
+        if config.ToolConfig.DefaultPackageLanguage not in platform.SupportedPackageLanguages:
+            # A platform that has no projects in the language of this project (Unity and a C++ project)
+            continue
         resultTuple = DoGenerateBuildFilesNow(
             pluginConfigContext, config, variableContext, errorHelpManager, files, platform, packageFilters, engineResolveConfig, FilterMode.Disabled
         )

@@ -33,7 +33,7 @@
 
 import xml.etree.ElementTree as ET
 
-from FslBuildGen import PackageConfig
+from FslBuildGen import PackageConfig, PlatformPackageTypes
 from FslBuildGen.Build.Filter import PackageFilter, RequirementFilter
 
 # from FslBuildGen.Config import Config
@@ -304,7 +304,10 @@ class PackageManager:
         # ToolRecipe's resolve using the hostPlatformName as we use this for 'cross compiling' for now
         currentPlatformName = platformName if packageType != PackageType.ToolRecipe else hostPlatformName
         resolvedPlatform = PackageManager.__CreatePlatform(createContext, platforms, currentPlatformName, packageType, systemDefaultValues)
-        resolvedPlatformDirectSupported = resolvedPlatform.Supported if not ignoreNotSupported else True
+        # A package of a kind the platform does not have is not for it, whatever its gen file says (an executable on 'Unity').
+        # 'ignoreNotSupported' is for what a gen file marks: it does not give a platform a kind of package it does not have.
+        isSupportedByGenFile = resolvedPlatform.Supported or ignoreNotSupported
+        resolvedPlatformDirectSupported = isSupportedByGenFile and PlatformPackageTypes.IsForPlatform(packageType, currentPlatformName)
 
         # Due to the new flavor project id generation code we no longer require a project id to be in the xml file
         # if currentPlatformName == PackageConfig.PlatformNameString.WINDOWS:

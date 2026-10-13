@@ -52,17 +52,24 @@ from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfig
 from FslBuildGen.Xml.Project.XmlCMakeConfiguration import XmlCMakeConfiguration
 from FslBuildGen.Xml.Project.XmlExperimentalPlatform import XmlExperimentalPlatform
 from FslBuildGen.Xml.Project.XmlGenFileSchema import ElementGenFileSchema, LoadGenFileSchemaLocation
+from FslBuildGen.Xml.Project.XmlProjectPlatformTemplate import ElementPlatformTemplate, LoadPlatformTemplates
 from FslBuildGen.Xml.ToolConfig import LoadUtil
 from FslBuildGen.Xml.ToolConfig.XmlConfigFileAddNewProjectTemplatesRootDirectory import XmlConfigFileAddNewProjectTemplatesRootDirectory
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageConfiguration import XmlConfigPackageConfiguration
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageLocation import XmlConfigPackageLocation
 from FslBuildGen.Xml.XmlBase import XmlBase
+from FslBuildGen.Xml.XmlNameCheck import XmlNamePlace
 
 # A project file ('Project.gen'): the file of a project itself holds a 'Project' element, the file of a project that extends another
 # one an 'ExtendedProject' element, which names the directory of the project file it extends.
 #
 # An attribute or an element in a project file that is not read stops the load when the file is read: one error that lists every such
 # name of the file (XmlNameCheck.XmlUnknownNamesException). The file a project extends is a file of its own, with its own names.
+#
+# An extended project adds to the project it extends: root directories, package locations, template directories, compilers and base
+# packages for its own packages, and it has its own schema location. What a project configures once (its documentation, its formatters,
+# clang tidy, CMake and the experimental settings) is the business of the project that is extended: such an element of a 'Project' is
+# one of the names of the file too, it is reported as not valid in an ExtendedProject.
 
 _g_elementProject = "Project"
 _g_elementExtendedProject = "ExtendedProject"
@@ -88,8 +95,8 @@ _g_attribDefaultTemplate = "DefaultTemplate"
 
 # What the root element of a project file holds
 _g_rootElements = frozenset({_g_elementProject, _g_elementExtendedProject})
-# The elements that are read in an 'ExtendedProject'
-_g_extendedProjectElements = frozenset(
+# The elements that are read in a 'Project'
+_g_projectElements = frozenset(
     {
         LoadUtil.ElementPackageConfiguration,
         _g_elementAddBasePackage,
@@ -97,15 +104,30 @@ _g_extendedProjectElements = frozenset(
         LoadUtil.ElementAddNewProjectTemplatesRootDirectory,
         _g_elementBuildDocConfiguration,
         _g_elementClangFormatConfiguration,
+        _g_elementDotnetFormatConfiguration,
         _g_elementClangTidyConfiguration,
         _g_elementCMakeConfiguration,
         _g_elementCompilerConfiguration,
         _g_elementExperimental,
         ElementGenFileSchema,
+        ElementPlatformTemplate,
     }
 )
-# The elements that are read in a 'Project': the same and one more
-_g_projectElements = _g_extendedProjectElements | {_g_elementDotnetFormatConfiguration}
+# The elements of a 'Project' that an 'ExtendedProject' can not hold
+_g_elementsNotInAnExtendedProject = frozenset(
+    {
+        _g_elementBuildDocConfiguration,
+        _g_elementClangFormatConfiguration,
+        _g_elementDotnetFormatConfiguration,
+        _g_elementClangTidyConfiguration,
+        _g_elementCMakeConfiguration,
+        _g_elementExperimental,
+        ElementPlatformTemplate,
+    }
+)
+# The elements that are read in an 'ExtendedProject', and its place for the ones it can not hold
+_g_extendedProjectElements = _g_projectElements - _g_elementsNotInAnExtendedProject
+_g_extendedProjectPlace = XmlNamePlace("an ExtendedProject", (), _g_elementsNotInAnExtendedProject)
 # The 'Project' element has no reader of its own, so its attributes are named here
 _g_projectAttributes = frozenset(
     {
@@ -262,14 +284,6 @@ class XmlExperimental(XmlBase):
                 platformDict[platform.Id] = platform
         return platformDict
 
-    def Merge(self, src: XmlExperimental | None) -> None:
-        if src is None:
-            return
-        if src.DefaultThirdPartyInstallDirectory is not None:
-            raise Exception("DefaultThirdPartyInstallDirectory can only be set by the root package")
-        if src.DefaultThirdPartyInstallReadonlyCacheDirectory is not None:
-            raise Exception("DefaultThirdPartyInstallReadonlyCacheDirectory can only be set by the root package")
-
 
 def _LoadPackageConfigurations(log: Log, projectElem: ET.Element, filename: str) -> list[XmlConfigPackageConfiguration]:
     xmlPackageConfigurations = LoadUtil.XMLLoadPackageConfiguration(log, projectElem, filename)
@@ -376,7 +390,9 @@ class XmlExtendedProject(XmlBase):
     def __init__(self, log: Log, xmlElement: ET.Element, filename: str) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes(
-            {self.__AttribName, self.__AttribShortName, self.__AttribVersion, self.__AttribParent, self.__AttribParentRoot}, _g_extendedProjectElements
+            {self.__AttribName, self.__AttribShortName, self.__AttribVersion, self.__AttribParent, self.__AttribParentRoot},
+            _g_extendedProjectElements,
+            _g_extendedProjectPlace,
         )
         # raise Exception("ExtendedProject not implemented");
         self.ProjectName: str = self._ReadAttrib(xmlElement, self.__AttribName)
@@ -392,15 +408,12 @@ class XmlExtendedProject(XmlBase):
         self.ProjectId = ProjectId(self.ProjectName, self.ShortProjectName)
 
         self.XmlPackageConfiguration: list[XmlConfigPackageConfiguration] = _LoadPackageConfigurations(log, xmlElement, filename)
+        # The base packages of the packages of this project, next to the ones of the project it extends. They are not added to the
+        # ones of that project: the tool config takes them from here for the context of this project.
         self.XmlBasePackages: list[XmlConfigFileAddBasePackage] = _LoadAddBasePackage(log, xmlElement, filename)
         self.XmlRootDirectories: list[XmlConfigFileAddRootDirectory] = _LoadAddRootDirectory(log, xmlElement, filename, self.ProjectId)
         self.XmlNewProjectTemplatesRootDirectories = LoadUtil.LoadAddNewProjectTemplatesRootDirectory(log, xmlElement, filename)
-        self.XmlBuildDocConfiguration: list[XmlBuildDocConfiguration] = _LoadBuildDocConfiguration(log, xmlElement, filename)
-        self.XmlClangFormatConfiguration: list[XmlClangFormatConfiguration] = _LoadClangFormatConfiguration(log, xmlElement, filename)
-        self.XmlClangTidyConfiguration: list[XmlClangTidyConfiguration] = _LoadClangTidyConfiguration(log, xmlElement, filename)
-        self.XmlCMakeConfiguration: list[XmlCMakeConfiguration] = _LoadCMakeConfiguration(log, xmlElement, filename)
         self.XmlCompilerConfiguration: list[XmlConfigCompilerConfiguration] = _LoadCompilerConfiguration(log, xmlElement, filename)
-        self.XmlExperimental: XmlExperimental | None = _TryLoadExperimental(log, xmlElement, filename)
         # Where the schema versions of the gen files of this project are. It is not taken from the parent project
         self.GenFileSchemaLocation: GenFileSchemaLocation = LoadGenFileSchemaLocation(log, xmlElement, filename, self.RootDirectory)
         _CheckHasRootDirectory(self.XmlRootDirectories, filename)
@@ -452,6 +465,8 @@ class XmlProjectRootConfigFile(XmlBase):
         self.XmlCompilerConfiguration: list[XmlConfigCompilerConfiguration] = []
         self.SourceFileName: str = LocalInvalidValues.INVALID_FILE_NAME
         self.DefaultTemplate: str = MagicStrings.VSDefaultCPPTemplate
+        # The project template of the platforms that do not use the default one (XmlProjectPlatformTemplate)
+        self.PlatformTemplates: dict[str, str] = {}
         self.ExtendedProject: list[XmlExtendedProject] = []
         if xmlElement is not None:
             # The root of the file that is being read: this file or the file of a project it extends
@@ -480,6 +495,7 @@ class XmlProjectRootConfigFile(XmlBase):
                 self.RequirePackageCreationYear = self._ReadBoolAttrib(projectElem, _g_attribRequirePackageCreationYear, False)
                 self.AllowExeDependency = self._ReadBoolAttrib(projectElem, _g_attribAllowExeDependency, False)
                 self.DefaultTemplate = self._ReadAttrib(projectElem, _g_attribDefaultTemplate, MagicStrings.VSDefaultCPPTemplate)
+                self.PlatformTemplates = LoadPlatformTemplates(log, projectElem, filename)
                 self.XmlPackageConfiguration = _LoadPackageConfigurations(log, projectElem, filename)
                 self.XmlBasePackages = _LoadAddBasePackage(log, projectElem, filename)
                 self.XmlRootDirectories = _LoadAddRootDirectory(log, projectElem, filename, self.ProjectId)
@@ -510,10 +526,7 @@ class XmlProjectRootConfigFile(XmlBase):
                 self.__ApplyExtended(self.XmlPackageConfiguration, extendedProject.XmlPackageConfiguration, True)
                 self.__ApplyExtended(self.XmlRootDirectories, extendedProject.XmlRootDirectories, False)
                 self.__ApplyExtended(self.XmlNewProjectTemplatesRootDirectories, extendedProject.XmlNewProjectTemplatesRootDirectories, False)
-                self.__ApplyExtended(self.XmlBuildDocConfiguration, extendedProject.XmlBuildDocConfiguration, False)
-                self.__ApplyExtended(self.XmlClangFormatConfiguration, extendedProject.XmlClangFormatConfiguration, False)
                 self.__ApplyExtended(self.XmlCompilerConfiguration, extendedProject.XmlCompilerConfiguration, False)
-                self.__ApplyExtendedExperimental(self.XmlExperimental, extendedProject.XmlExperimental)
 
         if self.RootDirectory == LocalInvalidValues.INVALID_FILE_NAME:
             raise Exception("RootDirectory not configured")
@@ -532,15 +545,12 @@ class XmlProjectRootConfigFile(XmlBase):
         if len(self.XmlCMakeConfiguration) > 1:
             raise Exception("There can only be one CMakeConfiguration entry")
 
-    def __ApplyExtendedExperimental(self, dst: XmlExperimental | None, src: XmlExperimental | None) -> None:
-        if dst is not None:
-            dst.Merge(src)
-
     def __GetDefaultPackageLanguage(self, xmlElement: ET.Element) -> PackageLanguage:
         defaultPackageLanguage = self._ReadAttrib(xmlElement, _g_attribDefaultPackageLanguage, "C++")
         return PackageLanguage.FromString(defaultPackageLanguage)
 
     # TODO: deal with the dynamic types
+    # What an extended project adds to the lists of the project it extends: each entry of these lists has an 'Id' and a 'Name'
     def __ApplyExtended(self, dst: Any, src: Any, canMerge: bool) -> None:
         for entry in src:
             parentItem = self.__TryFindById(dst, entry.Id)

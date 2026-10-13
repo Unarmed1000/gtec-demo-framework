@@ -31,13 +31,14 @@
 # ****************************************************************************************************************************************************
 
 import argparse
+import os
 from typing import Any
 
 from FslBuildGen import IOUtil, PackageListUtil, ParseUtil, PluginSharedValues
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.BuildConfig import Validate
-from FslBuildGen.BuildContent import ContentBuilder
+from FslBuildGen.BuildContent import ContentDelivery
 from FslBuildGen.BuildContent.SharedValues import CONFIG_FSLBUILDCONTENT_ENABLED
 from FslBuildGen.BuildExternal import RecipeBuilder
 from FslBuildGen.Config import Config
@@ -49,7 +50,6 @@ from FslBuildGen.DataTypes import PackageType
 # from FslBuildGen.PackageConfig import PlatformNameString
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
 from FslBuildGen.PackageFilters import PackageFilters
-from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.PlatformUtil import PlatformUtil
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
@@ -57,7 +57,7 @@ from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
 from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
 from FslBuildGen.Tool.ToolAppContext import ToolAppContext
 from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
-from FslBuildGen.ToolConfig import ToolConfig, ToolConfigPackageLocation
+from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.ToolMinimalConfig import ToolMinimalConfig
 from FslBuildGen.VariableContextHelper import VariableContextHelper
 
@@ -166,37 +166,50 @@ class ToolFlowBuildContent(AToolAppFlow):
             self.Log.DoPrint(disabledMessage)
             return
 
-        locations = toolConfig.PackageConfiguration[localToolConfig.PackageConfigurationType].Locations
-        if not localToolConfig.Recursive or topLevelPackage is None:
-            location = self.__TryFindLocation(locations, currentDirPath)
-            if location is None:
-                raise Exception(f"Could not locate location for {currentDirPath}")
-            packagePath = PackagePath(currentDirPath, location)
-            ContentBuilder.Build(
+        # The content of an app holds the content of the libraries it uses, so its packages are needed
+        if topLevelPackage is None:
+            topLevelPackage = self.__ResolveAndGetTopLevelPackage(
+                generatorContext, config, currentDirPath, toolConfig.GetMinimalConfig(generator.CMakeConfig), localToolConfig.Recursive
+            )
+
+        if not localToolConfig.Recursive:
+            package = self.__TryFindPackage(topLevelPackage, currentDirPath)
+            if package is None:
+                raise Exception(f"Could not locate a package at '{currentDirPath}'")
+            ContentDelivery.DeliverPackage(
                 self.Log,
                 config.GetBuildDir(),
                 config.DisableWrite,
                 toolConfig,
-                packagePath,
-                featureList,
+                package,
+                generatorContext.GeneratorName,
+                generator.DeliversAppContent,
                 localToolConfig.Output,
                 localToolConfig.DependencyFile,
             )
         else:
             if localToolConfig.DependencyFile is not None:
                 raise Exception("--DependencyFile is only allowed for single package builds")
-            # Location not found, but its ok since '-r' was specified and we have a top level package
+            if localToolConfig.Output is not None:
+                raise Exception("--output is only allowed for single package builds")
             for foundPackage in topLevelPackage.ResolvedBuildOrder:
                 if foundPackage.Type == PackageType.Executable:
-                    foundFeatureList = [entry.Name for entry in foundPackage.ResolvedAllUsedFeatures]
-                    if foundPackage.Path is None:
-                        raise Exception("Invalid package")
-                    ContentBuilder.Build(self.Log, config.GetBuildDir(), config.DisableWrite, toolConfig, foundPackage.Path, foundFeatureList)
+                    ContentDelivery.DeliverPackage(
+                        self.Log,
+                        config.GetBuildDir(),
+                        config.DisableWrite,
+                        toolConfig,
+                        foundPackage,
+                        generatorContext.GeneratorName,
+                        generator.DeliversAppContent,
+                    )
 
-    def __TryFindLocation(self, locations: list[ToolConfigPackageLocation], fullProjectPath: str) -> ToolConfigPackageLocation | None:
-        for location in locations:
-            if fullProjectPath.startswith(location.ResolvedPathEx) or fullProjectPath == location.ResolvedPath:
-                return location
+    def __TryFindPackage(self, topLevelPackage: Package, packageDirPath: str) -> Package | None:
+        packageId = os.path.normcase(os.path.normpath(packageDirPath))
+        for package in topLevelPackage.ResolvedBuildOrder:
+            # The same directory the way the file system compares names (on Windows 'e:/Work' is 'E:/work')
+            if package.AbsolutePath is not None and os.path.normcase(os.path.normpath(package.AbsolutePath)) == packageId:
+                return package
         return None
 
     def __ResolveAndGetTopLevelPackage(

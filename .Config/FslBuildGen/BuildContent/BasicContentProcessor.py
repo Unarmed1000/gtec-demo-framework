@@ -47,16 +47,22 @@ from FslBuildGen.Xml.XmlToolConfigFile import XmlConfigContentBuilderAddExtensio
 
 # $(OutputFileName) = Absolute path to the output file
 # $(InputFileName)  = Absolute path to the input file
+# $(PlatformName)   = The platform the content is built for
+# A variable can be an argument or a part of one ('-o=$(OutputFileName)')
 
 
 class BasicContentProcessor(ContentProcessor):
-    def __init__(self, log: Log, toolFinder: ToolFinder, contentBuilderConfig: ToolContentBuilder) -> None:
+    def __init__(self, log: Log, toolFinder: ToolFinder, contentBuilderConfig: ToolContentBuilder, platformName: str | None = None) -> None:
+        """platformName: the platform the content is built for, None when the caller only asks what would be built"""
         super().__init__(contentBuilderConfig.Name, contentBuilderConfig.FeatureRequirements, self.__GetExtensionsSet(contentBuilderConfig.DefaultExtensions))
         self.BasedUpon = contentBuilderConfig
         self.DefaultExtensions = contentBuilderConfig.DefaultExtensions
         self.ToolArguments = self.__ProcessToolParameters(contentBuilderConfig.Parameters)
         self.ToolCommand = toolFinder.GetPlatformDependentExecuteableName(contentBuilderConfig.Executable)
         self.ToolDescription = contentBuilderConfig.Description
+        self.PlatformNames = contentBuilderConfig.PlatformNames
+        self.__PlatformName = platformName
+        self.__DependencyFileOption = contentBuilderConfig.DependencyFileOption
         self.__ToolFinder = toolFinder
 
     def __GetExtensionsSet(self, extensions: list[XmlConfigContentBuilderAddExtension]) -> set[str]:
@@ -79,23 +85,41 @@ class BasicContentProcessor(ContentProcessor):
                 return entry
         return None
 
-    def __GetToolParameterList(self, outputFile: str, inputFile: str) -> list[str]:
+    def CheckTool(self) -> None:
+        """Stops if the tool of the builder is not there: told before a build starts, not at the first file that needs it"""
+        self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
+
+    def __GetToolParameterList(self, toolArguments: list[str], outputFile: str, inputFile: str) -> list[str]:
         res = []
-        for argument in self.ToolArguments:
-            if argument == "$(OutputFileName)":
-                res.append(outputFile)
-            elif argument == "$(InputFileName)":
-                res.append(inputFile)
-            else:
-                res.append(argument)
+        for argument in toolArguments:
+            argument = argument.replace("$(OutputFileName)", outputFile).replace("$(InputFileName)", inputFile)
+            if "$(PlatformName)" in argument:
+                if self.__PlatformName is None:
+                    raise Exception(f"The ContentBuilder '{self.Name}' uses $(PlatformName), so it can not be run without the platform it builds for")
+                argument = argument.replace("$(PlatformName)", self.__PlatformName)
+            res.append(argument)
         return res
 
-    def Process(self, log: Log, configDisableWrite: bool, contentBuildPath: str, contentOutputPath: str, contentFileRecord: PathRecord) -> list[str] | None:
+    def Process(
+        self,
+        log: Log,
+        configDisableWrite: bool,
+        contentBuildPath: str,
+        contentOutputPath: str,
+        contentFileRecord: PathRecord,
+        outputFileName: str | None = None,
+        toolArguments: list[str] | None = None,
+    ) -> list[str] | None:
+        """outputFileName: the output a build rule names, None for the output the builder names
+        toolArguments: the parameters a build rule gives the builder, None for its own
+        """
         # we ask the tool to write to a temporary file so that we can ensure that the output file is only modified
         # if the content was changed
         tmpOutputFileName = self.GetTempFileName(contentBuildPath, contentFileRecord)
         buildCommand = [self.ToolCommand]
-        buildCommand += self.__GetToolParameterList(tmpOutputFileName, contentFileRecord.ResolvedPath)
+        buildCommand += self.__GetToolParameterList(
+            self.ToolArguments if toolArguments is None else toolArguments, tmpOutputFileName, contentFileRecord.ResolvedPath
+        )
 
         if configDisableWrite:
             # if write is disabled we do a "tool-command" check directly since the subprocess call can't fail
@@ -103,12 +127,13 @@ class BasicContentProcessor(ContentProcessor):
             self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
             return None
 
-        outputFileName = self.GetOutputFileName(log, contentOutputPath, contentFileRecord)
+        if outputFileName is None:
+            outputFileName = self.GetOutputFileName(log, contentOutputPath, contentFileRecord)
         self.EnsureDirectoryExist(configDisableWrite, outputFileName)
 
         # Tools that can list the files the content file includes write them to a dependency file
         tmpDependencyFileName = self.GetTempFileName(contentBuildPath, contentFileRecord, ".d.tmp")
-        dependencyArguments = g_contentToolDependencyFile.TryGetArguments(log, self.ToolCommand, tmpDependencyFileName)
+        dependencyArguments = g_contentToolDependencyFile.TryGetArguments(log, self.ToolCommand, tmpDependencyFileName, self.__DependencyFileOption)
         if dependencyArguments is not None:
             buildCommand += dependencyArguments
 

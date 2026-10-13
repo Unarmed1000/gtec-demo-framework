@@ -34,12 +34,13 @@
 # from FslBuildGen.Xml.Exceptions import XmlMissingWindowsVisualStudioProjectIdException
 from typing import Any
 
-from FslBuildGen import IOUtil, PackageConfig, TemplateIO, ToolSharedValues, Util
+from FslBuildGen import IOUtil, PackageAppContentResolver, PackageConfig, TemplateIO, ToolSharedValues, Util
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 
 # from FslBuildGen.BuildContent.Sync.Content import Content
-from FslBuildGen.BuildContent import ContentBuilder
+from FslBuildGen.BuildContent import ContentBuilder, ContentBuildSteps, ContentDirectoryNames, ContentPlatformFilter
+from FslBuildGen.BuildContent.ContentBuildRules import ContentBuildRules
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.PathVariables import PathVariables
 from FslBuildGen.BuildContent.Processor.ContentBuildCommandFile import ContentBuildCommandFile
@@ -223,7 +224,7 @@ class PackageResolver:
                 log.LogPrintVerbose(4, "- include files")
                 self.__ResolveBuildIncludeFiles(packages)
                 log.LogPrintVerbose(4, "- content files")
-                self.__ResolveBuildContentFiles(log, toolConfig, packages)
+                self.__ResolveBuildContentFiles(log, toolConfig, packages, platformContext.PlatformName)
                 log.LogPrintVerbose(4, "- defines")
                 self.__ResolveBuildDefines(log, finalResolveOrder)
                 log.LogPrintVerbose(4, "- build config")
@@ -408,10 +409,15 @@ class PackageResolver:
                 package.ResolvedBuildPublicIncludeFiles = []
                 package.ResolvedBuildAllIncludeFiles = []
 
-    def __ResolveBuildContentFiles(self, log: Log, toolConfig: ToolConfig, packages: list[Package]) -> None:
+    def __ResolveBuildContentFiles(self, log: Log, toolConfig: ToolConfig, packages: list[Package], platformName: str) -> None:
+        # The instances of a package with flavors share their directory
+        checkedPaths: set[str] = set()
         for package in packages:
             if not package.IsVirtual:
-                sourceContent, commandFilename = self.__ProcessContentCommandFile(log, toolConfig, package)
+                if package.AbsolutePath is not None and package.AbsolutePath not in checkedPaths:
+                    checkedPaths.add(package.AbsolutePath)
+                    ContentDirectoryNames.CheckSpelling(package.Name, package.AbsolutePath, toolConfig.ContentDirectory)
+                sourceContent, commandFilename, package.ResolvedContentBuildRules = self.__ProcessContentCommandFile(log, toolConfig, package, platformName)
 
                 # The command file describes the content build, it is not built or synced by it (FslBuildContent skips it too).
                 # A file can be found by more than one route, for example a synced source inside the content build directory is also found by the
@@ -425,19 +431,17 @@ class PackageResolver:
                 if len(package.ResolvedContentBuilderBuildInputFiles) > 0 and package.Path is not None:
                     # Run through all files that will be build and determine what the output filename will be
                     featureList = [entry.Name for entry in package.ResolvedAllUsedFeatures]
-                    contentProcessorManager = ContentBuilder.GetContentProcessorManager(log, toolConfig, featureList)
+                    contentProcessorManager = ContentBuilder.GetContentProcessorManager(log, toolConfig, featureList, platformName)
+                    packageContentOutputPath = ContentBuilder.GetContentOutputPath(package.Path, toolConfig)
                     for contentEntry in package.ResolvedContentBuilderBuildInputFiles:
-                        contentProcessor = contentProcessorManager.TryFindContentProcessor(contentEntry)
-                        if contentProcessor is not None:
-                            packageContentOutputPath = ContentBuilder.GetContentOutputPath(package.Path)
-                            contentOutputFile = contentProcessor.GetOutputFileName(log, packageContentOutputPath, contentEntry)
-                            package.ResolvedContentBuilderBuildOutputFiles.append(contentOutputFile)
+                        for step in ContentBuildSteps.FindBuildSteps(log, contentProcessorManager, contentEntry, package.ResolvedContentBuildRules):
+                            package.ResolvedContentBuilderBuildOutputFiles.append(IOUtil.Join(packageContentOutputPath, step.OutputRelativePath))
                     package.ResolvedContentBuilderBuildOutputFiles.sort()
 
                 # Run through all sync files and determine their output filename
                 package.ResolvedContentBuilderSyncOutputFiles = []
                 if len(package.ResolvedContentBuilderSyncInputFiles) > 0 and package.Path is not None:
-                    packageContentOutputPath = ContentBuilder.GetContentOutputPath(package.Path)
+                    packageContentOutputPath = ContentBuilder.GetContentOutputPath(package.Path, toolConfig)
                     syncDstRoot = ContentBuilder.GetContentOutputContentRootRecord(log, packageContentOutputPath)
                     for syncContentEntry in package.ResolvedContentBuilderSyncInputFiles:
                         syncContentOutputFile = ContentBuilder.GetContentSyncOutputFilename(log, syncDstRoot, syncContentEntry)
@@ -449,7 +453,7 @@ class PackageResolver:
                 package.ResolvedContentBuilderAllOutputFiles.sort()
 
                 # Finally resolve the actual content files from the "Content" directory (excluding any files generated by the content builder)
-                package.ResolvedContentFiles = self.__ProcessContentFiles(log, package, package.ResolvedContentBuilderAllOutputFiles)
+                package.ResolvedContentFiles = self.__ProcessContentFiles(log, package, package.ResolvedContentBuilderAllOutputFiles, platformName)
                 # Resolve all known special files
                 package.ResolvedSpecialFiles = self.__ProcessSpecialFiles(log, package)
             else:
@@ -463,6 +467,11 @@ class PackageResolver:
                 package.ResolvedContentFiles = []
                 package.ResolvedSpecialFiles = []
 
+        # The content of an app is its own and that of the libraries it uses, which are all resolved now
+        for package in packages:
+            if package.Type == PackageType.Executable and not package.IsVirtual:
+                package.ResolvedAppContent = PackageAppContentResolver.Resolve(log, toolConfig, package)
+
     def __ProcessSpecialFiles(self, log: Log, package: Package) -> list[ResolvedPath]:
         if package.AbsolutePath is None:
             return []
@@ -473,7 +482,7 @@ class PackageResolver:
             res.append(ResolvedPath(natvisFilename, fullPathToNatvisFile))
         return res
 
-    def __ProcessContentFiles(self, log: Log, package: Package, resolvedContentBuilderAllOutputFiles: list[str]) -> list[PathRecord]:
+    def __ProcessContentFiles(self, log: Log, package: Package, resolvedContentBuilderAllOutputFiles: list[str], platformName: str) -> list[PathRecord]:
         if package.ContentPath is None or not IOUtil.IsDirectory(package.ContentPath.AbsoluteDirPath):
             return []
 
@@ -486,15 +495,19 @@ class PackageResolver:
         # Blacklist the content sync cache
         generatedContentSet.add(IOUtil.Join(absContentPath, ToolSharedValues.CONTENT_SYNC_CACHE_FILENAME))
         res = [entry for entry in content.Files if entry.ResolvedPath not in generatedContentSet]
-        return res
+        return ContentPlatformFilter.RemoveContentFilesNotForPlatform(log, absContentPath, res, platformName)
 
-    def __ProcessContentCommandFile(self, log: Log, toolConfig: ToolConfig, package: Package) -> tuple[SourceContent, str]:
+    def __ProcessContentCommandFile(
+        self, log: Log, toolConfig: ToolConfig, package: Package, platformName: str
+    ) -> tuple[SourceContent, str, ContentBuildRules | None]:
         if package.AbsoluteBuildPath is None or package.ContentSourcePath is None or package.ContentPath is None:
             raise Exception("Invalid package")
         pathVariables = PathVariables(toolConfig, package.AbsoluteBuildPath, package.ContentSourcePath.AbsoluteDirPath, package.ContentPath.AbsoluteDirPath)
         commandFilename = IOUtil.Join(package.ContentSourcePath.AbsoluteDirPath, ToolSharedValues.CONTENT_BUILD_FILE_NAME)
         commands = ContentBuildCommandFile(log, commandFilename, pathVariables)
-        return (SourceContent(log, package.ContentPath.AbsoluteDirPath, package.ContentSourcePath.AbsoluteDirPath, commands, False), commandFilename)
+        sourceContent = SourceContent(log, package.ContentPath.AbsoluteDirPath, package.ContentSourcePath.AbsoluteDirPath, commands, False)
+        ContentPlatformFilter.RemoveBuildFilesNotForPlatform(sourceContent, commands.PlatformList, package.ContentSourcePath.AbsoluteDirPath, platformName)
+        return (sourceContent, commandFilename, commands.BuildRules)
 
     @staticmethod
     def __GetContentInputFiles(records: list[PathRecord], commandFilename: str | None) -> list[PathRecord]:

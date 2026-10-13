@@ -64,9 +64,11 @@ class ContentToolDependencyFile:
         self.__RunHelp = runHelp
         self.__IsSupportedByToolCommand: dict[str, bool] = {}
 
-    def TryGetArguments(self, log: Log, toolCommand: str, dependencyFileName: str) -> list[str] | None:
-        """The extra tool arguments that write the dependency file, None if the tool can not write one"""
-        option = _DEPENDENCY_FILE_OPTION_BY_TOOL_NAME.get(GetToolName(toolCommand))
+    def TryGetArguments(self, log: Log, toolCommand: str, dependencyFileName: str, configuredOption: str | None = None) -> list[str] | None:
+        """The extra tool arguments that write the dependency file, None if the tool can not write one.
+        configuredOption: the option the tool config gives for the builder of the tool, None for what the tool is known to have
+        """
+        option = configuredOption if configuredOption is not None else _DEPENDENCY_FILE_OPTION_BY_TOOL_NAME.get(GetToolName(toolCommand))
         if option is None or not self.__IsSupported(log, toolCommand, option):
             return None
         return [option, dependencyFileName]

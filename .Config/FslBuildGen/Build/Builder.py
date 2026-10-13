@@ -43,7 +43,7 @@ from collections.abc import Callable
 from enum import Enum
 
 # from typing import cast
-from FslBuildGen import IOUtil, PackageListUtil, PackageUtil, ParseUtil, ToolSharedValues, Util
+from FslBuildGen import IOUtil, PackageListUtil, PackageUtil, ParseUtil, PlatformPackageTypes, ToolSharedValues, Util
 from FslBuildGen.Build import BuildDryRun, CMakeCacheValues
 from FslBuildGen.Build.BuildConfigRecord import BuildConfigRecord
 from FslBuildGen.Build.BuildConfigureCache import BuildConfigureCache
@@ -59,7 +59,7 @@ from FslBuildGen.Build.RequirementTreeNode import RequirementTreeNode
 from FslBuildGen.BuildConfig import Validate
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
-from FslBuildGen.BuildContent import ContentBuilder
+from FslBuildGen.BuildContent import ContentDelivery
 from FslBuildGen.BuildContent.SharedValues import CONFIG_FSLBUILDCONTENT_ENABLED
 from FslBuildGen.BuildExternal import RecipeBuilder
 from FslBuildGen.BuildExternal.BuilderSettings import BuilderSettings
@@ -70,7 +70,7 @@ from FslBuildGen.Context.GeneratorContext import GeneratorContext
 # from FslBuildGen.DataTypes import BuildThreads
 # from FslBuildGen.DataTypes import BuildVariantConfig
 # from FslBuildGen.DataTypes import PackageCreationYearString
-from FslBuildGen.DataTypes import BuildVariantType, PackageRequirementTypeString, PackageType, SpecialFiles, VariantType
+from FslBuildGen.DataTypes import BuildVariantType, PackageLanguage, PackageRequirementTypeString, PackageType, SpecialFiles, VariantType
 from FslBuildGen.Exceptions import BuildConfigureFailedException, ExitException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 
@@ -227,7 +227,9 @@ class Builder:
         # Do a final filter that removes all unsupported packages
         resolvedBuildOrder = topLevelPackage.ResolvedBuildOrder
         resolvedBuildOrder = PackageFilter.FilterNotSupported(self.Log, topLevelPackage, resolvedBuildOrder)
-        if not PackageFilter.WasThisAExecutableBuildAndAreThereAnyLeft(topLevelPackage.ResolvedBuildOrder, resolvedBuildOrder):
+        # A platform without executables is built for its libraries: there no executable is left on every build
+        hasExecutables = PlatformPackageTypes.HasExecutables(generatorContext.Generator.PlatformName)
+        if hasExecutables and not PackageFilter.WasThisAExecutableBuildAndAreThereAnyLeft(topLevelPackage.ResolvedBuildOrder, resolvedBuildOrder):
             self.Log.DoPrint("No executables left, skipping all")
             return
 
@@ -292,11 +294,18 @@ class Builder:
         if enableContentBuilder and not builderCanBuildContent:
             for package in resolvedBuildOrderBuildable:
                 if package.Type == PackageType.Executable:
-                    featureList = [entry.Name for entry in package.ResolvedAllUsedFeatures]
                     if package.Path is None:
                         raise Exception("Invalid package")
                     if runBuild:
-                        ContentBuilder.Build(log, configBuildDir, configDisableWrite, toolConfig, package.Path, featureList)
+                        ContentDelivery.DeliverPackage(
+                            log,
+                            configBuildDir,
+                            configDisableWrite,
+                            toolConfig,
+                            package,
+                            generatorContext.GeneratorName,
+                            generatorContext.Generator.DeliversAppContent,
+                        )
 
         # Windows runs its validation checks slightly differently
         runValidationChecks = buildConfig.PlatformName != PlatformNameString.WINDOWS
@@ -767,7 +776,7 @@ class Builder:
         return " ".join(res)
 
     def __ApplyPlatformOrderChanges(self, resolvedBuildOrder: list[Package], platformName: str) -> list[Package]:
-        if platformName != PlatformNameString.WINDOWS:
+        if platformName != PlatformNameString.WINDOWS and platformName != PlatformNameString.UNITY:
             return resolvedBuildOrder
 
         # Since visual studio does its own dependency management and building
@@ -982,7 +991,16 @@ class Builder:
         fullPathExe = IOUtil.Join(packagePath, foundVariantExePath)
         exeName = IOUtil.GetFileName(foundVariantExePath)
         exePath = IOUtil.GetDirectoryName(fullPathExe)
-        contentPath = IOUtil.Join(packagePath, ToolSharedValues.CONTENT_FOLDER_NAME)
+        contentPath = IOUtil.Join(packagePath, buildContext.ToolConfig.ContentDirectory.Name)
+        if buildExecutableInfo is not None:
+            # The build files put the content next to where they run the app
+            contentPath = IOUtil.Join(runPath, ToolSharedValues.CONTENT_FOLDER_NAME)
+        elif buildConfig.Generator.DeliversAppContent and package.ResolvedBuildPath is not None:
+            # The content of the app is in its resolved content directory (ContentDelivery). A C++ app looks for 'Content' where it is
+            # run, a C# app has it next to its executable and is run where it always was
+            contentPath = ContentDelivery.GetResolvedContentPath(package)
+            if package.PackageLanguage == PackageLanguage.CPP:
+                runPath = ContentDelivery.GetPackageBuildPath(package)
         fullBuildDirPath = IOUtil.Join(packagePath, package.ResolvedBuildPath)
         fullBuildDirPath = buildContext.ToolConfig.ToCurrentOSPathDirectConversion(fullBuildDirPath)
         fullPathExe = buildContext.ToolConfig.ToCurrentOSPathDirectConversion(fullPathExe)

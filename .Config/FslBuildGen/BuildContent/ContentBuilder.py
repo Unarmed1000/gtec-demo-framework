@@ -33,10 +33,14 @@
 
 import shutil
 import time
+from typing import Any
 
-from FslBuildGen import IOUtil, ToolSharedValues
+from FslBuildGen import ContentBuilderPlatforms, IOUtil, ToolSharedValues
+from FslBuildGen.BuildContent import ContentBuildSteps, ContentPlatformFilter
 from FslBuildGen.BuildContent.BasicContentProcessor import BasicContentProcessor
 from FslBuildGen.BuildContent.ContentBuildResult import ContentBuildResult
+from FslBuildGen.BuildContent.ContentBuildRules import ContentBuildRules
+from FslBuildGen.BuildContent.ContentBuildSteps import ContentBuildStep
 from FslBuildGen.BuildContent.ContentDependencyCache import ContentDependencyCache, CreateOutputDependencies
 
 # from FslBuildGen.BuildContent.ContentProcessor import ContentProcessor
@@ -45,6 +49,7 @@ from FslBuildGen.BuildContent.MakeDependencyFile import BuildMakeDependencyFile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.PathVariables import PathVariables
 from FslBuildGen.BuildContent.Processor.ContentBuildCommandFile import ContentBuildCommandFile
+from FslBuildGen.BuildContent.Processor.ListedSourceContent import ListedSourceContent
 
 # from FslBuildGen.BuildContent.Processor.Commands import Command
 # from FslBuildGen.BuildContent.Processor.Commands import CommandContentBuildSync
@@ -76,12 +81,16 @@ class Features:
 
 
 class ContentProcessorManager:
-    def __init__(self, log: Log, toolConfig: ToolConfig, features: Features, toolFinder: ToolFinder) -> None:
+    def __init__(self, log: Log, toolConfig: ToolConfig, features: Features, toolFinder: ToolFinder, platformName: str | None = None) -> None:
+        """platformName: the platform the content is built for, None gives the builders of every platform"""
         super().__init__()
 
         contentProcessors: list[BasicContentProcessor] = []
         if toolConfig.ContentBuilderConfiguration is not None:
-            contentProcessors += self.__AddBasicContentProcessors(log, toolFinder, toolConfig.ContentBuilderConfiguration)
+            contentProcessors += self.__AddBasicContentProcessors(log, toolFinder, toolConfig.ContentBuilderConfiguration, platformName)
+        # Every builder of the tool config, a build rule can name one that is not for this app
+        self.__KnownNames = [contentProcessor.Name for contentProcessor in contentProcessors]
+        contentProcessors = [entry for entry in contentProcessors if ContentBuilderPlatforms.IsFor(entry.PlatformNames, platformName)]
         self.__ContentProcessors = self.__FilterProcessorsBasedOnFeatures(contentProcessors, features)
 
     def TryFindContentProcessor(self, contentFile: PathRecord) -> BasicContentProcessor | None:
@@ -93,13 +102,26 @@ class ContentProcessorManager:
 
         return processors[0] if len(processors) == 1 else None
 
+    def TryFindContentProcessorByName(self, name: str) -> BasicContentProcessor | None:
+        """The builder of that name if it is for this app (its features, its platform)"""
+        for processor in self.__ContentProcessors:
+            if processor.Name == name:
+                return processor
+        return None
+
+    def IsKnownContentProcessor(self, name: str) -> bool:
+        return name in self.__KnownNames
+
+    def GetKnownContentProcessorNames(self) -> list[str]:
+        return list(self.__KnownNames)
+
     def __AddBasicContentProcessors(
-        self, log: Log, toolFinder: ToolFinder, contentBuilderConfiguration: ToolConfigContentBuilderConfiguration
+        self, log: Log, toolFinder: ToolFinder, contentBuilderConfiguration: ToolConfigContentBuilderConfiguration, platformName: str | None
     ) -> list[BasicContentProcessor]:
         """Add basic content builders from the tool config XML file"""
         contentBuilders: list[BasicContentProcessor] = []
         for contentBuilder in contentBuilderConfiguration.ContentBuilders:
-            contentBuilders.append(BasicContentProcessor(log, toolFinder, contentBuilder))
+            contentBuilders.append(BasicContentProcessor(log, toolFinder, contentBuilder, platformName))
         return contentBuilders
 
     def __FilterProcessorsBasedOnFeatures(self, contentProcessors: list[BasicContentProcessor], features: Features) -> list[BasicContentProcessor]:
@@ -122,17 +144,26 @@ class Builder:
         contentProcessorManager: ContentProcessorManager,
         outputRequired: bool,
         dependencyFile: str | None = None,
+        platformName: str | None = None,
+        listedContent: ListedSourceContent | None = None,
     ) -> None:
-        """dependencyFile: a make style dependency file to write for the build system, listing the files the outputs depend on beyond Content.bld"""
+        """dependencyFile: a make style dependency file to write for the build system, listing the files the outputs depend on beyond Content.bld
+        platformName: the platform the content is built for, needed when the command file lists files that are not for every platform
+        listedContent: what to build and to copy, when it is not what the command file and the directory of contentBuildPath hold: the
+                       content of an app with the files of the libraries it uses (ContentDelivery)
+        """
         super().__init__()
         self.Result = ContentBuildResult()
 
-        configPathVariables = PathVariables(toolConfig, packageBuildPath, contentBuildPath, contentOutputPath)
-        commandFilename = IOUtil.Join(contentBuildPath, ToolSharedValues.CONTENT_BUILD_FILE_NAME)
-        commandFile = ContentBuildCommandFile(log, commandFilename, configPathVariables)
-
-        # We don't include the files at "Content" (contentOutputPath)
-        sourceContent = SourceContent(log, contentOutputPath, contentBuildPath, commandFile, False, commandFilename)
+        # A file that is listed is built where it comes from, like a file of contentBuildPath is built there
+        self.__BuildInSourceRoot = listedContent is not None
+        self.__ListedBuildSteps = listedContent.BuildSteps if listedContent is not None else None
+        self.__BuildRules: ContentBuildRules | None = None
+        sourceContent: SourceContent | ListedSourceContent = (
+            listedContent
+            if listedContent is not None
+            else self.__ReadSourceContent(log, toolConfig, packageBuildPath, contentBuildPath, contentOutputPath, platformName)
+        )
 
         absoluteCacheFileName = IOUtil.Join(packageBuildPath, "_ContentBuildCache.fsl")
         absoluteOutputCacheFileName = IOUtil.Join(packageBuildPath, "_ContentBuildCacheOutput.fsl")
@@ -180,6 +211,19 @@ class Builder:
                 raise Exception("The content build did not create: {}".format(", ".join(f"'{entry}'" for entry in missingOutputFiles)))
             if dependencyFile is not None:
                 IOUtil.WriteFileUTF8IfChanged(dependencyFile, BuildMakeDependencyFile(sorted(self.Result.OutputFiles), dependencyCache.GetAllDependencies()))
+
+    def __ReadSourceContent(
+        self, log: Log, toolConfig: ToolConfig, packageBuildPath: str, contentBuildPath: str, contentOutputPath: str, platformName: str | None
+    ) -> SourceContent:
+        configPathVariables = PathVariables(toolConfig, packageBuildPath, contentBuildPath, contentOutputPath)
+        commandFilename = IOUtil.Join(contentBuildPath, ToolSharedValues.CONTENT_BUILD_FILE_NAME)
+        commandFile = ContentBuildCommandFile(log, commandFilename, configPathVariables)
+
+        # We don't include the files at "Content" (contentOutputPath)
+        sourceContent = SourceContent(log, contentOutputPath, contentBuildPath, commandFile, False, commandFilename)
+        ContentPlatformFilter.RemoveBuildFilesNotForPlatform(sourceContent, commandFile.PlatformList, contentBuildPath, platformName)
+        self.__BuildRules = commandFile.BuildRules
+        return sourceContent
 
     def __GetSyncStateFileName(self, contentBuildPath: str, contentFile: str) -> str:
         if contentFile.startswith(contentBuildPath):
@@ -247,20 +291,23 @@ class Builder:
         dependencyCache: ContentDependencyCache,
     ) -> None:
         dstRoot = ContentRootRecord(log, contentOutputPath)
+        # What there is to do is found before anything is built, so a tool that is missing is told before the first file and not
+        # in the middle of a build
+        work: list[tuple[PathRecord, ContentBuildStep, PathRecord, BuildState.ContentState | None, bool]] = []
         for contentFile in srcContent.Files:
-            processor = contentProcessorManager.TryFindContentProcessor(contentFile)
-            if processor is None:
+            steps = self.__GetBuildSteps(log, contentProcessorManager, contentFile)
+            if len(steps) <= 0:
                 # Normal for files that are only built for other features (like GLES shaders in a Vulkan build)
                 log.LogPrintVerbose(1, f"No content processor for '{contentFile.ResolvedPath}' with the active features, skipped")
                 self.Result.NoProcessor += 1
-            else:
-                # Query the processor for the output filename
-                outputFileName = processor.GetOutputFileName(log, contentOutputPath, contentFile)
-                outputFileRecord = PathRecord(log, dstRoot, outputFileName[len(dstRoot.ResolvedPath) + 1 :])
+                continue
 
-                # Query the sync state of the content file
-                syncStateFileName = self.__GetSyncStateFileName(contentBuildPath, contentFile.RelativePath)
-                contentState = syncState.TryGetFileStateByFileName(syncStateFileName)
+            # Query the sync state of the content file
+            syncStateFileName = self.__GetSyncStateFileName(contentBuildPath, contentFile.RelativePath)
+            contentState = syncState.TryGetFileStateByFileName(syncStateFileName)
+            for step in steps:
+                outputFileRecord = PathRecord(log, dstRoot, step.OutputRelativePath)
+                outputFileName = outputFileRecord.ResolvedPath
                 buildResource = contentState is None or contentState.CacheState != BuildState.CacheState.Unmodified
                 if not buildResource:
                     # It was unmodified, so we need to examine the state of the output file to
@@ -278,40 +325,78 @@ class Builder:
                         if buildReason is not None:
                             log.LogPrintVerbose(1, f"Building '{contentFile.ResolvedPath}' as {buildReason}")
                             buildResource = True
+                work.append((contentFile, step, outputFileRecord, contentState, buildResource))
 
-                if buildResource:
-                    try:
-                        dependencies = processor.Process(log, configDisableWrite, contentBuildPath, contentOutputPath, contentFile)
-                        if not configDisableWrite:
-                            outputName = self.__GetSyncStateFileName(contentOutputPath, outputFileName)
-                            dependencyCache.Set(outputName, CreateOutputDependencies(contentFile.ResolvedPath, dependencies, time.time_ns()))
-                    except:
-                        # Save if a exception occured to prevent reprocessing the working files, but we invalidate
-                        outputSyncState.Save()
-                        syncState.Save()
-                        raise
+        self.__CheckTools([step.Processor for _contentFile, step, _outputFileRecord, _contentState, buildResource in work if buildResource])
 
-                    # Add a entry for the output file
-                    outputFileState = outputSyncState.BuildContentState(log, outputFileRecord, True, True)
-                    # Tag it with the source file checksum so we have another way to detect changes
-                    if contentState is not None:
-                        outputFileState.TagChecksum = contentState.Checksum
-                    outputSyncState.Add(outputFileState)
-                    self.Result.Built += 1
-                else:
-                    self.Result.UpToDate += 1
-                self.Result.OutputFiles.append(outputFileRecord.ResolvedPath)
+        for contentFile, step, outputFileRecord, contentState, buildResource in work:
+            outputFileName = outputFileRecord.ResolvedPath
+            if buildResource:
+                try:
+                    workPath = contentFile.SourceRoot.ResolvedPath if self.__BuildInSourceRoot else contentBuildPath
+                    if step.BuilderName is None:
+                        dependencies = step.Processor.Process(log, configDisableWrite, workPath, contentOutputPath, contentFile)
+                    else:
+                        # A build rule: its builder, with the parameters and the output the rule gives
+                        dependencies = step.Processor.Process(
+                            log, configDisableWrite, workPath, contentOutputPath, contentFile, outputFileName, step.ToolArguments
+                        )
+                    if not configDisableWrite:
+                        outputName = self.__GetSyncStateFileName(contentOutputPath, outputFileName)
+                        dependencyCache.Set(outputName, CreateOutputDependencies(contentFile.ResolvedPath, dependencies, time.time_ns()))
+                except:
+                    # Save if a exception occured to prevent reprocessing the working files, but we invalidate
+                    outputSyncState.Save()
+                    syncState.Save()
+                    raise
+
+                # Add a entry for the output file
+                outputFileState = outputSyncState.BuildContentState(log, outputFileRecord, True, True)
+                # Tag it with the source file checksum so we have another way to detect changes
+                if contentState is not None:
+                    outputFileState.TagChecksum = contentState.Checksum
+                outputSyncState.Add(outputFileState)
+                self.Result.Built += 1
+            else:
+                self.Result.UpToDate += 1
+            self.Result.OutputFiles.append(outputFileRecord.ResolvedPath)
+
+    def __GetBuildSteps(self, log: Log, contentProcessorManager: ContentProcessorManager, contentFile: PathRecord) -> list[ContentBuildStep]:
+        """What builds the file: the steps it was listed with, or what the build rules of the directory and the builders say"""
+        listedSteps = self.__ListedBuildSteps.get(contentFile.ResolvedPath) if self.__ListedBuildSteps is not None else None
+        if listedSteps is None:
+            return ContentBuildSteps.FindBuildSteps(log, contentProcessorManager, contentFile, self.__BuildRules)
+        steps: list[ContentBuildStep] = []
+        for listedStep in listedSteps:
+            processor = (
+                contentProcessorManager.TryFindContentProcessor(contentFile)
+                if listedStep.BuilderName is None
+                else contentProcessorManager.TryFindContentProcessorByName(listedStep.BuilderName)
+            )
+            if processor is not None:
+                steps.append(ContentBuildStep(processor, listedStep.OutputRelativePath, listedStep.ToolArguments, listedStep.BuilderName))
+        return steps
+
+    def __CheckTools(self, processors: list[Any]) -> None:
+        checked: list[Any] = []
+        for processor in processors:
+            if not any(processor is entry for entry in checked):
+                checked.append(processor)
+                checkTool = getattr(processor, "CheckTool", None)
+                if checkTool is not None:
+                    checkTool()
 
 
-def GetContentProcessorManager(log: Log, toolConfig: ToolConfig, featureList: list[str]) -> ContentProcessorManager:
+def GetContentProcessorManager(log: Log, toolConfig: ToolConfig, featureList: list[str], platformName: str | None = None) -> ContentProcessorManager:
     toolFinder = ToolFinder(log)
     features = Features(log, featureList)
-    return ContentProcessorManager(log, toolConfig, features, toolFinder)
+    return ContentProcessorManager(log, toolConfig, features, toolFinder, platformName)
 
 
-def GetContentOutputPath(packagePath: PackagePath) -> str:
+def GetContentOutputPath(packagePath: PackagePath, toolConfig: ToolConfig) -> str:
+    """The content directory of the package itself, where what it builds is put when nothing else is asked for"""
     currentPath = packagePath.AbsoluteDirPath
-    return IOUtil.Join(currentPath, ToolSharedValues.CONTENT_FOLDER_NAME)
+    return IOUtil.Join(currentPath, toolConfig.ContentDirectory.Name)
 
 
 def Build(
@@ -323,12 +408,13 @@ def Build(
     featureList: list[str],
     outputPath: str | None = None,
     dependencyFile: str | None = None,
+    platformName: str | None = None,
 ) -> None:
     currentPath = packagePath.AbsoluteDirPath
-    contentBuildDir = ToolSharedValues.CONTENT_BUILD_FOLDER_NAME
+    contentBuildDir = toolConfig.ContentDirectory.BuildName
     contentBuildPath = IOUtil.Join(currentPath, contentBuildDir)
 
-    contentOutputPath = GetContentOutputPath(packagePath) if outputPath is None else outputPath
+    contentOutputPath = GetContentOutputPath(packagePath, toolConfig) if outputPath is None else outputPath
     # A explicit output path means a build system asked for the content (and expects the output files it knows about)
     outputRequired = outputPath is not None
 
@@ -342,9 +428,18 @@ def Build(
     if not configDisableWrite:
         IOUtil.SafeMakeDirs(packageBuildPath)
 
-    contentProcessorManager = GetContentProcessorManager(log, toolConfig, featureList)
+    contentProcessorManager = GetContentProcessorManager(log, toolConfig, featureList, platformName)
     builder = Builder(
-        log, configDisableWrite, toolConfig, packageBuildPath, contentBuildPath, contentOutputPath, contentProcessorManager, outputRequired, dependencyFile
+        log,
+        configDisableWrite,
+        toolConfig,
+        packageBuildPath,
+        contentBuildPath,
+        contentOutputPath,
+        contentProcessorManager,
+        outputRequired,
+        dependencyFile,
+        platformName,
     )
     # Always report what was done, a build log should show that the content was built
     log.DoPrint(builder.Result.GetSummary(currentPath, contentOutputPath))
