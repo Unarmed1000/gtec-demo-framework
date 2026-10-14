@@ -34,7 +34,7 @@
 # from FslBuildGen.Xml.Exceptions import XmlMissingWindowsVisualStudioProjectIdException
 from typing import Any
 
-from FslBuildGen import IOUtil, PackageAppContentResolver, PackageConfig, TemplateIO, ToolSharedValues, Util
+from FslBuildGen import GenerateEmbeddedFiles, IOUtil, PackageAppContentResolver, PackageConfig, TemplateIO, ToolSharedValues, Util
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 
@@ -140,11 +140,15 @@ class PackageResolver:
         writeGraph: bool,
         filterMode: FilterMode,
         allowExeDependency: bool,
+        updateGeneratedSources: bool = False,
     ) -> None:
         """
         fullResolve
         - if this is false only the dependencies, platform, requirements and not supported will be resolved.
           This is useful for doing some filtering before doing a full resolve
+        updateGeneratedSources
+        - true for a tool that makes the build files: a generated file with embedded files that is out of date is generated again.
+          Every other tool stops at one (GenerateEmbeddedFiles)
         """
         super().__init__()
         self.Log = log
@@ -214,7 +218,7 @@ class PackageResolver:
                     self.__MarkExternalLibFirstUse(packageBuilder.TopLevelPackage)
 
                 log.LogPrintVerbose(4, "- generating files")
-                self.__GenerateFiles(log, configIsDryRun, toolConfig, finalResolveOrder)
+                self.__GenerateFiles(log, configIsDryRun, toolConfig, finalResolveOrder, updateGeneratedSources)
 
                 # Everything checks out, so we can now start resolving files for the packages
                 log.LogPrintVerbose(4, "- include dirs")
@@ -548,9 +552,13 @@ class PackageResolver:
         if resolvedDir.IncludeDir.Name in rPublicIncludeDirs:
             del rPublicIncludeDirs[resolvedDir.IncludeDir.Name]
 
-    def __GenerateFiles(self, log: Log, configIsDryRun: bool, toolConfig: ToolConfig, finalResolveOrder: list[Package]) -> None:
+    def __GenerateFiles(self, log: Log, configIsDryRun: bool, toolConfig: ToolConfig, finalResolveOrder: list[Package], updateGeneratedSources: bool) -> None:
         for package in finalResolveOrder:
             for entry in package.ResolvedGenerateList:
+                if len(entry.EmbedFiles) > 0:
+                    # A file that is kept in version control and in step with what it embeds
+                    GenerateEmbeddedFiles.Generate(log, toolConfig, package.Name, entry, configIsDryRun, updateGeneratedSources)
+                    continue
                 templateFile = entry.TemplateFile.ResolvedPath
                 targetFile = entry.TargetFile.ResolvedPath
 

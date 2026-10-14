@@ -31,8 +31,12 @@
 # ****************************************************************************************************************************************************
 
 
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageEmbedFile import UnresolvedPackageEmbedFile
+
+
 class UnresolvedPackageGenerate:
-    def __init__(self, templateFile: str, targetFile: str) -> None:
+    def __init__(self, templateFile: str, targetFile: str, embedFiles: list[UnresolvedPackageEmbedFile] | None = None) -> None:
         super().__init__()
         self.TemplateFile = templateFile
         self.TargetFile = targetFile
+        self.EmbedFiles: list[UnresolvedPackageEmbedFile] = [] if embedFiles is None else embedFiles

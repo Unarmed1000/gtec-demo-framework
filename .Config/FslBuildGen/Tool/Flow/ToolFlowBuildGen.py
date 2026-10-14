@@ -134,6 +134,8 @@ class ToolFlowBuildGen(AToolAppFlow):
         if localToolConfig.IgnoreNotSupported:
             config.IgnoreNotSupported = True
         config.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
+        # This tool makes the build files: a generated file with embedded files that is out of date is generated again
+        config.UpdateGeneratedSources = True
 
         if localToolConfig.Graph:
             self.ToolAppContext.PluginConfigContext.EnableGraph()

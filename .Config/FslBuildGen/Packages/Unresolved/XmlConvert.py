@@ -58,6 +58,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedFactory import FactoryCreateConte
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackage, UnresolvedPackageFlags, UnresolvedPackagePaths
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageEmbedFile import UnresolvedPackageEmbedFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
@@ -327,7 +328,8 @@ class XmlConvert:
 
     @staticmethod
     def ToUnresolvedPackageGenerate(entry: XmlGenFileGenerate) -> UnresolvedPackageGenerate:
-        return UnresolvedPackageGenerate(entry.TemplateFile, entry.TargetFile)
+        embedFiles = [UnresolvedPackageEmbedFile(embed.Name, embed.File, embed.Builder, embed.Format) for embed in entry.EmbedFiles]
+        return UnresolvedPackageGenerate(entry.TemplateFile, entry.TargetFile, embedFiles)
 
     @staticmethod
     def ToUnresolvedPackageGenerateGrpcProtoFile(entry: XmlGenFileGenerateGrpcProtoFile) -> UnresolvedPackageGenerateGrpcProtoFile:

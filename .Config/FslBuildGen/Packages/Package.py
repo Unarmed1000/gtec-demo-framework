@@ -52,6 +52,7 @@ from FslBuildGen.Packages.PackageAppContent import PackageAppContentEntry
 from FslBuildGen.Packages.PackageBuildCustomization import PackageBuildCustomization
 from FslBuildGen.Packages.PackageCopyFile import PackageCopyFile
 from FslBuildGen.Packages.PackageElement import PackageElement
+from FslBuildGen.Packages.PackageEmbedFile import PackageEmbedFile
 from FslBuildGen.Packages.PackageGenerate import PackageGenerate
 from FslBuildGen.Packages.PackageGenerateGrpcProtoFile import PackageGenerateGrpcProtoFile
 from FslBuildGen.Packages.PackagePlatform import PackagePlatform
@@ -336,8 +337,18 @@ class Package:
         for entry in sourceList:
             resolvedTemplate = ResolvedPath(IOUtil.Join(pathRelative, entry.TemplateFile), IOUtil.Join(pathAbsolute, entry.TemplateFile))
             resolvedTarget = ResolvedPath(IOUtil.Join(pathRelative, entry.TargetFile), IOUtil.Join(pathAbsolute, entry.TargetFile))
+            embedFiles = [
+                PackageEmbedFile(
+                    embed.Name,
+                    ResolvedPath(IOUtil.Join(pathRelative, embed.File), IOUtil.Join(pathAbsolute, embed.File)),
+                    embed.File,
+                    embed.BuilderName,
+                    embed.Format,
+                )
+                for embed in entry.EmbedFiles
+            ]
 
-            res.append(PackageGenerate(resolvedTemplate, resolvedTarget))
+            res.append(PackageGenerate(resolvedTemplate, resolvedTarget, embedFiles))
         return res
 
     def __ToResolvedGenerateGrpcProtoFileList(

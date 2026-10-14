@@ -168,6 +168,7 @@ class PackageLoadAndResolveProcess:
         configIgnoreNotSupported = self.Config.IgnoreNotSupported
         configAllowVariantExtension = self.Config.AllowVariantExtension
         configAllowExeDependency = self.Config.AllowExeDependency
+        configUpdateGeneratedSources = self.Config.UpdateGeneratedSources
         toolConfig = self.Config.ToolConfig
 
         packageResolver = PackageResolver(
@@ -189,6 +190,7 @@ class PackageLoadAndResolveProcess:
             self.__writeGraph,
             filterMode,
             configAllowExeDependency,
+            configUpdateGeneratedSources,
         )
         self.IsFullResolve = fullResolve
         self.Packages = packageResolver.Packages

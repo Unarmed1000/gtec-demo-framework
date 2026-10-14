@@ -95,6 +95,9 @@ class Config(BaseConfig):
         # Search every package location and directory layout for each package name that is used, so a name defined twice is reported
         self.DetectDuplicatePackages: bool = False
         self.IsDryRun: bool = False
+        # True for the tools that make the build files: a generated file with embedded files that is out of date is generated again.
+        # Every other tool stops at one, it does not rewrite a file that is in version control (GenerateEmbeddedFiles)
+        self.UpdateGeneratedSources: bool = False
         self.VariantConstraints = variantsDict if variantsDict else ExternalVariantConstraints({})
 
         if self.IsQuery:

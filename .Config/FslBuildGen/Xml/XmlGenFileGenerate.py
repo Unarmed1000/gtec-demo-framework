@@ -34,7 +34,10 @@
 import xml.etree.ElementTree as ET
 
 from FslBuildGen.Log import Log
+from FslBuildGen.Xml.Exceptions import XmlFormatException
 from FslBuildGen.Xml.XmlBase import XmlBase
+from FslBuildGen.Xml.XmlGenFileEmbedFile import ElementName as EmbedFileElementName
+from FslBuildGen.Xml.XmlGenFileEmbedFile import XmlGenFileEmbedFile
 
 
 class XmlGenFileGenerate(XmlBase):
@@ -43,6 +46,13 @@ class XmlGenFileGenerate(XmlBase):
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribTemplate, self.__AttribTarget})
+        self._CheckAttributes({self.__AttribTemplate, self.__AttribTarget}, {EmbedFileElementName})
         self.TemplateFile = self._ReadAttrib(xmlElement, self.__AttribTemplate)
         self.TargetFile = self._ReadAttrib(xmlElement, self.__AttribTarget)
+        # The files the generated file holds as numbers (GenerateEmbeddedFiles)
+        self.EmbedFiles = [XmlGenFileEmbedFile(log, element) for element in xmlElement.findall(EmbedFileElementName)]
+        names: set[str] = set()
+        for embedFile in self.EmbedFiles:
+            if embedFile.Name in names:
+                raise XmlFormatException(f"The Generate of '{self.TargetFile}' has more than one {EmbedFileElementName} named '{embedFile.Name}'")
+            names.add(embedFile.Name)

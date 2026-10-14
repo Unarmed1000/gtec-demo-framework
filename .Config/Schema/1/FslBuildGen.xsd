@@ -100,10 +100,32 @@
     <xs:attribute name="If" type="xs:string" use="optional"/>
   </xs:complexType>
 
+  <xs:simpleType name="_TP_EmbedFileFormat">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UInt8"/>
+      <xs:enumeration value="UInt32"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:complexType name="_T_EmbedFile">
+    <xs:annotation>
+      <xs:documentation>A file the generated file holds as numbers. Name: the template has '##Name##' where the numbers go (upper case letters, digits and '_'). File: the file, below the package directory. Builder: the content builder of the tool config that builds the file, what it makes is embedded; without it the bytes of the file are. Format: 'UInt8' (each byte as a decimal number, the default) or 'UInt32' (four bytes as a hexadecimal word)</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="File" type="xs:string" use="required"/>
+    <xs:attribute name="Builder" type="xs:string" use="optional"/>
+    <xs:attribute name="Format" type="_TP_EmbedFileFormat" use="optional"/>
+  </xs:complexType>
+
+
   <xs:complexType name="_T_Generate">
 	<xs:annotation>
-		<xs:documentation>Specifies a generate file command</xs:documentation>
+		<xs:documentation>Generates the file 'Target' from the template 'Template' of the package. With EmbedFile elements the generated file holds those files as numbers: it is kept in version control, its template has '##GENERATE_STATE##' in a comment, and it is generated again when the template or an embedded file changes (by FslBuildGen and FslBuild; the other tools stop at a file that is out of date)</xs:documentation>
 	</xs:annotation>
+    <xs:sequence>
+      <xs:element name="EmbedFile" type="_T_EmbedFile" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
 	<xs:attribute name="Template" type="xs:string" use="required"/>
     <xs:attribute name="Target" type="xs:string" use="required"/>
   </xs:complexType>
