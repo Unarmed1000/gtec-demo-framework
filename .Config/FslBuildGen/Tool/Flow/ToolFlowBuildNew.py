@@ -94,6 +94,14 @@ class UnknownTemplateException(Exception):
         super().__init__(msg)
 
 
+def GetUnknownLanguageMessage(templateDict: dict[str, list[XmlNewTemplateFile]], language: str) -> str:
+    """What is said about a language ('--Language') the project has no templates for. The languages are named as '--List' names them"""
+    if len(templateDict) <= 0:
+        return f"The project has no templates for the language '{language}'. It has no package templates at all"
+    languages = sorted(templateDict.keys(), key=lambda entry: entry.lower())
+    return f"The project has no templates for the language '{language}'. Its languages are: {', '.join(languages)}"
+
+
 class ArgumentError(Exception):
     """Indicate that a invalid argument was supplied"""
 
@@ -236,7 +244,9 @@ class LocalConfig:
         return resultList
 
     def __GetTemplate(self, templateDict: dict[str, list[XmlNewTemplateFile]], strCurrentLanguage: str, projectTypeId: str) -> XmlNewTemplateFile:
-        templates = templateDict[strCurrentLanguage]
+        templates = templateDict.get(strCurrentLanguage)
+        if templates is None:
+            raise UnknownTemplateException(GetUnknownLanguageMessage(templateDict, strCurrentLanguage))
         for template in templates:
             if template.Id == projectTypeId:
                 return template
@@ -697,7 +707,7 @@ class ToolFlowBuildNew(AToolAppFlow):
             # Every template of the language of the run ('--Language'). A package is created from a template of that language, so
             # the templates of another language are not part of this check: a run with that language checks them.
             if localToolConfig.Language not in templateDict:
-                raise UnknownTemplateException(f"There are no templates for the language '{localToolConfig.Language}'")
+                raise UnknownTemplateException(GetUnknownLanguageMessage(templateDict, localToolConfig.Language))
             sortedTemplateEntries = list(templateDict[localToolConfig.Language])
             sortedTemplateEntries.sort(key=lambda s: s.Id.lower())
             allTemplates = [templateEntry.Name for templateEntry in sortedTemplateEntries]
