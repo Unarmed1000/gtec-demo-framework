@@ -19,7 +19,7 @@
   * Vulkan 1.3 is now the baseline. The Vulkan loader and the physical device must support Vulkan 1.3 and the instance is created with api version 1.3, the app fails at startup with a error that names the found version if they do not (VulkanInfo reports it instead).
   * Vulkan is no longer early access (the Vulkan packages no longer require the EarlyAccess feature).
   * The Vulkan 1.1, 1.2 and 1.3 core features can be requested with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest (for example PhysicalDeviceFeature::Synchronization2), the enabled features are available in the DemoAppVulkan m_deviceActiveFeatures11, m_deviceActiveFeatures12 and m_deviceActiveFeatures13 members.
-  * The shaders are compiled for Vulkan 1.3 (glslangValidator --target-env vulkan1.3, SPIR-V 1.6) and the prebuilt SPIR-V files were rebuilt.
+  * The shaders are compiled for Vulkan 1.3 (glslangValidator --target-env vulkan1.3, SPIR-V 1.6) and the prebuilt SPIR-V files were rebuilt. The SPIR-V that FslDemoService.NativeGraphics.Vulkan and FslUtil.Vulkan1_0 embed is generated from the shaders in their OriginalContent directories (`<EmbedFile>` of FslBuild), where it was pasted in by hand.
   * The 'Vulkan1.2' feature and the Vulkan1_2 package were removed, use 'Vulkan' instead.
   * Android Vulkan apps require Vulkan 1.3 (android.hardware.vulkan.version in the manifest).
   * VK_KHR_get_physical_device_properties2 is no longer requested as vkGetPhysicalDeviceFeatures2 is core.

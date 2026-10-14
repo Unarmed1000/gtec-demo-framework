@@ -4,6 +4,13 @@
     <Dependency Name="FslDemoService.NativeGraphics.BasicRender"/>
     <Dependency Name="FslService.Impl"/>
     <Dependency Name="FslUtil.Vulkan1_0"/>
+    <Generate Template="template/NativeGraphicsDeviceShaders.cpp.txt" Target="source/FslDemoService/NativeGraphics/Vulkan/NativeGraphicsDeviceShaders.cpp">
+      <EmbedFile Name="SHADER_COLOR_FRAG" File="OriginalContent/RenderSystemColor.frag" Builder="VulkanShaderCompiler" Format="UInt32"/>
+      <EmbedFile Name="SHADER_COLOR_VERT" File="OriginalContent/RenderSystemColor.vert" Builder="VulkanShaderCompiler" Format="UInt32"/>
+      <EmbedFile Name="SHADER_COLOR_TEXTURE_FRAG" File="OriginalContent/RenderSystemColorTexture.frag" Builder="VulkanShaderCompiler" Format="UInt32"/>
+      <EmbedFile Name="SHADER_COLOR_TEXTURE_VERT" File="OriginalContent/RenderSystemColorTexture.vert" Builder="VulkanShaderCompiler" Format="UInt32"/>
+      <EmbedFile Name="SHADER_COLOR_TEXTURE_SDF_FRAG" File="OriginalContent/RenderSystemColorTextureSdf.frag" Builder="VulkanShaderCompiler" Format="UInt32"/>
+    </Generate>
     <Platform Name="Windows" ProjectId="DED41996-4B0E-4963-9C6D-81334EAAA009"/>
   </Library>
 </FslBuildGen>

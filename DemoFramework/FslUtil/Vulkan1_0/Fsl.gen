@@ -6,6 +6,11 @@
     <Dependency Name="FslBase"/>
     <Dependency Name="FslGraphics"/>
     <Dependency Name="glm.DepthZeroToOne"/>
+    <Generate Template="template/QuadBatchShaders.cpp.txt" Target="source/FslUtil/Vulkan1_0/Batch/QuadBatchShaders.cpp">
+      <EmbedFile Name="QUAD_BATCH_FRAG" File="OriginalContent/QuadBatch.frag" Builder="VulkanShaderCompiler" Format="UInt32"/>
+      <EmbedFile Name="QUAD_BATCH_VERT" File="OriginalContent/QuadBatch.vert" Builder="VulkanShaderCompiler" Format="UInt32"/>
+      <EmbedFile Name="QUAD_BATCH_SDF_FRAG" File="OriginalContent/QuadBatchSdf.frag" Builder="VulkanShaderCompiler" Format="UInt32"/>
+    </Generate>
     <Platform Name="Windows" ProjectId="879B0671-DCD6-44B5-AED6-98F133DC87BD"/>
   </Library>
 </FslBuildGen>
