@@ -30,18 +30,23 @@ tiers are those of the pacer library (mb-framepacing), which rates what a app ca
 It has three major tiers with the best first, by who places a frame at its refresh, and each has the same four sub tiers. A tier is
 written as the two numbers, `1.1` to `3.4`:
 
-- **Major tier 1**: the display places the frame and skips a frame that is overdue (a present at a time, on a display that drops
-  the presents whose time has passed for the newest). It is rated only: no pacer is built for it, and it is paced as the same sub
-  tier of major tier 2. The Vulkan sample is in it with a swapchain that takes a absolute target time and the present mode FIFO
-  latest ready.
-- **Major tier 2**: the display places the frame (a present at a time). The Vulkan sample is in it with a swapchain that takes a
-  absolute target time.
-- **Major tier 3**: the frame loop places the frame. Every sample is in it without such a present, which is every system the
-  samples were run on.
+- **Major tier 1**: the display places the frame against a clock (a present at a time). The Vulkan sample is in it with a swapchain
+  that takes a absolute target time.
+- **Major tier 2**: the display places the frame relative to the one before (a present with a time the frame before stays on screen
+  at least, or a swap interval of two or more). It needs a wait for a present or display times, as after a late frame every later
+  time counts from it. The loop holds no present: a frame is presented when it is done, and the display keeps the frame before on
+  screen for the time. The Vulkan sample is in it with a swapchain that takes a relative target time, which is what the Windows
+  system that was measured has.
+- **Major tier 3**: the frame loop places the frame. Every sample is in it without such a present.
 
-The side bar of the samples lists all twelve tiers, and the ones the app does not have what it takes for are disabled.
+A display side that leaves out a frame that is overdue for a newer one that is due is no tier: it is the mark `s` after the tier's
+number, on any tier, as display times are the mark `+` ("2.1+s").
 
-The four sub tiers, here with the numbers of major tier 3:
+The side bar of the samples has the major tier and the sub tier as two groups of radio buttons, and what the app does not have what
+it takes for is disabled.
+
+The four sub tiers mean the same and rank the same in every major tier (in major tier 2 with display times in place of the wait in
+`.2` and `.4`), here with the numbers of major tier 3:
 
 - **Tier 3.1**: vertical blank times and a wait for a present. The pacer knows where the refreshes of the display are, and before a
   frame the loop waits until the display took an earlier present.
@@ -50,11 +55,12 @@ The four sub tiers, here with the numbers of major tier 3:
 - **Tier 3.4**: a timer and the refresh period only, which is a guess and what every system reaches.
 
 A present that takes the time the frame before stays on screen at least (Vulkan with `VK_EXT_present_timing` and a relative target
-time) is not a present at a time and changes no tier. With the `Timed present` switch of the samples on, the pacer plans that time,
-the sample gives it to the present, and everything else is as without it.
+time) is major tier 2: where it is checked in the side bar of the samples (`--Pacer.TimedPresent`, on by default), the pacer plans
+that time and the sample gives it to the present.
 
-The library has the order of the two in the middle as open until they have been measured. The wait for a present is how the presents
-that wait to be shown are kept few, see
+The library ranks vertical blank times above a wait for a present in every major tier, as the one measurement there is says (where
+the frame loop places the frame), and has the order as open until the tiers have been measured against each other. The wait for a
+present is how the presents that wait to be shown are kept few, see
 [Keeping the frame loop from getting ahead of the display](#keeping-the-frame-loop-from-getting-ahead-of-the-display). That the
 display side can hold a frame for two refreshes or more (a present with a time or a minimum duration, or a swap interval of two or
 more) is no tier: the library rates it on its own.
@@ -78,16 +84,16 @@ A run without the frame pacer is in no tier: nothing holds a frame for more than
 
 The default of the samples is the best tier the system has: `--Pacer.Kind vblank-present-wait` is asked for, and a app that lacks
 what it uses is paced with the best kind of what it has. The samples show the tiers in their side bar, below the switch of the
-frame pacer, as one group of radio buttons with the best first. The one that is checked is the tier the run is paced in (the one
-it will be paced in while the frame pacer is off), with the library's line for it below the group. A tier that can be used here
-can be checked, and one that can not is disabled: the app does not have what the pacer uses in it.
+frame pacer, as two groups of radio buttons with the best first: the major tier and the sub tier. The ones that are checked are
+the tier the run is paced in (the one it will be paced in while the frame pacer is off), with the library's line for it below the
+groups. What can be used here can be checked, and what can not is disabled: the app does not have what the pacer uses in it.
 
 Where the tiers of a run come from:
 
 - **Best here** is the rating the library gives the capabilities the sample has on this system right now: vertical blank times of
   the window system that are not those of a display with a variable refresh rate, and a swapchain that can be waited on. The wait
-  for a present only counts where the swapchain was made with it, which the user asks for (`--VkPresentWait`): without the option the
-  best tier here is 3.2 or 3.4 also on a system that has the extension. A present with a swap interval and the longest one it takes
+  for a present only counts where the swapchain was made with it, which the Vulkan sample asks for where the device has
+  `VK_KHR_present_wait2`. A present with a swap interval and the longest one it takes
   (OpenGL ES) and a present with a relative target time (Vulkan with `VK_EXT_present_timing`) are what the `Display side holds` row
   of the frame pacing overlay is rated from.
 - **In use** is the tier that paces the frame now, as the pacer says it: the tier of the kind (`--Pacer.Kind timer-period`,
@@ -365,7 +371,8 @@ What to know about them:
   presents wait (three with three images, two with two): what a image holds is taken over when it is presented, the
   presents wait below the swapchain, and the image count bounds them there.
 - When `vkWaitForPresent2KHR` returns in relation to the image being on the display is left to the window system by the
-  specification, so it has to be measured against the display times (`firstPixelOutTicks`) before it is relied on. The wait ends
+  specification, so it has to be measured against the display times (the `mbfp display` moments of the frame record) before it is
+  relied on. The wait ends
   after 250 ms at the latest: a present of a window that is not shown may never be presented.
 - Only a present the swapchain accepted is waited for, and a new swapchain starts with nothing to wait for.
 - A app can make the wait itself, which is how a frame pacer decides it: `SetPresentWaitByApp(true)` stops the wait of the host,
@@ -376,9 +383,9 @@ What to know about them:
   `OnVulkanFrameStart`. It is the wait for a frame slot of the host, made early, for the frame the app chooses and with a timeout.
   The host still waits for the frame slot of the frame after it, which returns at once where the GPU is done with that slot.
   `Vulkan.FramePacing --Pacer --Pacer.Kind timer-period --Pacer.GpuWait` does that with a pacer of the library that holds the loop
-  with it. The trace has `gpuWorkWaitBeginTicks`, `gpuWorkWaitEndTicks`, `gpuWorkWaitPresentId` and `gpuWorkWaitResult`.
-- The log has both: `waitForPresentBeginTicks`, `waitForPresentEndTicks`, `waitForPresentId`, `waitForPresentResult`,
-  `acquireFenceWaitBeginTicks` and `acquireFenceWaitEndTicks`, the facts `vulkan.presentWaitOption`, `vulkan.acquireFenceWaitOption`
+  with it. The trace has the wait as the `gpu` wait of the frame record, with `gpuWorkWaitPresentId` and `gpuWorkWaitResult`.
+- The log has both: the `present` wait and the second `acquire` wait of the frame record, `waitForPresentId`, `waitForPresentResult`,
+  the facts `vulkan.presentWaitOption`, `vulkan.acquireFenceWaitOption`
   and `vulkan.uses.VK_KHR_present_wait2`, and `presentWait` and `acquireFenceWait` in the `swapchainCreated` event (what the
   swapchain really does: `presentWait` is 0 when the surface can not).
 
@@ -423,8 +430,8 @@ flowchart TD
     run(["A frame with the frame pacer on"])
     q1{"What was asked for?<br/>--Pacer.Kind, the radio buttons<br/>(the default is the best: vblank-present-wait)"}
     q2{"Does the window system give a vsync time,<br/>and was no variable refresh seen?<br/>INativeWindow::TryGetVSyncInfo"}
-    q3{"Can the app wait for a present?<br/>VK_KHR_present_wait2 with --VkPresentWait"}
-    q4{"Can the app wait for a present?<br/>VK_KHR_present_wait2 with --VkPresentWait"}
+    q3{"Can the app wait for a present?<br/>VK_KHR_present_wait2"}
+    q4{"Can the app wait for a present?<br/>VK_KHR_present_wait2"}
     q0{"Does the swapchain take a absolute target time, and is it asked for?<br/>VK_EXT_present_timing with presentAtAbsoluteTime,<br/>--Pacer.PresentAtTime (on by default)"}
     q5{"Does the swapchain take a relative target time, and is it asked for?<br/>VK_EXT_present_timing with presentAtRelativeTime,<br/>--Pacer.TimedPresent"}
     major3(["Tier 3: the frame loop places the frame"])
@@ -517,7 +524,7 @@ What the pacer is given on every path:
 |---|---|---|
 | The refresh period | One value, given to the pacer again when it changes | The refresh rate of the display from the window system (`INativeWindow::TryGetDisplayInfo`). `--Pacer.RefreshRate` replaces it, and a slider in the sample sets it when the window system does not know it. |
 | The vertical blank times | Every new reading once, with the period that was measured with it, where the answer to question 2 is yes | `INativeWindow::TryGetVSyncInfo` |
-| Display reports | Off, unless `--Pacer.DisplayReports true` and the swapchain measures display times (`VK_EXT_present_timing`) | The display time of each present (first pixel out on the driver that was measured). It does not depend on how the frame is held. |
+| Display reports | On where the swapchain measures display times (`VK_EXT_present_timing`) and the display was not seen to refresh at a variable rate, unless `--Pacer.DisplayReports false` | The display time of each present (first pixel out on the driver that was measured). It does not depend on how the frame is held. |
 
 One period is known and not given to the pacer: the refresh duration `VK_EXT_present_timing` reports, which is only shown.
 

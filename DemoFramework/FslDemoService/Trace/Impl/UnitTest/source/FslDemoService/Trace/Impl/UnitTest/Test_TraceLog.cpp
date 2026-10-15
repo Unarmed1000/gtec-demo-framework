@@ -515,6 +515,79 @@ TEST(Test_TraceLog, AddSpan_WhatDoesNotFitIsRefused)
 }
 
 
+TEST(Test_TraceLog, AddSpan_TextArguments)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceTrack track = log->RegisterTrack("Records", TraceTrackKind::Sequential);
+  const std::array<TraceArgument, 4> arguments = {TraceArgument("kind", "frame slot"), TraceArgument("plannedNs", 17), TraceArgument("empty", ""),
+                                                  TraceArgument("result", "accepted")};
+
+  EXPECT_TRUE(log->AddSpan(track, "category", "name", NanosecondTickCount(5), NanosecondTimeSpan(2), arguments));
+  log->Close();
+
+  ASSERT_EQ(1u, recorded->Spans.size());
+  const TraceSpanRecord& span = recorded->Spans[0];
+  EXPECT_FALSE(span.IsMoment);
+  ASSERT_EQ(4u, span.ArgumentCount);
+  // Each text in the order it was given, the others as their number
+  EXPECT_TRUE(span.ArgumentIsText[0]);
+  EXPECT_EQ(std::string_view("frame slot"), std::string_view(span.ArgumentTexts.data() + span.ArgumentTextOffsets[0]));
+  EXPECT_FALSE(span.ArgumentIsText[1]);
+  EXPECT_EQ(17, span.ArgumentValues[1]);
+  EXPECT_TRUE(span.ArgumentIsText[2]);
+  EXPECT_EQ(std::string_view(), std::string_view(span.ArgumentTexts.data() + span.ArgumentTextOffsets[2]));
+  EXPECT_TRUE(span.ArgumentIsText[3]);
+  EXPECT_EQ(std::string_view("accepted"), std::string_view(span.ArgumentTexts.data() + span.ArgumentTextOffsets[3]));
+}
+
+
+TEST(Test_TraceLog, AddSpan_TextArgumentsThatDoNotFitAreRefused)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceTrack track = log->RegisterTrack("Records", TraceTrackKind::Sequential);
+  // The texts together with the zero that ends each of them fill the room there is
+  const std::string half(TraceSpanRecord::MaxArgumentTextsSize / 2u - 1u, 't');
+  const std::array<TraceArgument, 2> most = {TraceArgument("a", half), TraceArgument("b", half)};
+  const std::string longer = half + "t";
+  const std::array<TraceArgument, 2> tooLong = {TraceArgument("a", half), TraceArgument("b", longer)};
+
+  EXPECT_FALSE(log->AddSpan(track, "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), tooLong));
+  EXPECT_TRUE(log->AddSpan(track, "category", "name", NanosecondTickCount(1), NanosecondTimeSpan(1), most));
+  log->Close();
+
+  ASSERT_EQ(1u, recorded->Spans.size());
+  EXPECT_EQ(std::string_view(half), std::string_view(recorded->Spans[0].ArgumentTexts.data() + recorded->Spans[0].ArgumentTextOffsets[1]));
+}
+
+
+TEST(Test_TraceLog, AddMoment)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceTrack track = log->RegisterTrack("Records", TraceTrackKind::Sequential);
+  const std::array<TraceArgument, 1> arguments = {TraceArgument("source", "the platform")};
+
+  EXPECT_TRUE(log->AddMoment(track, "category", "the moment 1 2", NanosecondTickCount(1234), arguments));
+  EXPECT_FALSE(log->AddMoment(track, "category", "name", NanosecondTickCount(-1), {}));
+  EXPECT_FALSE(log->AddMoment(TraceTrack(), "category", "name", NanosecondTickCount(1), {}));
+  log->Close();
+
+  ASSERT_EQ(1u, recorded->Spans.size());
+  const TraceSpanRecord& moment = recorded->Spans[0];
+  EXPECT_TRUE(moment.IsMoment);
+  EXPECT_EQ(std::string_view("the moment 1 2"), std::string_view(moment.Name.data()));
+  EXPECT_EQ(1234, moment.BeginNanoseconds);
+  EXPECT_EQ(0, moment.DurationNanoseconds);
+  ASSERT_EQ(1u, moment.ArgumentCount);
+  EXPECT_EQ(std::string_view("the platform"), std::string_view(moment.ArgumentTexts.data() + moment.ArgumentTextOffsets[0]));
+
+  // And nothing is added to a trace that is closed
+  EXPECT_FALSE(log->AddMoment(track, "category", "name", NanosecondTickCount(1), {}));
+}
+
+
 TEST(Test_TraceLog, Declare_AMomentInNanosecondsIsAMark)
 {
   const auto recorded = std::make_shared<Recorded>();

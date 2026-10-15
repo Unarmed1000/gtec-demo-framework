@@ -167,16 +167,27 @@ namespace Fsl
   };
 
 
-  //! A argument of a span that is added with its times (ITraceService::AddSpan): a name and a whole number
+  //! A argument of a span or a moment that is added with its times (ITraceService::AddSpan, AddMoment): a name and a whole number or a
+  //! text
   struct TraceArgument
   {
     std::string_view Name;
+    //! The whole number (unless IsText)
     int64_t Value{0};
+    //! The text (if IsText)
+    std::string_view Text;
+    bool IsText{false};
 
     constexpr TraceArgument() noexcept = default;
     constexpr TraceArgument(const std::string_view name, const int64_t value) noexcept
       : Name(name)
       , Value(value)
+    {
+    }
+    constexpr TraceArgument(const std::string_view name, const std::string_view text) noexcept
+      : Name(name)
+      , Text(text)
+      , IsText(true)
     {
     }
   };

@@ -44,19 +44,36 @@ namespace Fsl::NanosecondTickCountUtil
 
   // -----------------------------------------------------------------------------------------------------------------------------------------------
 
+  //! @brief Convert from a TickCount, which is exact.
+  //! @return false if the value is outside of what a NanosecondTickCount holds (a TickCount has a hundred times the range), rResult is
+  //!         then left as it was.
+  inline constexpr bool TryFromTickCount(const TickCount value, NanosecondTickCount& rResult) noexcept
+  {
+    constexpr int64_t NanosecondsPerTick = NanosecondTickCount::NanosecondsPerTick;
+    if (value.Ticks() < (std::numeric_limits<int64_t>::min() / NanosecondsPerTick) ||
+        value.Ticks() > (std::numeric_limits<int64_t>::max() / NanosecondsPerTick))
+    {
+      return false;
+    }
+    rResult = NanosecondTickCount(value.Ticks() * NanosecondsPerTick);
+    return true;
+  }
+
+  // -----------------------------------------------------------------------------------------------------------------------------------------------
+
   //! @brief Convert from a TickCount, which is exact. A TickCount has a hundred times the range.
   inline constexpr NanosecondTickCount FromTickCount(const TickCount value)
   {
-    constexpr int64_t NanosecondsPerTick = NanosecondTickCount::NanosecondsPerTick;
-    if (value.Ticks() < (std::numeric_limits<int64_t>::min() / NanosecondsPerTick))
+    NanosecondTickCount result;
+    if (!TryFromTickCount(value, result))
     {
-      throw UnderflowException("nanoseconds underflow");
-    }
-    if (value.Ticks() > (std::numeric_limits<int64_t>::max() / NanosecondsPerTick))
-    {
+      if (value.Ticks() < 0)
+      {
+        throw UnderflowException("nanoseconds underflow");
+      }
       throw OverflowException("nanoseconds overflow");
     }
-    return NanosecondTickCount(value.Ticks() * NanosecondsPerTick);
+    return result;
   }
 }
 

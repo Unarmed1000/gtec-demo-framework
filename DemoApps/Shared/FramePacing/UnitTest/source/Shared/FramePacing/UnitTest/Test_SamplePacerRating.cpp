@@ -157,6 +157,8 @@ TEST(TestSamplePacerRating, Rate_DisplayTimes_AreNoTier)
   capabilities.DisplayTimes = true;
 
   EXPECT_EQ(SamplePacerTier::TimerPeriodOnly, SamplePacer::Rate(capabilities).Tier);
+  // They are the "+" of the rating
+  EXPECT_TRUE(SamplePacer::Rate(capabilities).ReportsDisplayTimes);
 }
 
 
@@ -171,16 +173,17 @@ TEST(TestSamplePacerRating, GetTierNumber_IsTheMajorTierAndTheSubTierOfTheLibrar
   EXPECT_EQ("3.2", SamplePacer::GetTierNumber(SamplePacerTier::VBlankPeriodOnly));
   EXPECT_EQ("3.3", SamplePacer::GetTierNumber(SamplePacerTier::TimerWaitForPresent));
   EXPECT_EQ("3.4", SamplePacer::GetTierNumber(SamplePacerTier::TimerPeriodOnly));
-  // Where the display places the frame the order is the library's: what holds the loop first, then where the refreshes are
-  EXPECT_EQ("2.1", SamplePacer::GetTierNumber(SamplePacerTier::TimedVBlankWaitForPresent));
-  EXPECT_EQ("2.2", SamplePacer::GetTierNumber(SamplePacerTier::TimedTimerWaitForPresent));
-  EXPECT_EQ("2.3", SamplePacer::GetTierNumber(SamplePacerTier::TimedVBlankPeriodOnly));
-  EXPECT_EQ("2.4", SamplePacer::GetTierNumber(SamplePacerTier::TimedTimerPeriodOnly));
-  // And the same on a display that leaves out a frame that is overdue
-  EXPECT_EQ("1.1", SamplePacer::GetTierNumber(SamplePacerTier::TimedSkipVBlankWaitForPresent));
-  EXPECT_EQ("1.2", SamplePacer::GetTierNumber(SamplePacerTier::TimedSkipTimerWaitForPresent));
-  EXPECT_EQ("1.3", SamplePacer::GetTierNumber(SamplePacerTier::TimedSkipVBlankPeriodOnly));
-  EXPECT_EQ("1.4", SamplePacer::GetTierNumber(SamplePacerTier::TimedSkipTimerPeriodOnly));
+  // Where the display places the frame against a clock the order is the library's: what holds the loop first, then where the
+  // refreshes are
+  EXPECT_EQ("1.1", SamplePacer::GetTierNumber(SamplePacerTier::AtTimeVBlankWaitForPresent));
+  EXPECT_EQ("1.2", SamplePacer::GetTierNumber(SamplePacerTier::AtTimeVBlankPeriodOnly));
+  EXPECT_EQ("1.3", SamplePacer::GetTierNumber(SamplePacerTier::AtTimeTimerWaitForPresent));
+  EXPECT_EQ("1.4", SamplePacer::GetTierNumber(SamplePacerTier::AtTimeTimerPeriodOnly));
+  // And where it places the frame relative to the one before, where the display times take the place of the wait
+  EXPECT_EQ("2.1", SamplePacer::GetTierNumber(SamplePacerTier::AfterDurationVBlankWaitForPresent));
+  EXPECT_EQ("2.2", SamplePacer::GetTierNumber(SamplePacerTier::AfterDurationVBlankDisplayTimes));
+  EXPECT_EQ("2.3", SamplePacer::GetTierNumber(SamplePacerTier::AfterDurationTimerWaitForPresent));
+  EXPECT_EQ("2.4", SamplePacer::GetTierNumber(SamplePacerTier::AfterDurationTimerDisplayTimes));
 }
 
 
@@ -252,7 +255,7 @@ TEST(TestSamplePacerRating, GetTier_EveryKindSaysItsTierOnceItHasAVerticalBlank)
   }
   for (const SamplePacerTier tier : SamplePacerTierChoiceUtil::Tiers)
   {
-    if (SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier))
+    if (SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier) || SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier))
     {
       continue;
     }
@@ -276,7 +279,7 @@ TEST(TestSamplePacerRating, GetTier_WithATimeOnThePresentTheDisplayPlacesTheFram
   {
     const SamplePacer pacer(config);
     EXPECT_TRUE(pacer.IsPresentAtTimeInUse());
-    EXPECT_EQ(SamplePacerTier::TimedTimerPeriodOnly, pacer.GetTier());
+    EXPECT_EQ(SamplePacerTier::AtTimeTimerPeriodOnly, pacer.GetTier());
   }
   {    // Not asked for: the frame loop places the frame
     SamplePacerConfig loopConfig = config;
@@ -285,19 +288,75 @@ TEST(TestSamplePacerRating, GetTier_WithATimeOnThePresentTheDisplayPlacesTheFram
     EXPECT_FALSE(pacer.IsPresentAtTimeInUse());
     EXPECT_EQ(SamplePacerTier::TimerPeriodOnly, pacer.GetTier());
   }
-  {    // A display that leaves out a frame that is overdue is rated as the first major tier and paced as the second
+  {    // A display that leaves out a frame that is overdue is a mark of the rating: the tier is the same
     SamplePacerConfig skipConfig = config;
     skipConfig.Capabilities.PresentSkipsOverdue = true;
-    // What the run uses of what the app has: the timer, the time on the present and what the display does with it
-    const SamplePacerCapabilities uses = SamplePacerTierChoiceUtil::ToUsedCapabilities(skipConfig.Capabilities, skipConfig.Kind, true);
-    EXPECT_EQ(SamplePacerTier::TimedSkipTimerPeriodOnly, SamplePacer::Rate(uses).Tier);
+    // What the run uses of what the app has: the timer, the time on the present and what the display does with a late frame
+    const SamplePacerCapabilities uses = SamplePacerTierChoiceUtil::ToUsedCapabilities(skipConfig.Capabilities, skipConfig.Kind, true, false, false);
+    EXPECT_EQ(SamplePacerTier::AtTimeTimerPeriodOnly, SamplePacer::Rate(uses).Tier);
+    EXPECT_TRUE(SamplePacer::Rate(uses).SkipsOverdue);
     const SamplePacer pacer(skipConfig);
-    EXPECT_EQ(SamplePacerTier::TimedTimerPeriodOnly, pacer.GetTier());
+    EXPECT_EQ(SamplePacerTier::AtTimeTimerPeriodOnly, pacer.GetTier());
   }
 }
 
 
-TEST(TestSamplePacerRating, Rate_ATimeOnThePresent_IsTheSecondMajorTier)
+// The second major tier has a pacer of its own: the run is in it and it paces it
+TEST(TestSamplePacerRating, GetTier_WithADurationOnThePresentTheRunIsInTheSecondMajorTier)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  SamplePacerConfig config = Config(SamplePacerKind::TimerWaitForPresent);
+  config.Capabilities.PresentAfterDuration = true;
+  config.TimedPresent = true;
+  const SamplePacer pacer(config);
+
+  EXPECT_TRUE(pacer.IsTimedPresentInUse());
+  EXPECT_EQ(SamplePacerTier::AfterDurationTimerWaitForPresent, pacer.GetTier());
+  EXPECT_EQ(SamplePacerTier::AfterDurationTimerWaitForPresent, pacer.GetPacedAsTier());
+}
+
+
+TEST(TestSamplePacerRating, Rate_ADurationOnThePresent_NeedsAWaitForAPresentOrDisplayTimes)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  SamplePacerCapabilities capabilities;
+  capabilities.PresentAfterDuration = true;
+  capabilities.VBlankTimes = true;
+  // Neither: the frame loop places the frame
+  EXPECT_EQ(SamplePacerTier::VBlankPeriodOnly, SamplePacer::Rate(capabilities).Tier);
+
+  SamplePacerCapabilities withDisplayTimes = capabilities;
+  withDisplayTimes.DisplayTimes = true;
+  EXPECT_EQ(SamplePacerTier::AfterDurationVBlankDisplayTimes, SamplePacer::Rate(withDisplayTimes).Tier);
+  EXPECT_TRUE(SamplePacer::Rate(withDisplayTimes).ReportsDisplayTimes);
+
+  SamplePacerCapabilities withWait = capabilities;
+  withWait.WaitForPresent = true;
+  EXPECT_EQ(SamplePacerTier::AfterDurationVBlankWaitForPresent, SamplePacer::Rate(withWait).Tier);
+  EXPECT_EQ("2.1", SamplePacer::GetTierNumber(SamplePacer::Rate(withWait).Tier));
+}
+
+
+TEST(TestSamplePacerRating, GetRatingText_TheNumberAndItsMarks)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  EXPECT_EQ("3.1", SamplePacer::GetRatingText({SamplePacerTier::VBlankWaitForPresent, false, false, false}));
+  EXPECT_EQ("2.1+", SamplePacer::GetRatingText({SamplePacerTier::AfterDurationVBlankWaitForPresent, true, true, false}));
+  EXPECT_EQ("3.1s", SamplePacer::GetRatingText({SamplePacerTier::VBlankWaitForPresent, false, false, true}));
+  EXPECT_EQ("1.3+s", SamplePacer::GetRatingText({SamplePacerTier::AtTimeTimerWaitForPresent, true, true, true}));
+}
+
+
+TEST(TestSamplePacerRating, Rate_ATimeOnThePresent_IsTheFirstMajorTier)
 {
   if (!SamplePacer::IsSupported())
   {
@@ -305,17 +364,18 @@ TEST(TestSamplePacerRating, Rate_ATimeOnThePresent_IsTheSecondMajorTier)
   }
   SamplePacerCapabilities capabilities;
   capabilities.PresentAtTime = true;
-  EXPECT_EQ(SamplePacerTier::TimedTimerPeriodOnly, SamplePacer::Rate(capabilities).Tier);
+  EXPECT_EQ(SamplePacerTier::AtTimeTimerPeriodOnly, SamplePacer::Rate(capabilities).Tier);
   EXPECT_TRUE(SamplePacer::Rate(capabilities).DisplaySideHolds);
 
   capabilities.VBlankTimes = true;
   capabilities.WaitForPresent = true;
-  EXPECT_EQ(SamplePacerTier::TimedVBlankWaitForPresent, SamplePacer::Rate(capabilities).Tier);
+  EXPECT_EQ(SamplePacerTier::AtTimeVBlankWaitForPresent, SamplePacer::Rate(capabilities).Tier);
 
-  // What the display does with a frame that is overdue is nothing without a time on the present
+  // What the display does with a frame that is overdue is a mark on any tier, and changes no tier
   SamplePacerCapabilities skipOnly;
   skipOnly.PresentSkipsOverdue = true;
   EXPECT_EQ(SamplePacerTier::TimerPeriodOnly, SamplePacer::Rate(skipOnly).Tier);
+  EXPECT_TRUE(SamplePacer::Rate(skipOnly).SkipsOverdue);
 }
 
 

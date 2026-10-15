@@ -253,13 +253,13 @@ namespace Fsl
         const auto swapBuffersResult = m_demoHost->TrySwapBuffers();
         if (swapBuffersResult != SwapBuffersResult::AppControlled)
         {
-          m_demoAppManager->OnSwapBuffers(swapCallTime, m_timer.GetTimestamp());
+          m_demoAppManager->OnHostSwapBuffers(swapCallTime, m_timer.GetTimestamp(), swapBuffersResult);
           //  The swap buffer operation is not app controlled, so use a quick exit.
           return swapBuffersResult;
         }
         // the swap is app controlled so delegate it to the app
         result = m_demoAppManager->TryAppSwapBuffers();
-        m_demoAppManager->OnSwapBuffers(swapCallTime, m_timer.GetTimestamp());
+        m_demoAppManager->OnAppSwapBuffers(swapCallTime, m_timer.GetTimestamp());
       }
       ++retryCount;
     }

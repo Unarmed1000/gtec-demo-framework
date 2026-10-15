@@ -37,9 +37,10 @@ namespace Fsl
   {
     //! No error that counts
     NoError,
-    //! The display was uneven: the frame, or the one before it, was not on screen for the time it was to be (half a refresh or more
-    //! off its target). A frame that is shown a refresh late is one, and so is the frame after it, which comes on time and has moved
-    //! too much.
+    //! The display was uneven. Where the pacer said when the two frames were to be shown: the display step was as far or further off
+    //! that step than the animation step was. Else: the frame, or the one before it, was not on screen for its intended period (half a
+    //! refresh or more off it). A frame that is shown a refresh late is one, and so is the frame after it, which comes on time and has
+    //! moved too much.
     Pacing,
     //! The display was even and the animation was not: the frames came when they were to, and the animation moved by another time
     DeltaTimeJitter
@@ -62,20 +63,26 @@ namespace Fsl
     TimeSpan Error;
     //! If the error counts and why
     SampleAnimationErrorCause Cause{SampleAnimationErrorCause::NoError};
+    //! The time the frame before this one was to stay on screen: the target frame time of this frame, rounded up to whole refreshes
+    //! with a twentieth of a refresh of slack (the target frame time as it is without a refresh period)
+    TimeSpan IntendedPeriod;
+    //! Late, as the mb-framepacing tools have it: the frame before stayed on screen half a refresh or more longer than this frame was
+    //! animated for and than its intended period. Never for a frame that did not move (a animation step of zero).
+    bool IsLate{false};
+    //! Delta time jitter, as the mb-framepacing tools have it (their yellow frames): a error that counts, with the cause
+    //! DeltaTimeJitter, off by less than the intended period, and not late
+    bool IsDeltaTimeJitter{false};
 
     constexpr bool operator==(const SampleAnimationErrorRecord&) const noexcept = default;
   };
 
-  //! The frames with a animation error that counts, which together are the stutter, by their cause
+  //! The frames with a animation error that counts, which together are the stutter, and the late and delta time jitter frames of
+  //! them (SampleAnimationErrorRecord::IsLate and IsDeltaTimeJitter)
   struct SampleStutterCount
   {
-    uint32_t Pacing{0};
+    uint32_t ErrorFrames{0};
+    uint32_t Late{0};
     uint32_t DeltaTimeJitter{0};
-
-    [[nodiscard]] constexpr uint32_t Total() const noexcept
-    {
-      return Pacing + DeltaTimeJitter;
-    }
 
     constexpr bool operator==(const SampleStutterCount&) const noexcept = default;
   };
@@ -133,9 +140,11 @@ namespace Fsl
     {
       uint64_t PresentId{0};
       TimeSpan AnimationTime;
-      //! How long the frame is to be on screen, and the refresh period of the display when it was presented
+      //! The time from the frame before to this one the pacer aims for, and the refresh period of the display when it was presented
       TimeSpan TargetFrameTime;
       TimeSpan RefreshPeriod;
+      //! When the pacer meant the frame to be shown, if it said
+      std::optional<TickCount> IntendedDisplayTime;
       std::optional<TickCount> DisplayTime;
       bool NotShown{false};
     };
@@ -149,15 +158,16 @@ namespace Fsl
     bool m_hasShown{false};
     TimeSpan m_shownAnimationTime;
     TickCount m_shownDisplayTime;
-    TimeSpan m_shownTargetFrameTime;
-    //! True if the step before the last one that was judged was off its target (the display was uneven there)
+    std::optional<TickCount> m_shownIntendedDisplayTime;
+    //! True if the step before the last one that was judged was off its intended period (the display was uneven there)
     bool m_lastStepUneven{false};
-    //! The frames with a error that counts: all of them by cause, and the newest ones with their display time
+    //! The frames with a error that counts: all of them, and the newest ones with their display time
     SampleStutterCount m_runStutter;
     struct StutterEntry
     {
       TickCount DisplayTime;
-      SampleAnimationErrorCause Cause{SampleAnimationErrorCause::NoError};
+      bool IsLate{false};
+      bool IsDeltaTimeJitter{false};
     };
     std::array<StutterEntry, StutterCapacity> m_stutter{};
     std::size_t m_stutterNext{0};
@@ -173,9 +183,13 @@ namespace Fsl
 
     //! @brief A frame is presented. The ids of the presents are given in the order of the frames, each larger than the one before.
     //! @param animationTime the moment the frame was drawn for
-    //! @param targetFrameTime how long the frame is to be on screen (its swap interval in time)
-    //! @param refreshPeriod the time between two refreshes of the display (zero: not known, a error then counts as pacing)
-    void AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime, const TimeSpan refreshPeriod) noexcept;
+    //! @param targetFrameTime the time from the frame before to this one the pacer aims for (its swap interval in time, one refresh
+    //!        without the pacer), as the target frame time of the frame pacing marker
+    //! @param intendedDisplayTime when the pacer meant the frame to be shown, if it said
+    //! @param refreshPeriod the time between two refreshes of the display (zero: not known, a error then counts as pacing and no frame
+    //!        is late)
+    void AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime,
+                  const std::optional<TickCount> intendedDisplayTime, const TimeSpan refreshPeriod) noexcept;
 
     //! @brief When the frame was shown.
     void AddDisplayTime(const uint64_t presentId, const TickCount displayTime) noexcept;
@@ -204,6 +218,11 @@ namespace Fsl
     //! @brief The error in thousandths of a refresh, which is what a chart draws: -1000 is a frame that was shown a refresh too late
     //! @return zero if the refresh period is not known, and not more than MaxRefreshThousandths in either direction
     [[nodiscard]] static int32_t ToRefreshThousandths(const TimeSpan error, const TimeSpan refreshPeriod) noexcept;
+
+    //! @brief The intended period of a frame as the mb-framepacing tools have it: the target frame time rounded up to whole refreshes,
+    //!        with a twentieth of a refresh of slack, and at least one refresh
+    //! @return the target frame time if the refresh period is not known
+    [[nodiscard]] static TimeSpan CalcIntendedPeriod(const TimeSpan targetFrameTime, const TimeSpan refreshPeriod) noexcept;
 
   private:
     [[nodiscard]] Frame* TryFind(const uint64_t presentId) noexcept;

@@ -27,6 +27,7 @@
 #include <cmath>
 #include <concepts>
 #include <memory>
+#include <string>
 #include <utility>
 
 // The pacer library is only available on the platforms that support the frame pacing marker library
@@ -67,22 +68,22 @@ namespace Fsl
   {
     switch (tier)
     {
-    case SamplePacerTier::TimedSkipVBlankWaitForPresent:
-      return "timedSkipVBlankWaitForPresent";
-    case SamplePacerTier::TimedSkipTimerWaitForPresent:
-      return "timedSkipTimerWaitForPresent";
-    case SamplePacerTier::TimedSkipVBlankPeriodOnly:
-      return "timedSkipVBlankPeriodOnly";
-    case SamplePacerTier::TimedSkipTimerPeriodOnly:
-      return "timedSkipTimerPeriodOnly";
-    case SamplePacerTier::TimedVBlankWaitForPresent:
-      return "timedVBlankWaitForPresent";
-    case SamplePacerTier::TimedTimerWaitForPresent:
-      return "timedTimerWaitForPresent";
-    case SamplePacerTier::TimedVBlankPeriodOnly:
-      return "timedVBlankPeriodOnly";
-    case SamplePacerTier::TimedTimerPeriodOnly:
-      return "timedTimerPeriodOnly";
+    case SamplePacerTier::AfterDurationVBlankWaitForPresent:
+      return "afterDurationVBlankWaitForPresent";
+    case SamplePacerTier::AfterDurationTimerWaitForPresent:
+      return "afterDurationTimerWaitForPresent";
+    case SamplePacerTier::AfterDurationVBlankDisplayTimes:
+      return "afterDurationVBlankDisplayTimes";
+    case SamplePacerTier::AfterDurationTimerDisplayTimes:
+      return "afterDurationTimerDisplayTimes";
+    case SamplePacerTier::AtTimeVBlankWaitForPresent:
+      return "atTimeVBlankWaitForPresent";
+    case SamplePacerTier::AtTimeTimerWaitForPresent:
+      return "atTimeTimerWaitForPresent";
+    case SamplePacerTier::AtTimeVBlankPeriodOnly:
+      return "atTimeVBlankPeriodOnly";
+    case SamplePacerTier::AtTimeTimerPeriodOnly:
+      return "atTimeTimerPeriodOnly";
     case SamplePacerTier::VBlankWaitForPresent:
       return "vblankWaitForPresent";
     case SamplePacerTier::VBlankPeriodOnly:
@@ -106,22 +107,22 @@ namespace Fsl
     {
       switch (tier)
       {
-      case PC::PacerTier::TimedSkipVBlankWaitForPresent:
-        return SamplePacerTier::TimedSkipVBlankWaitForPresent;
-      case PC::PacerTier::TimedSkipTimerWaitForPresent:
-        return SamplePacerTier::TimedSkipTimerWaitForPresent;
-      case PC::PacerTier::TimedSkipVBlankPeriodOnly:
-        return SamplePacerTier::TimedSkipVBlankPeriodOnly;
-      case PC::PacerTier::TimedSkipTimerPeriodOnly:
-        return SamplePacerTier::TimedSkipTimerPeriodOnly;
-      case PC::PacerTier::TimedVBlankWaitForPresent:
-        return SamplePacerTier::TimedVBlankWaitForPresent;
-      case PC::PacerTier::TimedTimerWaitForPresent:
-        return SamplePacerTier::TimedTimerWaitForPresent;
-      case PC::PacerTier::TimedVBlankPeriodOnly:
-        return SamplePacerTier::TimedVBlankPeriodOnly;
-      case PC::PacerTier::TimedTimerPeriodOnly:
-        return SamplePacerTier::TimedTimerPeriodOnly;
+      case PC::PacerTier::AfterDurationVBlankWaitForPresent:
+        return SamplePacerTier::AfterDurationVBlankWaitForPresent;
+      case PC::PacerTier::AfterDurationTimerWaitForPresent:
+        return SamplePacerTier::AfterDurationTimerWaitForPresent;
+      case PC::PacerTier::AfterDurationVBlankDisplayTimes:
+        return SamplePacerTier::AfterDurationVBlankDisplayTimes;
+      case PC::PacerTier::AfterDurationTimerDisplayTimes:
+        return SamplePacerTier::AfterDurationTimerDisplayTimes;
+      case PC::PacerTier::AtTimeVBlankWaitForPresent:
+        return SamplePacerTier::AtTimeVBlankWaitForPresent;
+      case PC::PacerTier::AtTimeTimerWaitForPresent:
+        return SamplePacerTier::AtTimeTimerWaitForPresent;
+      case PC::PacerTier::AtTimeVBlankPeriodOnly:
+        return SamplePacerTier::AtTimeVBlankPeriodOnly;
+      case PC::PacerTier::AtTimeTimerPeriodOnly:
+        return SamplePacerTier::AtTimeTimerPeriodOnly;
       case PC::PacerTier::VBlankWaitForPresent:
         return SamplePacerTier::VBlankWaitForPresent;
       case PC::PacerTier::VBlankPeriodOnly:
@@ -138,22 +139,22 @@ namespace Fsl
     {
       switch (tier)
       {
-      case SamplePacerTier::TimedSkipVBlankWaitForPresent:
-        return PC::PacerTier::TimedSkipVBlankWaitForPresent;
-      case SamplePacerTier::TimedSkipTimerWaitForPresent:
-        return PC::PacerTier::TimedSkipTimerWaitForPresent;
-      case SamplePacerTier::TimedSkipVBlankPeriodOnly:
-        return PC::PacerTier::TimedSkipVBlankPeriodOnly;
-      case SamplePacerTier::TimedSkipTimerPeriodOnly:
-        return PC::PacerTier::TimedSkipTimerPeriodOnly;
-      case SamplePacerTier::TimedVBlankWaitForPresent:
-        return PC::PacerTier::TimedVBlankWaitForPresent;
-      case SamplePacerTier::TimedTimerWaitForPresent:
-        return PC::PacerTier::TimedTimerWaitForPresent;
-      case SamplePacerTier::TimedVBlankPeriodOnly:
-        return PC::PacerTier::TimedVBlankPeriodOnly;
-      case SamplePacerTier::TimedTimerPeriodOnly:
-        return PC::PacerTier::TimedTimerPeriodOnly;
+      case SamplePacerTier::AfterDurationVBlankWaitForPresent:
+        return PC::PacerTier::AfterDurationVBlankWaitForPresent;
+      case SamplePacerTier::AfterDurationTimerWaitForPresent:
+        return PC::PacerTier::AfterDurationTimerWaitForPresent;
+      case SamplePacerTier::AfterDurationVBlankDisplayTimes:
+        return PC::PacerTier::AfterDurationVBlankDisplayTimes;
+      case SamplePacerTier::AfterDurationTimerDisplayTimes:
+        return PC::PacerTier::AfterDurationTimerDisplayTimes;
+      case SamplePacerTier::AtTimeVBlankWaitForPresent:
+        return PC::PacerTier::AtTimeVBlankWaitForPresent;
+      case SamplePacerTier::AtTimeTimerWaitForPresent:
+        return PC::PacerTier::AtTimeTimerWaitForPresent;
+      case SamplePacerTier::AtTimeVBlankPeriodOnly:
+        return PC::PacerTier::AtTimeVBlankPeriodOnly;
+      case SamplePacerTier::AtTimeTimerPeriodOnly:
+        return PC::PacerTier::AtTimeTimerPeriodOnly;
       case SamplePacerTier::VBlankWaitForPresent:
         return PC::PacerTier::VBlankWaitForPresent;
       case SamplePacerTier::VBlankPeriodOnly:
@@ -276,8 +277,8 @@ namespace Fsl
       active.VBlankTimes = config.Capabilities.VBlankTimes && SamplePacerTierChoiceUtil::IsVBlankKind(config.Kind);
       active.WaitForPresent = config.Capabilities.WaitForPresent && SamplePacerTierChoiceUtil::IsPresentWaitKind(config.Kind);
       active.PresentAtTime = config.Capabilities.PresentAtTime && config.PresentAtTime;
-      // What the display does with presents that carry a time is a fact of the system: it is there with such a present
-      active.PresentSkipsOverdue = config.Capabilities.PresentSkipsOverdue && active.PresentAtTime;
+      // What the display does with a frame that is overdue is a fact of the system, on every tier
+      active.PresentSkipsOverdue = config.Capabilities.PresentSkipsOverdue;
       // A present takes one time: the time the frame before stays on screen is for a present without a time of its own
       active.PresentAfterDuration = config.Capabilities.PresentAfterDuration && config.TimedPresent && !active.PresentAtTime;
       // The display times are used where the run gives them to the pacer
@@ -285,6 +286,25 @@ namespace Fsl
       // The wait for the GPU's work where the config asks for it. The pacer does not ask for it next to a wait for a present.
       active.WaitForGpuWork = config.Capabilities.WaitForGpuWork && config.GpuWait;
       return ToLibrary(active);
+    }
+
+    //! The names of the capabilities of a set, in the order of their bits, as the library names them
+    std::string ToNames(const PC::PacerCapabilities& capabilities)
+    {
+      std::string names;
+      for (uint32_t bit = 1u; bit <= static_cast<uint32_t>(PC::PacerCapability::AllCapabilities); bit <<= 1u)
+      {
+        const auto capability = static_cast<PC::PacerCapability>(bit);
+        if (capabilities.Has(capability))
+        {
+          if (!names.empty())
+          {
+            names += ", ";
+          }
+          names += PC::PacerTierText::NameOf(capability);
+        }
+      }
+      return names;
     }
 
     PC::PacerSettings ToPacerSettings(const SamplePacerConfig& config) noexcept
@@ -368,13 +388,41 @@ namespace Fsl
   {
     // The rating is the library's: the best tier the set reaches, and if the display side can hold a frame
     const PC::PacerRating rating = PC::PacerTierUtil::Rate(ToLibrary(capabilities));
-    return {ToSampleTier(rating.Tier), rating.DisplaySideHolds};
+    return {ToSampleTier(rating.Tier), rating.DisplaySideHolds, rating.ReportsDisplayTimes, rating.SkipsOverdue};
+  }
+
+
+  std::string SamplePacer::GetRatingText(const SamplePacerRating& rating)
+  {
+    // The marks follow the number in the order the library writes them: "+" first
+    std::string text(PC::PacerTierText::NumberOf(ToLibraryTier(rating.Tier)));
+    if (rating.ReportsDisplayTimes)
+    {
+      text += PC::PacerTierText::DisplayTimesMark;
+    }
+    if (rating.SkipsOverdue)
+    {
+      text += PC::PacerTierText::SkipsOverdueMark;
+    }
+    return text;
   }
 
 
   std::string_view SamplePacer::GetTierNumber(const SamplePacerTier tier) noexcept
   {
     return PC::PacerTierText::NumberOf(ToLibraryTier(tier));
+  }
+
+
+  std::string SamplePacer::GetCapabilityNames(const SamplePacerCapabilities& capabilities)
+  {
+    return ToNames(ToLibrary(capabilities));
+  }
+
+
+  std::string SamplePacer::GetActiveCapabilityNames(const SamplePacerConfig& config)
+  {
+    return ToNames(ToActiveCapabilities(config));
   }
 
 
@@ -445,6 +493,16 @@ namespace Fsl
 
 
   SamplePacerTier SamplePacer::GetTier() const noexcept
+  {
+    // The working tier is below the active one while something is missing, and is the tier of the frame loop that paces a tier
+    // without a pacer of its own. Only the first is a lower tier for the run.
+    const PC::PacerTier activeTier = m_impl->Pacer.ActiveRating().Tier;
+    const PC::PacerTier workingTier = m_impl->Pacer.WorkingTier();
+    return ToSampleTier(workingTier == PC::PacerTierUtil::PacedAs(activeTier) ? activeTier : workingTier);
+  }
+
+
+  SamplePacerTier SamplePacer::GetPacedAsTier() const noexcept
   {
     return ToSampleTier(m_impl->Pacer.WorkingTier());
   }
@@ -777,6 +835,27 @@ namespace Fsl
   }
 
 
+  std::string SamplePacer::GetRatingText(const SamplePacerRating& rating)
+  {
+    FSL_PARAM_NOT_USED(rating);
+    return {};
+  }
+
+
+  std::string SamplePacer::GetCapabilityNames(const SamplePacerCapabilities& capabilities)
+  {
+    FSL_PARAM_NOT_USED(capabilities);
+    return {};
+  }
+
+
+  std::string SamplePacer::GetActiveCapabilityNames(const SamplePacerConfig& config)
+  {
+    FSL_PARAM_NOT_USED(config);
+    return {};
+  }
+
+
   std::string_view SamplePacer::GetMajorTierNumber(const SamplePacerTier tier) noexcept
   {
     FSL_PARAM_NOT_USED(tier);
@@ -860,6 +939,12 @@ namespace Fsl
 
 
   SamplePacerTier SamplePacer::GetTier() const noexcept
+  {
+    return SamplePacerTier::TimerPeriodOnly;
+  }
+
+
+  SamplePacerTier SamplePacer::GetPacedAsTier() const noexcept
   {
     return SamplePacerTier::TimerPeriodOnly;
   }

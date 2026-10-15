@@ -28,30 +28,32 @@ namespace Fsl
   //! The tiers of the pacer library (its PacerTier), the best first. A tier is the capabilities a app needs to reach it, and the
   //! definition is the library's: the sample has none of its own. There are three major tiers, by who places a frame on its
   //! refresh, of four sub tiers each, and a tier is written as the two numbers ("3.1", SamplePacer::GetTierNumber):
-  //! - 1: the display places the frame, from a time on the present before which the frame is not shown, and it leaves out a frame
-  //!   that is overdue. The library rates it and paces it as the same sub tier of major tier 2.
-  //! - 2: the display places the frame, from such a time, and shows every frame.
+  //! - 1: the display places the frame against a clock, from a time on the present before which the frame is not shown.
+  //! - 2: the display places the frame relative to the one before, from a time the frame before stays on screen at least (or a
+  //!   swap interval of two or more): the loop may present early. It needs a wait for a present or display times, so the pacer sees
+  //!   a late frame.
   //! - 3: the frame loop places the frame: it has to make the present at the right moment. Every app reaches its last sub tier.
-  //! A sub tier is what the loop paces with: the vertical blank times of the window system or a timer, with or without a wait
-  //! for a present.
+  //! A sub tier is what the loop paces with, the same in every major tier: .1 the vertical blank times of the window system and a
+  //! wait for a present, .2 the vertical blank times, .3 a wait for a present on a timer, .4 a timer (in major tier 2 the display
+  //! times take the place of the wait in .2 and .4).
   enum class SamplePacerTier
   {
-    //! 1.1: a time on the present on a display that skips a frame that is overdue, vertical blank times and a wait for a present
-    TimedSkipVBlankWaitForPresent,
-    //! 1.2: the same display side, a wait for a present, on a timer
-    TimedSkipTimerWaitForPresent,
-    //! 1.3: the same display side, vertical blank times
-    TimedSkipVBlankPeriodOnly,
-    //! 1.4: the same display side, on a timer and the refresh period only
-    TimedSkipTimerPeriodOnly,
-    //! 2.1: a time on the present, vertical blank times and a wait for a present
-    TimedVBlankWaitForPresent,
-    //! 2.2: a time on the present and a wait for a present, on a timer
-    TimedTimerWaitForPresent,
-    //! 2.3: a time on the present and vertical blank times
-    TimedVBlankPeriodOnly,
-    //! 2.4: a time on the present, on a timer and the refresh period only
-    TimedTimerPeriodOnly,
+    //! 1.1: a time on the present, vertical blank times and a wait for a present
+    AtTimeVBlankWaitForPresent,
+    //! 1.2: a time on the present and vertical blank times
+    AtTimeVBlankPeriodOnly,
+    //! 1.3: a time on the present and a wait for a present, on a timer
+    AtTimeTimerWaitForPresent,
+    //! 1.4: a time on the present, on a timer and the refresh period only
+    AtTimeTimerPeriodOnly,
+    //! 2.1: a duration on the present, vertical blank times and a wait for a present
+    AfterDurationVBlankWaitForPresent,
+    //! 2.2: a duration on the present, vertical blank times and display times
+    AfterDurationVBlankDisplayTimes,
+    //! 2.3: a duration on the present and a wait for a present, on a timer
+    AfterDurationTimerWaitForPresent,
+    //! 2.4: a duration on the present and display times, on a timer
+    AfterDurationTimerDisplayTimes,
     //! 3.1: vertical blank times and a wait for a present
     VBlankWaitForPresent,
     //! 3.2: vertical blank times

@@ -82,8 +82,9 @@ namespace Fsl::Vulkan
     //! @brief Examine what the physical device supports.
     //! @param rExtensionRequests the device extensions to enable are appended to this.
     //! @param presentTiming Off leaves the present timing extensions disabled.
-    //! @param presentWait true enables VK_KHR_present_wait2 where the device has it. It is only enabled when asked for, as nothing uses it
-    //!        unless the user asks for the wait.
+    //! @param presentWait true if the user asked for the wait for a present (a warning is logged if the device does not have it).
+    //!        VK_KHR_present_wait2 is enabled where the device has it either way, as a app can ask for a swapchain that can be
+    //!        waited on (DemoAppVulkanSetup::PresentWait) and the device is created before the app.
     HostDeviceExtensions(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests,
                          const OptionUserChoice presentTiming = OptionUserChoice::Default, const bool presentWait = false);
 

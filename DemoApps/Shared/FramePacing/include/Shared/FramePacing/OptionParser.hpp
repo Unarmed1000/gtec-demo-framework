@@ -52,13 +52,13 @@ namespace Fsl
     int32_t m_pacerKindChangeFrames{SampleConfig::KindChangeFrames.Get()};
     bool m_pacerSystemHoldsLoop{false};
     bool m_pacerPresentAtTime{true};
-    bool m_pacerTimedPresent{false};
-    bool m_pacerGpuWait{false};
+    bool m_pacerTimedPresent{true};
+    bool m_pacerGpuWait{true};
     bool m_pacerSystemWaits{true};
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
     bool m_pacerAdaptive{true};
-    bool m_pacerDisplayReports{false};
+    bool m_pacerDisplayReports{true};
     int32_t m_pacerStartupPauseRefreshes{SampleConfig::StartupPauseRefreshes.Get()};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_cpuSpikeMs{SampleConfig::CpuSpikeMs.Get()};

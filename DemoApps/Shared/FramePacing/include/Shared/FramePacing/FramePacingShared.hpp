@@ -30,6 +30,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoApp/Base/DemoAppConfig.hpp>
 #include <FslDemoApp/Base/DemoTime.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingFrameId.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingRunState.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
 #include <FslGraphics/Color.hpp>
@@ -69,6 +70,7 @@
 
 namespace Fsl
 {
+  class IFramePacingDetailService;
   class IFramePacingMarkerService;
   class ITraceService;
   class SampleAnimationErrorChart;
@@ -217,13 +219,13 @@ namespace Fsl
       std::shared_ptr<UI::Switch> SwitchAdaptive;
       //! The aim of the pacer: on is low latency, off is smoothness
       std::shared_ptr<UI::Switch> SwitchLowLatency;
-      std::shared_ptr<UI::Switch> SwitchTimedPresent;
       std::shared_ptr<UI::Switch> SwitchPacerDisplayReports;
-      //! What the frames can be paced with (below the switch of the frame pacer), one group of radio buttons: every tier of the
-      //! pacer library, with the best first. A tier that can not be used here is disabled, and the one that is checked is the one
-      //! the run is paced by. Above every four of them is the line of their major tier: who places a frame on its refresh.
-      std::array<std::shared_ptr<UI::RadioButton>, 12> RadioTiers;
-      std::array<std::shared_ptr<UI::Label>, 3> LabelMajorTiers;
+      //! What the frames can be paced with (below the switch of the frame pacer), the tiers of the pacer library as two groups of
+      //! radio buttons, the best first: the major tier (who places a frame on its refresh) and the sub tier (what the frame loop
+      //! paces with), which mean the same in every major tier. A choice that can not be used here is disabled, and the ones that
+      //! are checked are the tier the run is paced by.
+      std::array<std::shared_ptr<UI::RadioButton>, 3> RadioMajorTiers;
+      std::array<std::shared_ptr<UI::RadioButton>, 4> RadioSubTiers;
       //! What the pacer that is checked does, below the group: a line of the pacer library for a tier. The label has the line of
       //! every pacer and is as wide as the longest, so the side bar keeps its width when another one is checked.
       std::shared_ptr<UI::SelectorLabel> LabelTierDescription;
@@ -352,8 +354,8 @@ namespace Fsl
     bool m_presentsMeasured{false};
     //! True if the app can give a present a target time (SetTimedPresentSupport)
     bool m_timedPresentSupported{false};
-    //! True if the app can give a present a time before which the frame is not shown, and if its display side then leaves out a
-    //! frame that is overdue (SetPresentAtTimeSupport)
+    //! True if the app can give a present a time before which the frame is not shown, and if its display side leaves out a frame
+    //! that is overdue (SetPresentAtTimeSupport)
     bool m_presentAtTimeSupported{false};
     bool m_presentSkipsOverdue{false};
     //! True once the app reported when the GPU worked on a frame, and how long it worked on one (AddGpuInterval, AddGpuTime)
@@ -364,6 +366,8 @@ namespace Fsl
     struct TierState
     {
       std::optional<SamplePacerTier> InUse;
+      //! The tier that paces InUse: itself, or the tier of the frame loop that paces a tier without a pacer of its own
+      std::optional<SamplePacerTier> PacedAs;
       //! What the pacer library rates everything the app can do at
       SamplePacerRating Best;
 
@@ -433,8 +437,11 @@ namespace Fsl
     TickCount m_vsyncReadTime;
     NanosecondTickCount m_pacerVBlankTime;
     //! True if the run is to use the time on the present before which a frame is not shown, where the app has it
-    //! (--Pacer.PresentAtTime, then the radio button the user checked last): the display then places the frame
+    //! (--Pacer.PresentAtTime, then the major tier the user checked last): the display then places the frame
     bool m_pacerPresentAtTime{true};
+    //! True if the run is to use the time the frame before stays on screen, where the app has it and the present is not given the
+    //! other time (--Pacer.TimedPresent, then the major tier the user checked last)
+    bool m_pacerTimedPresent{true};
     //! The tiers that can be used right now, in the order of SamplePacerTierChoiceUtil::Tiers (the radio buttons that are
     //! enabled), and the tier the run is to be in with its kind: the one that was asked for (m_pacerKind, m_pacerPresentAtTime)
     //! or the one that comes closest to it. They are what Update decided.
@@ -478,9 +485,7 @@ namespace Fsl
     struct LogColumns
     {
       TraceValue PacerOn;
-      TraceValue SwapInterval;
       TraceValue PreferredSwapInterval;
-      TraceValue Change;
       TraceValue AnimationStep;
       TraceValue WindowFrames;
       TraceValue WindowLateFrames;
@@ -488,16 +493,12 @@ namespace Fsl
       TraceValue WindowAverageWork;
       TraceValue WindowSpan;
       TraceValue WindowFull;
-      TraceValue FrameWaitStart;
-      TraceValue FrameWaitTarget;
       TraceValue FrameStart;
       TraceValue EndFrame;
       TraceValue WorkCpu;
       TraceValue WorkGpu;
       TraceValue WorkGpuFrameIndex;
       TraceValue GpuTime;
-      TraceValue GpuWorkBegin;
-      TraceValue GpuWorkEnd;
       TraceValue FlushCall;
       TraceValue PresentWait;
       TraceValue PresentWaitBegin;
@@ -508,7 +509,6 @@ namespace Fsl
       TraceValue PacerFrameId;
       TraceValue NextFrameStart;
       TraceValue DisplayReportsOn;
-      TraceValue DisplayReportTime;
       TraceValue DisplayReports;
       TraceValue DisplayRefused;
       TraceValue DisplayJudgedFrames;
@@ -519,7 +519,6 @@ namespace Fsl
       TraceValue DisplayStartToDisplayTotal;
       TraceValue DisplayStartToDisplayLongest;
       TraceValue AnimationError;
-      TraceValue PresentTarget;
       TraceValue CpuSpike;
       TraceValue PacerKind;
       TraceValue RefreshesBehindClock;
@@ -545,9 +544,6 @@ namespace Fsl
       uint64_t PresentId{0};
       //! The id the frame pacer gave the frame (zero = the frame was not paced)
       uint64_t PacerFrameId{0};
-      //! The frame of the log (valid if HasLogFrame)
-      TraceFrameIndex LogFrameIndex;
-      bool HasLogFrame{false};
     };
 
     std::array<PacerPresentFrame, 64> m_pacerPresentFrames{};
@@ -570,11 +566,12 @@ namespace Fsl
 
     std::array<PacerFrame, 16> m_pacerFrames{};
 
-    //! The frame of the log a present belongs to
+    //! The frame of the log a present belongs to, and its ids in the frame record
     struct LogPresentFrame
     {
       uint64_t PresentId{0};
       TraceFrameIndex FrameIndex;
+      FramePacingFrameId DetailFrameId;
     };
 
     //! The zones of the sample in the trace: what it does in its update and its draw, and where it waits
@@ -604,6 +601,9 @@ namespace Fsl
 
     //! The trace service, which is the log of the frames (null: the trace is off and nothing is logged)
     std::shared_ptr<ITraceService> m_trace;
+    //! What happened around each frame as the frame record of mb-framepacing has it, its second part (null: the trace is off or the
+    //! platform has no marker service)
+    std::shared_ptr<IFramePacingDetailService> m_details;
     TraceZones m_traceZones;
 
     LogColumns m_logColumns;
@@ -618,11 +618,12 @@ namespace Fsl
 
     std::array<PresentFrame, 16> m_presentFrames{};
 
-    //! The frame of the log a frame of the sample belongs to
+    //! The frame of the log a frame of the sample belongs to, and its ids in the frame record
     struct LogFrame
     {
       uint64_t FrameId{0};
       TraceFrameIndex FrameIndex;
+      FramePacingFrameId DetailFrameId;
     };
 
     std::array<LogFrame, 64> m_logFrames{};
@@ -751,9 +752,9 @@ namespace Fsl
     //! pacer plans that time where it is asked to. Call it every frame, as it can change when the swapchain is recreated.
     void SetTimedPresentSupport(const bool supported);
     //! Tell the sample if the app can give a present a time before which the frame is not shown, so the display places the frame,
-    //! and if its display side then leaves out a frame that is overdue (a present mode that shows the newest frame that is due).
-    //! The frame pacer is told both and plans the time where it is asked to. Call it every frame, as it can change when the
-    //! swapchain is recreated.
+    //! and if its display side leaves out a frame that is overdue (a present mode that shows the newest frame that is due, with or
+    //! without such a time). The frame pacer is told both and plans the time where it is asked to. Call it every frame, as it can
+    //! change when the swapchain is recreated.
     void SetPresentAtTimeSupport(const bool supported, const bool skipsOverdue);
     //! The time the present of the frame that just ended (EndFrame) is to be given: the frame is not to be shown before it (a
     //! HighResolutionTimer timestamp). Zero if the frame pacer gave none.
@@ -899,6 +900,9 @@ namespace Fsl
     [[nodiscard]] SamplePacerCapabilities GetPacerCapabilities() const noexcept;
     //! @brief True if the pacer is to use the present that takes a time: the switch is on and the app has such a present
     [[nodiscard]] bool IsTimedPresentRequested() const;
+    //! @brief True if the run gives the pacer the display reports: the switch is on, the presents are measured, and the display was not
+    //!        seen to refresh at a variable rate
+    [[nodiscard]] bool IsDisplayReportsWanted() const;
     //! The kind that is asked for from here on (--Pacer.Kind, then the one the user checked last)
     void SetRequestedKind(const SamplePacerKind kind) noexcept;
     //! Take a tier the user checked as the one that is asked for
@@ -907,6 +911,8 @@ namespace Fsl
     void UpdateTierChoice();
     //! Enable the radio buttons of the tiers that can be used and check the one of the given tier
     void ShowTiers(const SamplePacerTier tier);
+    //! Enable a radio button of the tiers or not, and check it if it is to be checked
+    static void SetTierRadioButton(UI::RadioButton& rRadioButton, const bool isEnabled, const bool isChecked);
     //! @return the refresh period of the display the window is on, in nanoseconds (zero if the window system does not know it)
     [[nodiscard]] NanosecondTimeSpan ReadDisplayRefreshPeriod() const;
     //! Take the refresh period the window system reports now (m_detectedRefreshPeriod)
@@ -935,6 +941,8 @@ namespace Fsl
     void LogPresentWait(const TickCount beginTime, const TickCount targetTime, const TickCount endTime);
     //! Write what the frame that just started is to the trace
     void LogFrameStart(const TickCount waitStartTime);
+    //! How the frames are paced, for the frame record
+    void LogPacerEnvironment();
     //! Keep the CPU busy for the given time (the simulated CPU load)
     void BurnCpu(const TimeSpan duration) const;
     //! Create the two overlays: every value of the last marker and the frame pacing stats (fills in the overlay members of m_ui)

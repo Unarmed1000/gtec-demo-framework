@@ -98,6 +98,8 @@ namespace Fsl
     void AddEvent(const std::string_view name, const std::string_view details) final;
     bool AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
                  const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept final;
+    bool AddMoment(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount time,
+                   const std::span<const TraceArgument> arguments) noexcept final;
     void SetFact(const std::string_view key, const std::string_view value) final;
     void AddAnonymousText(const std::string_view text, const std::string_view replacement) final;
     void AddAnonymousFact(const std::string_view key, const std::string_view replacement) final;

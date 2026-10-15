@@ -114,8 +114,9 @@ namespace Fsl
                           "for before a frame starts and before it is presented, and the sample only does that. vblank-present-wait (the "
                           "default and the best tier the samples reach: the pacer is told when the display of the window refreshes, so "
                           "it aims a frame at a vertical blank, and before a frame it names a earlier present to wait for until it was "
-                          "shown: Vulkan with --VkPresentWait n, which is then the number of presents the pacer lets wait and no longer "
-                          "a wait of the host. From the wait it learns where in a refresh a frame has to be ready), vblank-period (the "
+                          "shown: Vulkan with VK_KHR_present_wait2, where the sample asks for a swapchain that can be waited on; with "
+                          "--VkPresentWait n, n is the number of presents the pacer lets wait and no longer a wait of the host. From the "
+                          "wait it learns where in a refresh a frame has to be ready), vblank-period (the "
                           "vertical blank times without the wait), timer-present-wait (the wait, on a timer and without the vertical "
                           "blank times) or timer-period (a timer and the refresh period of the display, which every app has). A app "
                           "that lacks what a kind uses is paced with the best kind of what it has, so the default is the best tier "
@@ -146,17 +147,18 @@ namespace Fsl
                           "tiers of major tier 2, and of major tier 1 where the display leaves out a frame that is overdue (the present "
                           "mode FIFO latest ready). false: the frame loop places the frame, the tiers of major tier 3. A app without such "
                           "a present is in major tier 3 with both.");
-    rOptions.emplace_back("Pacer.TimedPresent", OptionArgument::OptionNone, CommandId::PacerTimedPresent,
-                          "The pacer uses the present that takes a time, where the app has one (Vulkan with a swapchain "
+    rOptions.emplace_back("Pacer.TimedPresent", OptionArgument::OptionRequired, CommandId::PacerTimedPresent,
+                          "true (default): the pacer uses the present that takes a time, where the app has one (Vulkan with a swapchain "
                           "that takes a time the frame before stays on screen at least): the pacer plans that time and the sample gives "
                           "it to the present, next to everything it does without it. It changes no tier: only a present at a time "
-                          "lets the display place the frame (--Pacer.PresentAtTime), and a present takes one of the two.");
-    rOptions.emplace_back("Pacer.GpuWait", OptionArgument::OptionNone, CommandId::PacerGpuWait,
-                          "The kinds without a wait for a present (timer-period and vblank-period) hold the frame loop with a "
-                          "wait for the GPU's work on an earlier frame, where the app can make that wait (Vulkan): the pacer names the "
-                          "frame, the one before with the aim of low latency and the one before that with smoothness where two frames "
+                          "lets the display place the frame (--Pacer.PresentAtTime), and a present takes one of the two. false: it is "
+                          "not used.");
+    rOptions.emplace_back("Pacer.GpuWait", OptionArgument::OptionRequired, CommandId::PacerGpuWait,
+                          "true (default): the kinds without a wait for a present (timer-period and vblank-period) hold the frame loop "
+                          "with a wait for the GPU's work on an earlier frame, where the app can make that wait (Vulkan): the pacer names "
+                          "the frame, the one before with the aim of low latency and the one before that with smoothness where two frames "
                           "are in flight (--VkFramesInFlight 2). It is the wait for a frame slot of the app base, made for the frame the "
-                          "pacer names and reported to it.");
+                          "pacer names and reported to it. false: it is not used.");
     rOptions.emplace_back("Pacer.SystemWaits", OptionArgument::OptionRequired, CommandId::PacerSystemWaits,
                           "true (default): the waits the app base makes by itself before a frame (the wait for a frame slot and the "
                           "acquire of a Vulkan app) are reported to the pacer. On a timer the pacer then does not take a frame "
@@ -175,9 +177,9 @@ namespace Fsl
     rOptions.emplace_back("Pacer.Adaptive", OptionArgument::OptionRequired, CommandId::PacerAdaptive,
                           "true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.");
     rOptions.emplace_back("Pacer.DisplayReports", OptionArgument::OptionRequired, CommandId::PacerDisplayReports,
-                          "true: the frame pacer is given when the display showed the frames, as display reports, where the app measures "
-                          "its presents (Vulkan with VK_EXT_present_timing). It counts the animation error of the frames from them and "
-                          "paces the same. Only for a display with a fixed refresh rate. false (default).");
+                          "true (default): the frame pacer is given when the display showed the frames, as display reports, where the app "
+                          "measures its presents (Vulkan with VK_EXT_present_timing) and the display was not seen to refresh at a variable "
+                          "rate. It counts the animation error of the frames from them and paces the same. false: they are not given.");
     rOptions.emplace_back("Pacer.StartupPause", OptionArgument::OptionRequired, CommandId::PacerStartupPause,
                           "The refreshes of the pause the pacer makes once, half a second after it started, so the presents that are "
                           "queued between the app and the display are shown before the next one is added (timer-period and "
@@ -292,10 +294,10 @@ namespace Fsl
       StringParseUtil::Parse(m_pacerPresentAtTime, strOptArg);
       return OptionParseResult::Parsed;
     case CommandId::PacerTimedPresent:
-      m_pacerTimedPresent = true;
+      StringParseUtil::Parse(m_pacerTimedPresent, strOptArg);
       return OptionParseResult::Parsed;
     case CommandId::PacerGpuWait:
-      m_pacerGpuWait = true;
+      StringParseUtil::Parse(m_pacerGpuWait, strOptArg);
       return OptionParseResult::Parsed;
     case CommandId::PacerSystemWaits:
       StringParseUtil::Parse(m_pacerSystemWaits, strOptArg);

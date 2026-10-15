@@ -196,11 +196,19 @@ namespace Fsl
     //! @param category the category of the span, at most 15 characters.
     //! @param name the name of the span, at most 63 characters.
     //! @param duration zero or more: zero is a span without a length.
-    //! @param arguments at most 8, each with a name of at most 31 characters. They are written in this order.
+    //! @param arguments at most 16, each with a name of at most 31 characters, and the texts of those that are texts together at most
+    //!        1023 characters. They are written in this order.
     //! @return false if it was not added (the trace is off, not a track, a text that is empty or too long, a time before the start of
     //!         the clock, a duration below zero, too many arguments).
     virtual bool AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
                          const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept = 0;
+
+    //! @brief Add a moment the caller gives the whole form of, as AddSpan does a span: something that happened at a time, with no
+    //!        length (the display time a platform reported for a frame).
+    //! @param track the track it is on (RegisterTrack): a track of the spans that are added (AddSpan).
+    //! @return false if it was not added (see AddSpan).
+    virtual bool AddMoment(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount time,
+                           const std::span<const TraceArgument> arguments) noexcept = 0;
 
     //! @brief Write a fact about the run (the graphics API, the present mode, a setting).
     virtual void SetFact(const std::string_view key, const std::string_view value) = 0;

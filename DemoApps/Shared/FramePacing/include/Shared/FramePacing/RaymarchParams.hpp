@@ -52,7 +52,7 @@ namespace Fsl
   {
     //! The GPU load (0 = the background is not drawn): the number of steps the shader marches every ray in. For the lace every
     //! doubling of it is one more round of detail, and the rest of it is the number of samples it draws every pixel with. For the
-    //! Mandelbrot set a pixel can take eight times this many iterations.
+    //! Mandelbrot set it is the number of iterations a pixel can take.
     int32_t Steps{0};
     //! The scene that is drawn
     RaymarchScene Scene{RaymarchScene::Flight};

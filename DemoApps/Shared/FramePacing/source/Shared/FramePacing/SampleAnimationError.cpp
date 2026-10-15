@@ -35,7 +35,7 @@ namespace Fsl
     m_hasShown = false;
     m_shownAnimationTime = {};
     m_shownDisplayTime = {};
-    m_shownTargetFrameTime = {};
+    m_shownIntendedDisplayTime = {};
     m_lastStepUneven = false;
     m_runStutter = {};
     m_stutter = {};
@@ -48,7 +48,7 @@ namespace Fsl
 
 
   void SampleAnimationError::AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime,
-                                      const TimeSpan refreshPeriod) noexcept
+                                      const std::optional<TickCount> intendedDisplayTime, const TimeSpan refreshPeriod) noexcept
   {
     if (m_count == Capacity)
     {
@@ -64,6 +64,7 @@ namespace Fsl
     rFrame.AnimationTime = animationTime;
     rFrame.TargetFrameTime = targetFrameTime;
     rFrame.RefreshPeriod = refreshPeriod;
+    rFrame.IntendedDisplayTime = intendedDisplayTime;
     ++m_count;
     m_newestPresentId = presentId;
   }
@@ -127,23 +128,49 @@ namespace Fsl
       m_errorNext = (m_errorNext + 1u) % StatsFrames;
       m_errorCount = std::min(m_errorCount + 1u, StatsFrames);
 
-      // The display was uneven where the frame before this one was not on screen for the time it was to be: half a refresh or more
-      // off. Without a refresh period that can not be told, and a error is then taken to be the display's.
-      const int64_t offTargetTicks = std::abs((rRecord.DisplayStep - m_shownTargetFrameTime).Ticks());
-      const bool isStepUneven = frame.RefreshPeriod.Ticks() <= 0 || (offTargetTicks * 2) >= frame.RefreshPeriod.Ticks();
-      if (std::abs(rRecord.Error.Ticks()) > ErrorThreshold.Ticks())
+      // The rules of the mb-framepacing tools. Half a refresh is their tolerance, and without a refresh period nothing can be told
+      // about the display: no frame is late and a error is taken to be the display's.
+      const int64_t refreshTicks = frame.RefreshPeriod.Ticks();
+      const int64_t halfRefreshTicks = refreshTicks / 2;
+      rRecord.IntendedPeriod = CalcIntendedPeriod(frame.TargetFrameTime, frame.RefreshPeriod);
+      // Late: the frame before stayed on screen half a refresh or more longer than this frame was animated for and than its intended
+      // period. A frame that did not move (a paused app) is never late.
+      rRecord.IsLate = refreshTicks > 0 && rRecord.AnimationStep.Ticks() != 0 && rRecord.Error.Ticks() <= -halfRefreshTicks &&
+                       rRecord.DisplayStep.Ticks() >= (rRecord.IntendedPeriod.Ticks() + halfRefreshTicks);
+      // The display was uneven where the frame before this one was not on screen for its intended period: half a refresh or more off
+      const int64_t offIntendedTicks = std::abs((rRecord.DisplayStep - rRecord.IntendedPeriod).Ticks());
+      const bool isStepUneven = refreshTicks <= 0 || offIntendedTicks >= halfRefreshTicks;
+      const int64_t absErrorTicks = std::abs(rRecord.Error.Ticks());
+      if (absErrorTicks > ErrorThreshold.Ticks())
       {
-        // And the frame after a uneven step has the other half of it: it comes on time and has moved by the wrong time
-        rRecord.Cause = (isStepUneven || m_lastStepUneven) ? SampleAnimationErrorCause::Pacing : SampleAnimationErrorCause::DeltaTimeJitter;
-        if (rRecord.Cause == SampleAnimationErrorCause::Pacing)
+        bool isPacing = true;
+        if (refreshTicks > 0)
         {
-          ++m_runStutter.Pacing;
+          if (frame.IntendedDisplayTime.has_value() && m_shownIntendedDisplayTime.has_value())
+          {
+            // The pacer said when both frames were to be shown: the display is to blame if it was as far or further off that step
+            // than the animation was
+            const TimeSpan intendedStep = *frame.IntendedDisplayTime - *m_shownIntendedDisplayTime;
+            isPacing = std::abs((rRecord.DisplayStep - intendedStep).Ticks()) >= std::abs((rRecord.AnimationStep - intendedStep).Ticks());
+          }
+          else
+          {
+            // And the frame after a uneven step has the other half of it: it comes on time and has moved by the wrong time
+            isPacing = isStepUneven || m_lastStepUneven;
+          }
         }
-        else
+        rRecord.Cause = isPacing ? SampleAnimationErrorCause::Pacing : SampleAnimationErrorCause::DeltaTimeJitter;
+        rRecord.IsDeltaTimeJitter = !isPacing && absErrorTicks < rRecord.IntendedPeriod.Ticks() && !rRecord.IsLate;
+        ++m_runStutter.ErrorFrames;
+        if (rRecord.IsLate)
+        {
+          ++m_runStutter.Late;
+        }
+        if (rRecord.IsDeltaTimeJitter)
         {
           ++m_runStutter.DeltaTimeJitter;
         }
-        m_stutter[m_stutterNext] = {displayTime, rRecord.Cause};
+        m_stutter[m_stutterNext] = {displayTime, rRecord.IsLate, rRecord.IsDeltaTimeJitter};
         m_stutterNext = (m_stutterNext + 1u) % StutterCapacity;
         m_stutterCount = std::min(m_stutterCount + 1u, StutterCapacity);
       }
@@ -156,7 +183,7 @@ namespace Fsl
     m_hasShown = true;
     m_shownAnimationTime = frame.AnimationTime;
     m_shownDisplayTime = displayTime;
-    m_shownTargetFrameTime = frame.TargetFrameTime;
+    m_shownIntendedDisplayTime = frame.IntendedDisplayTime;
     return true;
   }
 
@@ -202,11 +229,12 @@ namespace Fsl
       const StutterEntry& entry = m_stutter[i];
       if ((m_shownDisplayTime - entry.DisplayTime) < RecentTime)
       {
-        if (entry.Cause == SampleAnimationErrorCause::Pacing)
+        ++count.ErrorFrames;
+        if (entry.IsLate)
         {
-          ++count.Pacing;
+          ++count.Late;
         }
-        else
+        if (entry.IsDeltaTimeJitter)
         {
           ++count.DeltaTimeJitter;
         }
@@ -228,6 +256,21 @@ namespace Fsl
     const int64_t half = refreshPeriod.Ticks() / 2;
     const int64_t thousandths = (scaled >= 0 ? (scaled + half) : (scaled - half)) / refreshPeriod.Ticks();
     return static_cast<int32_t>(std::clamp(thousandths, -int64_t{MaxRefreshThousandths}, int64_t{MaxRefreshThousandths}));
+  }
+
+
+  TimeSpan SampleAnimationError::CalcIntendedPeriod(const TimeSpan targetFrameTime, const TimeSpan refreshPeriod) noexcept
+  {
+    const int64_t refreshTicks = refreshPeriod.Ticks();
+    if (refreshTicks <= 0)
+    {
+      return targetFrameTime;
+    }
+    // Whole refreshes, rounded up, where a target that is a twentieth of a refresh or less over a whole number is that number
+    const int64_t slackTicks = refreshTicks / 20;
+    const int64_t overSlackTicks = targetFrameTime.Ticks() - slackTicks;
+    const int64_t refreshes = overSlackTicks > 0 ? std::max((overSlackTicks + refreshTicks - 1) / refreshTicks, int64_t{1}) : int64_t{1};
+    return TimeSpan(refreshes * refreshTicks);
   }
 
 

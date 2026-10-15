@@ -68,6 +68,10 @@ namespace Fsl::VulkanBasic
     //! If true the app wants to know when its frames were presented (see DemoAppVulkanBasic::GetPresentTimings).
     //! It needs VK_EXT_present_timing, so check DemoAppVulkanBasic::IsPresentTimingEnabled to see if the measurements are available.
     bool PresentTiming{false};
+    //! If true the app wants a swapchain whose presents it can wait for (see DemoAppVulkanBasic::WaitForPresent). It needs
+    //! VK_KHR_present_wait2, so check DemoAppVulkanBasic::IsPresentWaitEnabled. The app base only waits for a present by itself when
+    //! the user asks for it ('--VkPresentWait n').
+    bool PresentWait{false};
   };
 }
 

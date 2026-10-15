@@ -36,7 +36,7 @@ Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
-GPU load                      |`--GpuLoad <steps>`             |Draws the background with the given load (0 is no background, the default is a low load of 16). The cost grows linearly with it. It is the number of steps of every ray, more steps reach further; for the lace every doubling of it adds a round of finer detail and the rest of it is samples per pixel; for the Mandelbrot zoom a pixel can take eight times that many iterations, and the more of them the more of the spirals is drawn.
+GPU load                      |`--GpuLoad <steps>`             |Draws the background with the given load (0 is no background, the default is a low load of 16). The cost grows linearly with it. It is the number of steps of every ray, more steps reach further; for the lace every doubling of it adds a round of finer detail and the rest of it is samples per pixel; for the Mandelbrot zoom it is the number of iterations a pixel can take, and the more of them the more of the spirals is drawn.
 Background                    |`--Background <name>`           |The scene of the background (the radio buttons below the GPU load). `mandelbrot` (the default) is a zoom into a spiral of the Mandelbrot set (Seahorse Valley): the cheapest one, which a low end GPU can draw. `blobs` is a flight through blobs that melt into each other and `lace` is circles packed into circles: both are cheap at a low load. `flight` is a raymarched flight through a fractal lattice and `hall` a raymarched hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see: both cost a lot from the first step on.
 
 The target fps slider and the adaptive switch can only be changed while the frame pacer is on. The line below the refresh rate shows the
@@ -44,30 +44,32 @@ rate the frames are paced at: the refresh rate divided by the swap interval. The
 and the frame time that was measured, with how many of the last frames were late. They are shown with the pacer off as well: every frame is
 then held for one refresh, and the late frames are the ones of the last two seconds that took more than one refresh.
 
-Below the switch of the frame pacer the side bar has what the frames can be paced with, as one group of radio buttons: every tier
-of the pacer library (see [FramePacingPlatformSupport.md](../../../Doc/FramePacingPlatformSupport.md)). The tiers are the library's and the sample has no definition of its
-own. It has three major tiers by who places a frame on its refresh, each with a line of the library above its radio buttons, and
-four sub tiers each, written as the two numbers with the best first: `1.1` to `3.4`.
+Below the switch of the frame pacer the side bar has what the frames can be paced with: the tiers of the pacer library (see
+[FramePacingPlatformSupport.md](../../../Doc/FramePacingPlatformSupport.md)) as two groups of radio buttons, the best first. The tiers are the
+library's and the sample has no definition of its own. The first group is the major tier, by who places a frame on its refresh, the
+second the sub tier, what the frame loop paces with, which means the same in every major tier. A tier is written as the two
+numbers: `1.1` to `3.4`.
 
-- **Tier 1, the display places a frame and skips one that is overdue**: the present is given a time before which the frame is not
-  shown, on a display side that shows the newest of the frames that are due (Vulkan with a absolute target time and the present
-  mode FIFO latest ready). The library rates it and paces it as the same sub tier of tier 2.
-- **Tier 2, the display places a frame**: the present is given such a time and every frame is shown (Vulkan with a absolute target
-  time, `--Pacer.PresentAtTime`, which is on by default).
+- **Tier 1, the display places a frame against a clock**: the present is given a time before which the frame is not shown (Vulkan
+  with a absolute target time, `--Pacer.PresentAtTime`, which is on by default).
+- **Tier 2, the display places a frame relative to the one before**: the present is given a time the frame before stays on screen at
+  least (Vulkan with a relative target time, `--Pacer.TimedPresent`, which is on by default, or a swap interval of two or more), so
+  the loop may present early. After a late frame every later time counts from it, so the pacer has to see that: tier 2 needs a wait
+  for a present or display times. The loop holds no present in it: a frame is presented when it is done, and the display keeps the
+  frame before on screen for the time.
 - **Tier 3, the frame loop places a frame**: the loop has to make the present at the right moment. Every app reaches its last sub
   tier.
 
-A sub tier is what the frame loop paces with (`--Pacer.Kind`), each with its own color: vertical blank times with a wait for a
-present (orange, `vblank-present-wait`), vertical blank times (purple, `vblank-period`), a timer with a wait for a present (blue,
-`timer-present-wait`) and a timer (green, `timer-period`). In tier 3 that is their order, in tiers 1 and 2 the wait comes first
-(`x.1` vertical blank times with a wait, `x.2` a timer with a wait, `x.3` vertical blank times, `x.4` a timer).
+Each major tier has its color: tier 1 orange, tier 2 purple, tier 3 blue; the sub tiers have none. A sub tier is what the frame loop
+paces with (`--Pacer.Kind`), in the same order in every major tier: `x.1` vertical blank times with a wait for a present
+(`vblank-present-wait`), `x.2` vertical blank times (`vblank-period`), `x.3` a timer with a wait for a present
+(`timer-present-wait`) and `x.4` a timer (`timer-period`). In tier 2 the display times take the place of the wait in `2.2` and
+`2.4`. The radio buttons of the sub tiers have their own number only, the major tier is the group above.
 
-No tier is hidden: one the app does not have what it takes for is disabled. Of tiers 1 and 2 only one can be used on a system, as
-what the display does with a frame that is overdue is a fact of it and not something a run chooses. The time the frame before
-stays on screen at least changes no tier. That one is the switch `Timed present` (`--Pacer.TimedPresent`) below, where the present
-of the app takes it: the pacer then plans that time and the sample gives it to the present, unless the present is given a time
-before which the frame is not shown, as a present takes one of the two. The line below the radio buttons is the library's line for
-the tier the run is in.
+No tier is hidden: a major tier none of whose sub tiers the app has what it takes for is disabled, and so is a sub tier the app can
+not use in the major tier that is checked. A present takes one of the two times, so with a time before which the frame is not shown
+the run is in tier 1. The line below the radio buttons is the library's line for the tier the run is in. A display side that leaves out a frame that is overdue for a newer one that is due
+is no tier: it is the mark `s` after the tier's number, as display times are the mark `+` ("2.1+s").
 
 - The tier that is checked is the one the run is paced in, and the one it will be paced in while the frame pacer is off. The line
   below the group is the library's line for it.
@@ -75,7 +77,8 @@ the tier the run is in.
   run starts with, and the default is the best one: `--Pacer.Kind vblank-present-wait` with `--Pacer.PresentAtTime true`. A tier is
   disabled when the app does not have what it takes (the library rates what the app can do): a time on the present needs a
   swapchain that takes a absolute target time, vertical blank times need a window system that tells when the display refreshes,
-  and the wait for a present needs a app that can wait for one (Vulkan with `--VkPresentWait <n>`).
+  and the wait for a present needs a app that can wait for one (Vulkan with `VK_KHR_present_wait2`: the sample asks for a swapchain
+  that can be waited on).
 - What was asked for and can not be used right now gives way to the tier of what is left of it: a tier of the display placing the
   frame to the same kind where the frame loop places it, `vblank-present-wait` to `vblank-period` without a present to wait for
   and to `timer-present-wait` without vertical blank times, and each of them to `timer-period` without both. It comes back when
@@ -83,8 +86,8 @@ the tier the run is in.
 - With the frame pacer on the app base makes no wait for a present by itself: the pacer names the present a frame waits for, and
   `--VkPresentWait <n>` is the number of presents the pacer lets wait.
 
-The tier the run is in and the best one the system reaches are in the `tier` event of the log and in the `FramePacing:` line of the
-output. If the present of the app can hold a frame for two refreshes or more is no tier: the library rates it on its own, and it is
+The tier the run is in, the tier that paces it (`pacedAs`) and the best one the system
+reaches with its marks are in the `tier` event of the log and in the `FramePacing:` line of the output. If the present of the app can hold a frame for two refreshes or more is no tier: the library rates it on its own, and it is
 the `Display side holds` row of the frame pacing overlay.
 
 Two overlays at the top right can be switched on and off (`Show the last marker` and `Show the frame pacing`, or start without them with
@@ -157,11 +160,13 @@ The three versions of the sample differ in what they can measure and in how they
 - **The animation error is drawn.** With the display times of the frames the sample knows how far the animation of a frame was off
   where it was shown: how far the animation moved from the frame before it, less how long after that frame it was shown. That is the
   animation error, the measure of the mb-framepacing tools, and what is seen as stutter. A chart above the work chart draws it as the
-  report of those tools does: a bar for each frame, up when it was shown too soon and down when it was shown too late, with a dashed
-  line where a frame is a whole refresh off (`Show the animation error chart`, `--HideAnimationErrorChart`), and the `Animation error`
-  row counts the frames that were more than 1 ms off. The legend of the chart counts them as stutter: how many in the last second, and
-  how many in the run by their cause as those tools tell them apart, `pacing` (the display was uneven) and `jitter` (their delta time
-  jitter: the display was even and the animation was not). It is made from the display times the driver reports, not from a capture.
+  report of those tools does: a bar for each frame, up when it was shown too soon and down when it was shown too late, yellow for
+  delta time jitter (the display was even and the animation was off by less than the intended period) and red for every other error,
+  with a dashed line where a frame is a whole refresh off (`Show the animation error chart`, `--HideAnimationErrorChart`), and the
+  `Animation error` row counts the frames that were more than 1 ms off. The legend of the chart counts them as stutter: how many in the
+  last second, and with the words of those tools how many in the run were `late` (the frame before stayed on screen half a refresh or
+  more longer than the frame was animated for and than its intended period) and `delta time jitter` (the yellow ones). It is made from
+  the display times the driver reports, not from a capture.
 - **When the GPU worked on a frame can be shown.** With `VK_KHR_calibrated_timestamps` the timestamp queries are converted to the clock of
   the CPU, and the `GPU work` row shows when the GPU started and finished the frame, counted from the start of the frame (`Place the GPU
   work in time`).

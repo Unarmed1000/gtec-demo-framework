@@ -28,25 +28,33 @@
 
 namespace Fsl
 {
-  //! A span that was added with its times and its texts (ITraceService::AddSpan), as it waits for the sink. The texts are held in the
-  //! record and each ends with a zero, so adding a span allocates nothing. What a span can hold is what can be added.
+  //! A span or a moment that was added with its times and its texts (ITraceService::AddSpan, AddMoment), as it waits for the sink. The
+  //! texts are held in the record and each ends with a zero, so adding one allocates nothing. What a record can hold is what can be added.
   struct TraceSpanRecord
   {
     static constexpr std::size_t MaxCategoryLength = 15;
     static constexpr std::size_t MaxNameLength = 63;
     static constexpr std::size_t MaxArgumentNameLength = 31;
-    static constexpr std::size_t MaxArguments = 8;
+    static constexpr std::size_t MaxArguments = 16;
+    //! The texts of the arguments that are texts together, each with the zero that ends it
+    static constexpr std::size_t MaxArgumentTextsSize = 1024;
 
     //! The index of the track (TraceSchema::Tracks)
     uint32_t TrackIndex{0};
+    //! True: a moment, at BeginNanoseconds (DurationNanoseconds is zero)
+    bool IsMoment{false};
     std::array<char, MaxCategoryLength + 1> Category{};
     std::array<char, MaxNameLength + 1> Name{};
     //! When it begins on the steady clock of the framework, and how long it lasts
     int64_t BeginNanoseconds{0};
     int64_t DurationNanoseconds{0};
-    //! The first ArgumentCount names and values are the arguments of the span, in the order they were given
+    //! The first ArgumentCount names and values are the arguments, in the order they were given. A argument that is a text has its
+    //! text at ArgumentTextOffsets in ArgumentTexts, the value of the others is in ArgumentValues
     std::array<std::array<char, MaxArgumentNameLength + 1>, MaxArguments> ArgumentNames{};
     std::array<int64_t, MaxArguments> ArgumentValues{};
+    std::array<bool, MaxArguments> ArgumentIsText{};
+    std::array<uint16_t, MaxArguments> ArgumentTextOffsets{};
+    std::array<char, MaxArgumentTextsSize> ArgumentTexts{};
     uint32_t ArgumentCount{0};
   };
 }

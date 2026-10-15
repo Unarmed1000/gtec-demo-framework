@@ -534,8 +534,9 @@ namespace Fsl
         return m_presentCounter + 1;
       }
 
-      //! @brief Check if a present of the swapchain can be waited for (WaitForPresent). The user asks for it with '--VkPresentWait' and it
-      //!        needs a device and a surface with VK_KHR_present_wait2, so it can change when the swapchain is recreated.
+      //! @brief Check if a present of the swapchain can be waited for (WaitForPresent). The app asks for it with
+      //!        DemoAppVulkanSetup::PresentWait or the user with '--VkPresentWait', and it needs a device and a surface with
+      //!        VK_KHR_present_wait2, so it can change when the swapchain is recreated.
       [[nodiscard]] bool IsPresentWaitEnabled() const noexcept
       {
         return m_presentWait.IsEnabled();

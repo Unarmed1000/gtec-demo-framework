@@ -27,14 +27,14 @@ Track | What is on it
 ---|---
 `Main` (a thread) | The zones of the main thread: what the thread did, as blocks inside blocks. See [the zones of the main thread](#the-zones-of-the-main-thread).
 `Frames` | One span `Frame` for every frame, from where the host started on it to where the host was done with it. It carries **every value of the frame** as an argument, see below.
-`Vulkan` | The calls and waits of a Vulkan app as spans of their frame: `wait for present`, `wait for frame slot`, `acquire`, `wait for acquire fence`, `submit`, `present`.
-`Present to display` | Vulkan with present timing: a span from the present call of a frame to the first pixel out. The presents of the frames in flight overlap, so they are drawn in lanes.
-`Display` | Vulkan with present timing: the marks `queue operations end`, `request dequeued`, `first pixel out` and `first pixel visible` of the present of a frame.
+`Vulkan` | The submit of a Vulkan app as a span of its frame: `submit`. Its waits, its acquire and its present are in the frame record (`mbfp waits`, `mbfp presents`).
+`Display` | Vulkan with present timing: the marks `queue operations end`, `request dequeued`, `first pixel out` and `first pixel visible` of the present of a frame, but for the stage that is its display time, which is the `mbfp display` moment of the frame record.
 `mbfp frames` | The frame record of mb-framepacing: one span `mbfp frame <runId> <frameIndex>` in the category `mbfp` for every frame whose frame pacing marker was drawn. It begins at the CPU start time of the marker and lasts its CPU busy time. The tools of mb-framepacing find the frame of a marker by it, see [FramePacing.md](FramePacing.md#the-frame-record-the-frame-of-a-marker-in-the-trace-of-the-app).
+`mbfp waits`, `mbfp presents`, `mbfp gpu`, `mbfp display`, `mbfp run` | The second part of the frame record, for every frame: its waits, its present, the GPU's work on it, when the platform says it was shown, a frame that was never presented, and the moments of the run (its environment, a new swapchain, a change of the swap interval). See [FramePacing.md](FramePacing.md#the-second-part-what-happened-around-each-frame).
 `Marker` | The mark `marker drawn` of the frame pacing marker.
 `Pacer plan` | The marks `intended display` (an app with a pacer) and `next frame start` (the FramePacing samples).
-`Sample frame`, `GPU` | The FramePacing samples: `wait for frame start`, `work` and `hold before present`, and the `GPU work` of a frame in lanes.
-`CPU work`, `GPU time`, `Animation error`, `Swap interval` | The FramePacing samples: graphs with a point where each frame began.
+`Sample frame` | The FramePacing samples: `work` and `hold before present`.
+`CPU work`, `GPU time`, `Animation error` | The FramePacing samples: graphs with a point where each frame began.
 `Events` | Something that happened at a moment: a swapchain was created, a setting changed. The details are arguments.
 `Facts` | What holds for the whole run: one mark for each fact, named by its key, with the argument `value`.
 `Schema` | What the frames hold, so a reader does not need the source that wrote it: a mark `value` for every value (`name`, `unit`, `description`), and `track`, `span`, `mark`, `counter` and `frameBounds` for what is drawn from them.
@@ -50,8 +50,8 @@ There are three kinds of things in a trace:
 
 Some values are drawn as well: two times of a frame as a span, a time as a mark, a count as a graph. That is only for the eye. The
 number to calculate with is the argument of the `Frame` span: a graph in a trace holds numbers with decimals, and a span is only
-drawn when the frame has both of its times. A span that is there to be read is one that was added with its times (`AddSpan`): it
-is in the trace as it was given, to the nanosecond.
+drawn when the frame has both of its times. A span or a moment that is there to be read is one that was added with its times
+(`AddSpan`, `AddMoment`): it is in the trace as it was given, to the nanosecond.
 
 A frame is written 64 frames after it began, as some of its values arrive late (the display time of a present is reported a few
 frames later). So a trace of a app that is running lacks its last 64 frames until the app exits, and a app that is killed loses them
@@ -170,9 +170,11 @@ if (m_trace)
   (the work of the GPU, the way of a present to the display), is two time values that are declared as a span.
 - **A span somebody else defines.** `AddSpan(track, category, name, begin, duration, arguments)` adds a span the caller gives the
   whole form of: the trace adds nothing to it and changes nothing of it. It is for a record a reader outside the framework
-  requires (the frame record of mb-framepacing, which the frame pacing marker service adds for every marker it drew). The texts
-  are copied, nothing is allocated: a category of at most 15 characters, a name of at most 63, at most 8 arguments with names of at
-  most 31. Such a span is on a track of its own kind, not on one with spans that are declared.
+  requires (the frame record of mb-framepacing, which the frame pacing marker service adds). `AddMoment(track, category, name, time,
+  arguments)` does the same for something that happened at a time and has no length, a instant event of Perfetto. A argument is a
+  whole number or a text (`TraceArgument`). The texts are copied, nothing is allocated: a category of at most 15 characters, a name
+  of at most 63, at most 16 arguments with names of at most 31, and the texts of the arguments together at most 1023. Such a span
+  or moment is on a track of its own kind, not on one with spans that are declared.
 - **Tracks.** The spans of a `Sequential` track follow each other or are inside each other. The spans of a `Lanes` track can overlap
   from frame to frame and are drawn below each other. A span that cuts through another one on a `Sequential` track is drawn on a
   lane below it and gets the argument `overflow`.
@@ -229,11 +231,23 @@ with a few of their values:
 ```sql
 select extract_arg(s.arg_set_id, 'debug.frameIndex') as frameIndex,
        extract_arg(s.arg_set_id, 'debug.runId') as runId,
-       extract_arg(s.arg_set_id, 'debug.presentCallTicks') as presentCallTicks,
-       extract_arg(s.arg_set_id, 'debug.firstPixelOutTicks') as firstPixelOutTicks
+       extract_arg(s.arg_set_id, 'debug.frameStartTicks') as frameStartTicks,
+       extract_arg(s.arg_set_id, 'debug.endFrameTicks') as endFrameTicks
 from slice s join track t on s.track_id = t.id
 where s.name = 'Frame' and t.name = 'Frames'
 order by frameIndex
+```
+
+The presents of the second part of the frame record, with the swap interval and what the present returned (the name ends with the
+run id and the frame index of the frame):
+
+```sql
+select s.name, s.ts, s.dur,
+       extract_arg(s.arg_set_id, 'debug.swapInterval') as swapInterval,
+       extract_arg(s.arg_set_id, 'debug.result') as result
+from slice s
+where s.name glob 'mbfp present *'
+order by s.ts
 ```
 
 Every value of every frame (`key` is `debug.<name>`), and the facts:

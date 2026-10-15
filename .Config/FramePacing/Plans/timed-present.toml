@@ -18,7 +18,9 @@
 description = "One fixed refresh rate: a frame held by a present that takes a time and by a wait before the present, two fixed frame rates and CPU work of 130 %, display reports on, each idle and under CPU load"
 app = "Vulkan.FramePacing"
 frames = 400
-args = ["--Window", "{window}", "--GpuLoad", "0", "--Pacer", "--Pacer.DisplayReports", "true"]
+# Timed present, the GPU wait, display reports and the wait for a present (vblank-present-wait) became the defaults after this plan
+# was written: they are pinned here to what it measured, and a run that sets one itself overrides the pin.
+args = ["--Pacer.TimedPresent", "false", "--Pacer.GpuWait", "false", "--Pacer.DisplayReports", "false", "--Pacer.Kind", "vblank-period", "--Window", "{window}", "--GpuLoad", "0", "--Pacer", "--Pacer.DisplayReports", "true"]
 
 [variables]
 # Half the refresh rate of the display in frames per second (two refreshes per frame)
@@ -41,7 +43,7 @@ duty = 1.0
 [[run]]
 name = "half_timed"
 what = "{half_fps} fps (two refreshes per frame), light work, the present is given a time"
-args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
+args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent", "true"]
 loaded = true
 
 [[run]]
@@ -53,7 +55,7 @@ loaded = true
 [[run]]
 name = "slow_timed"
 what = "{slow_fps} fps, light work, the present is given a time"
-args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{slow_fps}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
+args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{slow_fps}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent", "true"]
 loaded = true
 
 [[run]]
@@ -67,7 +69,7 @@ loaded = true
 [[run]]
 name = "w130_timed"
 what = "CPU work of 130 % of a refresh, adaptive pacer, the present is given a time"
-args = ["--CpuLoad", "{work130_ms}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
+args = ["--CpuLoad", "{work130_ms}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent", "true"]
 frames = 600
 loaded = true
 

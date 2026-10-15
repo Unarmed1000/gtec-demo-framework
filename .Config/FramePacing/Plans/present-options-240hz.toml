@@ -10,7 +10,9 @@ app = "Vulkan.FramePacing"
 frames = 2400
 expected_refresh_hz = 240.0
 # The scene is named: the GPU load settings below were measured with it, and the default scene of the sample is another one now
-args = ["--Background", "flight", "--Window", "[0,0,1600,900]", "--CpuLoad", "0"]
+# Timed present, the GPU wait, display reports and the wait for a present (vblank-present-wait) became the defaults after this plan
+# was written: they are pinned here to what it measured, and a run that sets one itself overrides the pin.
+args = ["--Pacer.TimedPresent", "false", "--Pacer.GpuWait", "false", "--Pacer.DisplayReports", "false", "--Pacer.Kind", "vblank-period", "--Background", "flight", "--Window", "[0,0,1600,900]", "--CpuLoad", "0"]
 
 [variables]
 # The --GpuLoad that makes the GPU work 20 and 90 % of a refresh on a frame (the defaults were measured on a NVIDIA desktop GPU)

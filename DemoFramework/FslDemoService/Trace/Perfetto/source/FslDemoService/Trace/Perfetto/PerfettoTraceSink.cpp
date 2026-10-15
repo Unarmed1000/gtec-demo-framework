@@ -399,22 +399,38 @@ namespace Fsl
         {
           return;
         }
+        // The record is what its caller gave and nothing else: the category, the name, the times and the arguments
+        const perfetto::DynamicCategory category(span.Category.data());
+        const auto addArguments = [&span](perfetto::EventContext context)
+        {
+          for (uint32_t i = 0; i < span.ArgumentCount; ++i)
+          {
+            if (span.ArgumentIsText[i])
+            {
+              context.AddDebugAnnotation(perfetto::DynamicString(span.ArgumentNames[i].data()),
+                                         span.ArgumentTexts.data() + span.ArgumentTextOffsets[i]);
+            }
+            else
+            {
+              context.AddDebugAnnotation(perfetto::DynamicString(span.ArgumentNames[i].data()), span.ArgumentValues[i]);
+            }
+          }
+        };
+        if (span.IsMoment)
+        {
+          // A moment takes no room, so it is on the first lane of its track
+          TRACE_EVENT_INSTANT(category, perfetto::DynamicString(span.Name.data()), ToTrack(GetFirstLaneTrackId(m_tracks[span.TrackIndex])),
+                              ToTimestampFromNanoseconds(span.BeginNanoseconds), addArguments);
+          return;
+        }
         // The lane is found in ticks, as it is for the spans of the frames: a tick the span reaches into is one it has
         const int64_t endNanoseconds = span.BeginNanoseconds + span.DurationNanoseconds;
         bool overflow = false;
         const perfetto::Track track =
           ToTrack(PlaceSpan(m_tracks[span.TrackIndex], span.BeginNanoseconds / LocalConfig::NanosecondsPerTick,
                             (endNanoseconds + LocalConfig::NanosecondsPerTick - 1) / LocalConfig::NanosecondsPerTick, overflow));
-        // The span is what its caller gave and nothing else: the category, the name, the times and the arguments
-        const perfetto::DynamicCategory category(span.Category.data());
         TRACE_EVENT_BEGIN(category, perfetto::DynamicString(span.Name.data()), track, ToTimestampFromNanoseconds(span.BeginNanoseconds),
-                          [&span](perfetto::EventContext context)
-                          {
-                            for (uint32_t i = 0; i < span.ArgumentCount; ++i)
-                            {
-                              context.AddDebugAnnotation(perfetto::DynamicString(span.ArgumentNames[i].data()), span.ArgumentValues[i]);
-                            }
-                          });
+                          addArguments);
         TRACE_EVENT_END(category, track, ToTimestampFromNanoseconds(endNanoseconds));
       }
 

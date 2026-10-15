@@ -63,6 +63,44 @@ namespace Fsl
       rDst[text.size()] = 0;
       return true;
     }
+
+    //! The arguments of a span or a moment into its record. False if they do not fit.
+    bool TryCopyArguments(TraceSpanRecord& rRecord, const std::span<const TraceArgument> arguments) noexcept
+    {
+      if (arguments.size() > TraceSpanRecord::MaxArguments)
+      {
+        return false;
+      }
+      std::size_t textsSize = 0;
+      for (std::size_t i = 0; i < arguments.size(); ++i)
+      {
+        const TraceArgument& argument = arguments[i];
+        if (!TryCopyText(rRecord.ArgumentNames[i], argument.Name))
+        {
+          return false;
+        }
+        rRecord.ArgumentIsText[i] = argument.IsText;
+        if (argument.IsText)
+        {
+          // The text and the zero that ends it
+          if (argument.Text.size() >= (rRecord.ArgumentTexts.size() - textsSize))
+          {
+            return false;
+          }
+          rRecord.ArgumentTextOffsets[i] = static_cast<uint16_t>(textsSize);
+          std::copy(argument.Text.begin(), argument.Text.end(), rRecord.ArgumentTexts.begin() + static_cast<std::ptrdiff_t>(textsSize));
+          textsSize += argument.Text.size();
+          rRecord.ArgumentTexts[textsSize] = 0;
+          ++textsSize;
+        }
+        else
+        {
+          rRecord.ArgumentValues[i] = argument.Value;
+        }
+      }
+      rRecord.ArgumentCount = static_cast<uint32_t>(arguments.size());
+      return true;
+    }
   }
 
 
@@ -536,38 +574,53 @@ namespace Fsl
   bool TraceLog::AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
                          const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept
   {
-    if (m_isClosed || !IsTrack(track) || begin.TotalNanoseconds() < 0 || duration.TotalNanoseconds() < 0 ||
-        arguments.size() > TraceSpanRecord::MaxArguments)
+    if (begin.TotalNanoseconds() < 0 || duration.TotalNanoseconds() < 0)
     {
       return false;
     }
     TraceSpanRecord record;
-    record.TrackIndex = track.Value - 1u;
     record.BeginNanoseconds = begin.TotalNanoseconds();
     record.DurationNanoseconds = duration.TotalNanoseconds();
-    if (!TryCopyText(record.Category, category) || !TryCopyText(record.Name, name))
+    return TryAddRecord(record, track, category, name, arguments);
+  }
+
+
+  bool TraceLog::AddMoment(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount time,
+                           const std::span<const TraceArgument> arguments) noexcept
+  {
+    if (time.TotalNanoseconds() < 0)
     {
       return false;
     }
-    for (std::size_t i = 0; i < arguments.size(); ++i)
+    TraceSpanRecord record;
+    record.IsMoment = true;
+    record.BeginNanoseconds = time.TotalNanoseconds();
+    return TryAddRecord(record, track, category, name, arguments);
+  }
+
+
+  bool TraceLog::TryAddRecord(TraceSpanRecord& rRecord, const TraceTrack track, const std::string_view category, const std::string_view name,
+                              const std::span<const TraceArgument> arguments) noexcept
+  {
+    if (m_isClosed || !IsTrack(track))
     {
-      if (!TryCopyText(record.ArgumentNames[i], arguments[i].Name))
-      {
-        return false;
-      }
-      record.ArgumentValues[i] = arguments[i].Value;
+      return false;
     }
-    record.ArgumentCount = static_cast<uint32_t>(arguments.size());
+    rRecord.TrackIndex = track.Value - 1u;
+    if (!TryCopyText(rRecord.Category, category) || !TryCopyText(rRecord.Name, name) || !TryCopyArguments(rRecord, arguments))
+    {
+      return false;
+    }
     try
     {
       if (m_schemaWritten)
       {
-        m_writer.AddSpan(record);
+        m_writer.AddSpan(rRecord);
       }
       else
       {
         // The sink knows the tracks from the schema, which is written with the first frame that is: a while after it began
-        m_spansBeforeSchema.push_back(record);
+        m_spansBeforeSchema.push_back(rRecord);
       }
     }
     catch (const std::exception&)

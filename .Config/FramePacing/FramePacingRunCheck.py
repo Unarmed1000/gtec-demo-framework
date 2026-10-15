@@ -29,6 +29,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from FramePacingLogFile import FramePacingLog, g_ticksPerMillisecond, g_ticksPerSecond
+from FramePacingTraceFile import (g_displayColumnName, g_gpuBeginColumnName, g_gpuEndColumnName, g_swapIntervalChangeEventName,
+                                  g_swapIntervalColumnName)
 
 # The first frames of a run are left out of the timing numbers: the swapchain, the pacer and the GPU timer are still settling
 _g_skippedStartFrames = 60
@@ -294,9 +296,13 @@ def CheckRun(log: FramePacingLog, expectation: RunExpectation) -> RunCheck:
         pacerOn = log.GetValues("pacerOn")
         check.PacerOnRows = sum(1 for value in pacerOn if value != 0)
         check.PacerOffRows = len(pacerOn) - check.PacerOnRows
-        check.SwapIntervals = dict(sorted(Counter(log.GetValues("swapInterval")).items()))
-        changes = Counter(log.GetValues("pacerChange"))
-        check.PacerChanges = {"slower": changes.get(1, 0), "faster": changes.get(2, 0)}
+        # The swap interval of the presents of the paced frames (a frame the pacer did not pace is presented with 1)
+        check.SwapIntervals = dict(sorted(Counter(interval for on, interval in zip(pacerOn, log.GetColumn(g_swapIntervalColumnName))
+                                                  if on != 0 and interval is not None).items()))
+        # What the pacer's rule did to the swap interval, from the moments of the run
+        changes = [event.GetValues() for event in log.GetEvents(g_swapIntervalChangeEventName)]
+        byPacer = [(int(values["from"]), int(values["to"])) for values in changes if values.get("by") == "pacer" and "from" in values and "to" in values]
+        check.PacerChanges = {"slower": sum(1 for old, new in byPacer if new > old), "faster": sum(1 for old, new in byPacer if new < old)}
 
     if log.HasColumn("pacerWindowStartsAheadTicks") and log.HasColumn("pacerWindowSpanTicks") and check.RefreshIntervalTicks:
         # Only the frames where the window was full: a window that is still filling is short, and the first frames of a run and a
@@ -329,32 +335,33 @@ def CheckRun(log: FramePacingLog, expectation: RunExpectation) -> RunCheck:
         frameStart = [None if value is None else value // _g_nanosecondsPerTick for value in log.GetColumn(check.FrameStartColumn)]
     check.FrameStartIntervalMs = _ToDistributionMs(_Deltas(frameStart, firstRow))
 
-    if log.HasColumn("firstPixelOutTicks"):
-        firstPixelOut = log.GetColumn("firstPixelOutTicks")
-        check.TimedPresents = sum(1 for value in firstPixelOut if value is not None)
-        check.UntimedReports = sum(1 for read, shown in zip(log.GetColumn("resultReadAtFrame"), firstPixelOut) if read is not None and shown is None)
+    if log.HasColumn(g_displayColumnName):
+        # When the platform says the frame was shown (the frame record has the stage it is)
+        displayTime = log.GetColumn(g_displayColumnName)
+        check.TimedPresents = sum(1 for value in displayTime if value is not None)
+        check.UntimedReports = sum(1 for read, shown in zip(log.GetColumn("resultReadAtFrame"), displayTime) if read is not None and shown is None)
         if log.HasColumn("presentTimingRequested"):
             check.UnrequestedPresents = sum(1 for value in log.GetValues("presentTimingRequested") if value == 0)
         # From one image that reached the display to the next one that did
-        displaySteps = _DeltasOfValues(firstPixelOut, firstRow)
+        displaySteps = _DeltasOfValues(displayTime, firstRow)
         check.DisplayIntervalMs = _ToDistributionMs(displaySteps)
         if check.RefreshIntervalTicks:
             refreshes = Counter(round(step / check.RefreshIntervalTicks) for step in displaySteps)
             check.ShownForRefreshes = dict(sorted(refreshes.items()))
-        latency = [shown - start for shown, start in zip(firstPixelOut[firstRow:], frameStart[firstRow:]) if shown is not None and start is not None]
+        latency = [shown - start for shown, start in zip(displayTime[firstRow:], frameStart[firstRow:]) if shown is not None and start is not None]
         check.LatencyMs = _ToDistributionMs(latency)
         intended = log.GetColumn("intendedDisplayNs")[firstRow:]
         # An intended display time of zero is one the pacer does not know. It is in nanoseconds, the time the frame was shown in ticks
-        check.DisplayErrorMs = _ToDistributionMs([shown - aimed / _g_nanosecondsPerTick for shown, aimed in zip(firstPixelOut[firstRow:], intended)
+        check.DisplayErrorMs = _ToDistributionMs([shown - aimed / _g_nanosecondsPerTick for shown, aimed in zip(displayTime[firstRow:], intended)
                                                   if shown is not None and aimed is not None and aimed != 0])
         frameIndex = log.GetColumn("frameIndex")
         late = Counter(read - index for read, index in zip(log.GetColumn("resultReadAtFrame"), frameIndex) if read is not None and index is not None)
         check.ResultFramesLate = dict(sorted(late.items()))
 
     check.WorkCpuMs = _ToDistributionMs([value for value in log.GetColumn("workCpuTicks")[firstRow:] if value is not None])
-    if log.HasColumn("gpuWorkBeginTicks") and log.HasColumn("gpuWorkEndTicks"):
-        begin = log.GetColumn("gpuWorkBeginTicks")[firstRow:]
-        end = log.GetColumn("gpuWorkEndTicks")[firstRow:]
+    if log.HasColumn(g_gpuBeginColumnName) and log.HasColumn(g_gpuEndColumnName):
+        begin = log.GetColumn(g_gpuBeginColumnName)[firstRow:]
+        end = log.GetColumn(g_gpuEndColumnName)[firstRow:]
         check.WorkGpuMs = _ToDistributionMs([endTime - beginTime for beginTime, endTime in zip(begin, end)
                                              if beginTime is not None and endTime is not None])
     else:

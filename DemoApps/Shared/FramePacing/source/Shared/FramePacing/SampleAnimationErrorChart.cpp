@@ -52,6 +52,7 @@ namespace Fsl
 
       //! The colors of the report of the mb-framepacing tools
       constexpr UI::UIColor BarColor(PackedColor32(0xFFE5534B));            // red
+      constexpr UI::UIColor JitterBarColor(PackedColor32(0xFFE3B341));      // yellow, a delta time jitter frame
       constexpr UI::UIColor ClipMarkColor(PackedColor32(0xFFFFFFFF));       // white
       constexpr UI::UIColor BandColor(PackedColor32(0x0FFFFFFF));           // white, 6 %
       constexpr UI::UIColor ZeroLineColor(PackedColor32(0x73FFFFFF));       // white, 45 %
@@ -75,6 +76,8 @@ namespace Fsl
   {
     //! The frames, the oldest first when read from First
     std::array<int16_t, SampleAnimationErrorChart::Capacity> Values{};
+    //! True for a delta time jitter frame, at the same index as its value
+    std::array<bool, SampleAnimationErrorChart::Capacity> IsDeltaTimeJitter{};
     uint32_t First{0};
     uint32_t Count{0};
     int32_t BandRefreshThousandths{0};
@@ -86,6 +89,7 @@ namespace Fsl
     int32_t LinePx{1};
     //! Premultiplied
     UI::UIRenderColor BarColor;
+    UI::UIRenderColor JitterBarColor;
     UI::UIRenderColor ClipMarkColor;
     UI::UIRenderColor BandColor;
     UI::UIRenderColor ZeroLineColor;
@@ -141,16 +145,16 @@ namespace Fsl
   }
 
 
-  void SampleAnimationErrorChart::AddError(const int32_t refreshThousandths)
+  void SampleAnimationErrorChart::AddError(const int32_t refreshThousandths, const bool isDeltaTimeJitter)
   {
     // What is beyond the scale is kept as that (it gets a mark), and no value is the one of a gap
-    AddEntry(static_cast<int16_t>(std::clamp(refreshThousandths, -(ScaleRefreshThousandths + 1), ScaleRefreshThousandths + 1)));
+    AddEntry(static_cast<int16_t>(std::clamp(refreshThousandths, -(ScaleRefreshThousandths + 1), ScaleRefreshThousandths + 1)), isDeltaTimeJitter);
   }
 
 
   void SampleAnimationErrorChart::AddGap()
   {
-    AddEntry(LocalConfig::Gap);
+    AddEntry(LocalConfig::Gap, false);
   }
 
 
@@ -190,6 +194,7 @@ namespace Fsl
       const UI::UIColorConverter& colorConverter = GetContext()->ColorConverter;
       DrawData& rDrawData = *m_drawData;
       rDrawData.BarColor = UI::UIRenderColor::Premultiply(colorConverter.Convert(LocalConfig::BarColor) * finalBaseColor);
+      rDrawData.JitterBarColor = UI::UIRenderColor::Premultiply(colorConverter.Convert(LocalConfig::JitterBarColor) * finalBaseColor);
       rDrawData.ClipMarkColor = UI::UIRenderColor::Premultiply(colorConverter.Convert(LocalConfig::ClipMarkColor) * finalBaseColor);
       rDrawData.BandColor = UI::UIRenderColor::Premultiply(colorConverter.Convert(LocalConfig::BandColor) * finalBaseColor);
       rDrawData.ZeroLineColor = UI::UIRenderColor::Premultiply(colorConverter.Convert(LocalConfig::ZeroLineColor) * finalBaseColor);
@@ -200,7 +205,7 @@ namespace Fsl
   }
 
 
-  void SampleAnimationErrorChart::AddEntry(const int16_t value)
+  void SampleAnimationErrorChart::AddEntry(const int16_t value, const bool isDeltaTimeJitter)
   {
     DrawData& rDrawData = *m_drawData;
     if (rDrawData.Count == Capacity)
@@ -208,7 +213,9 @@ namespace Fsl
       rDrawData.First = (rDrawData.First + 1u) % Capacity;
       --rDrawData.Count;
     }
-    rDrawData.Values[(rDrawData.First + rDrawData.Count) % Capacity] = value;
+    const uint32_t index = (rDrawData.First + rDrawData.Count) % Capacity;
+    rDrawData.Values[index] = value;
+    rDrawData.IsDeltaTimeJitter[index] = isDeltaTimeJitter;
     ++rDrawData.Count;
     PropertyUpdated(UI::PropertyType::Content);
   }
@@ -232,8 +239,8 @@ namespace Fsl
       const float y0 = dstPositionPxf.Y.Value;
       const auto addRect = [&rBuilder, &renderInfo, x0, y0](const int32_t left, const int32_t top, const int32_t right, const int32_t bottom)
       {
-        rBuilder.AddRect(x0 + static_cast<float>(left), y0 + static_cast<float>(top), x0 + static_cast<float>(right),
-                         y0 + static_cast<float>(bottom), renderInfo.TextureArea);
+        rBuilder.AddRect(x0 + static_cast<float>(left), y0 + static_cast<float>(top), x0 + static_cast<float>(right), y0 + static_cast<float>(bottom),
+                         renderInfo.TextureArea);
       };
 
       // The line of no error is in the middle, and the scale reaches the edges
@@ -275,22 +282,22 @@ namespace Fsl
       for (uint32_t i = 0; i < entries; ++i)
       {
         x -= drawData.EntryWidthPx;
-        const int16_t value = drawData.Values[(drawData.First + drawData.Count - 1u - i) % SampleAnimationErrorChart::Capacity];
-        if (value == LocalConfig::Gap)
+        const uint32_t index = (drawData.First + drawData.Count - 1u - i) % SampleAnimationErrorChart::Capacity;
+        const int16_t value = drawData.Values[index];
+        if (value == LocalConfig::Gap || value == 0)
         {
           continue;
         }
-        const bool isClipped = value > SampleAnimationErrorChart::ScaleRefreshThousandths || value < -SampleAnimationErrorChart::ScaleRefreshThousandths;
-        const int32_t barPx = toPx(std::clamp(static_cast<int32_t>(value), -SampleAnimationErrorChart::ScaleRefreshThousandths,
-                                              SampleAnimationErrorChart::ScaleRefreshThousandths));
-        if (barPx == 0)
-        {
-          continue;
-        }
+        const bool isClipped =
+          value > SampleAnimationErrorChart::ScaleRefreshThousandths || value < -SampleAnimationErrorChart::ScaleRefreshThousandths;
+        const int32_t scaledPx = toPx(std::clamp(static_cast<int32_t>(value), -SampleAnimationErrorChart::ScaleRefreshThousandths,
+                                                 SampleAnimationErrorChart::ScaleRefreshThousandths));
+        // A error is at least a pixel long, as the report draws it
+        const int32_t barPx = scaledPx != 0 ? scaledPx : (value > 0 ? 1 : -1);
         // Up is too soon
         const int32_t top = barPx > 0 ? std::max(zeroPx - barPx, 0) : zeroPx;
         const int32_t bottom = barPx > 0 ? zeroPx : std::min(zeroPx - barPx, heightPx);
-        rBuilder.SetColor(drawData.BarColor);
+        rBuilder.SetColor(drawData.IsDeltaTimeJitter[index] ? drawData.JitterBarColor : drawData.BarColor);
         addRect(x, top, x + drawData.EntryWidthPx, bottom);
         if (isClipped)
         {

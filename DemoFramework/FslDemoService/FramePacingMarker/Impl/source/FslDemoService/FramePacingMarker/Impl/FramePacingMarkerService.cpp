@@ -37,6 +37,8 @@
 #include <FslDemoService/Trace/Control/ITraceServiceControl.hpp>
 #include <FslDemoService/Trace/ITraceService.hpp>
 #include <mb/framepacing/marker/Options.hpp>
+#include <mb/framepacing/trace/FrameDetail.hpp>
+#include <mb/framepacing/trace/FrameDetailName.hpp>
 #include <mb/framepacing/trace/FrameRecordText.hpp>
 #include <fmt/format.h>
 #include <algorithm>
@@ -56,6 +58,8 @@ namespace Fsl
     {
       //! How often the load of the machine is written to the log
       constexpr TimeSpan LogSystemLoadInterval = TimeSpan::FromSeconds(1);
+      //! The most annotations a moment of the run has: its run id and the 13 of the environment
+      constexpr std::size_t MaxRunMomentArguments = 14;
     }
 
     int32_t ClampModuleSize(const int32_t moduleSizePx) noexcept
@@ -67,6 +71,153 @@ namespace Fsl
     constexpr TimeSpan ToTimeSpan(const uint64_t cpuTimeTicks) noexcept
     {
       return TimeSpan(UncheckedNumericCast<int64_t>(cpuTimeTicks));
+    }
+
+    namespace RecordText = MB::FramePacing::Trace::FrameRecordText;
+
+    //! A time of the framework on the clock of the record, in whole nanoseconds. False for a time no nanosecond count holds, which is
+    //! not written
+    bool TryToRecordTime(const TickCount time, NanosecondTickCount& rResult) noexcept
+    {
+      return NanosecondTickCountUtil::TryFromTickCount(time, rResult);
+    }
+
+    // The values of the second part of the frame record are its texts: the trace module of mb-framepacing has them all
+
+    std::string_view ToRecordText(const FramePacingWaitKind kind) noexcept
+    {
+      switch (kind)
+      {
+      case FramePacingWaitKind::FrameSlot:
+        return RecordText::WaitKindFrameSlot;
+      case FramePacingWaitKind::Acquire:
+        return RecordText::WaitKindAcquire;
+      case FramePacingWaitKind::Present:
+        return RecordText::WaitKindPresent;
+      case FramePacingWaitKind::Gpu:
+        return RecordText::WaitKindGpu;
+      case FramePacingWaitKind::StartTime:
+        return RecordText::WaitKindStartTime;
+      case FramePacingWaitKind::VBlank:
+        return RecordText::WaitKindVBlank;
+      case FramePacingWaitKind::Other:
+        break;
+      }
+      return RecordText::WaitKindOther;
+    }
+
+    std::string_view ToRecordText(const FramePacingPresentResult result) noexcept
+    {
+      switch (result)
+      {
+      case FramePacingPresentResult::Accepted:
+        return RecordText::PresentResultAccepted;
+      case FramePacingPresentResult::Suboptimal:
+        return RecordText::PresentResultSuboptimal;
+      case FramePacingPresentResult::OutOfDate:
+        return RecordText::PresentResultOutOfDate;
+      case FramePacingPresentResult::Lost:
+        return RecordText::PresentResultLost;
+      case FramePacingPresentResult::Refused:
+        return RecordText::PresentResultRefused;
+      case FramePacingPresentResult::Other:
+        break;
+      }
+      return RecordText::PresentResultOther;
+    }
+
+    std::string_view ToRecordText(const FramePacingPresentMode presentMode) noexcept
+    {
+      switch (presentMode)
+      {
+      case FramePacingPresentMode::Queue:
+        return RecordText::PresentModeQueue;
+      case FramePacingPresentMode::QueueLateAtOnce:
+        return RecordText::PresentModeQueueLateAtOnce;
+      case FramePacingPresentMode::NewestAtRefresh:
+        return RecordText::PresentModeNewestAtRefresh;
+      case FramePacingPresentMode::Immediate:
+        return RecordText::PresentModeImmediate;
+      case FramePacingPresentMode::Unknown:
+        break;
+      }
+      return RecordText::PresentModeUnknown;
+    }
+
+    std::string_view ToRecordText(const FramePacingWindowSystem windowSystem) noexcept
+    {
+      switch (windowSystem)
+      {
+      case FramePacingWindowSystem::Win32:
+        return RecordText::WindowSystemWin32;
+      case FramePacingWindowSystem::Wayland:
+        return RecordText::WindowSystemWayland;
+      case FramePacingWindowSystem::X11:
+        return RecordText::WindowSystemX11;
+      case FramePacingWindowSystem::Android:
+        return RecordText::WindowSystemAndroid;
+      case FramePacingWindowSystem::MacOS:
+        return RecordText::WindowSystemMacOs;
+      case FramePacingWindowSystem::IOS:
+        return RecordText::WindowSystemIos;
+      case FramePacingWindowSystem::Kms:
+        return RecordText::WindowSystemKms;
+      case FramePacingWindowSystem::Other:
+        break;
+      }
+      return RecordText::WindowSystemOther;
+    }
+
+    std::string_view ToRecordText(const FramePacingVsyncSource vsyncSource) noexcept
+    {
+      switch (vsyncSource)
+      {
+      case FramePacingVsyncSource::PresentWait:
+        return RecordText::VsyncSourcePresentWait;
+      case FramePacingVsyncSource::VBlankTimes:
+        return RecordText::VsyncSourceVBlankTimes;
+      case FramePacingVsyncSource::DisplayTiming:
+        return RecordText::VsyncSourceDisplayTiming;
+      case FramePacingVsyncSource::Timer:
+        return RecordText::VsyncSourceTimer;
+      case FramePacingVsyncSource::NotPaced:
+        break;
+      }
+      return RecordText::VsyncSourceNone;
+    }
+
+    std::string_view ToRecordText(const FramePacingPacerAim aim) noexcept
+    {
+      switch (aim)
+      {
+      case FramePacingPacerAim::Smoothness:
+        return RecordText::AimSmoothness;
+      case FramePacingPacerAim::LowLatency:
+        return RecordText::AimLowLatency;
+      case FramePacingPacerAim::NoPacer:
+        break;
+      }
+      return RecordText::NoPacer;
+    }
+
+    std::string_view ToRecordText(const FramePacingSwapIntervalChangedBy changedBy) noexcept
+    {
+      return changedBy == FramePacingSwapIntervalChangedBy::Pacer ? RecordText::ChangedByPacer : RecordText::ChangedByApplication;
+    }
+
+    std::string_view ToGraphicsApiRecordText(const DemoHostFeatureName::Enum api) noexcept
+    {
+      switch (api)
+      {
+      case DemoHostFeatureName::Vulkan:
+        return RecordText::GraphicsApiVulkan;
+      case DemoHostFeatureName::OpenGLES:
+        return RecordText::GraphicsApiOpenGlEs;
+      case DemoHostFeatureName::OpenGL:
+        return RecordText::GraphicsApiOpenGl;
+      default:
+        return RecordText::GraphicsApiOther;
+      }
     }
 
     //! The sequence id as 32 hex digits (the way the mb-framepacing tools show a sequence id that is not printable text)
@@ -111,6 +262,12 @@ namespace Fsl
       // trace from a frame of a capture. The SDK of the marker says everything of it (its trace module): the name of the track here,
       // the category when a record is added, and the record itself from the payload of the marker (the overlay).
       m_traceRecordTrack = m_trace->RegisterTrack(MB::FramePacing::Trace::FrameRecordText::TrackName, TraceTrackKind::Sequential);
+      // The second part of the record, what happened around each frame (IFramePacingDetailService), on tracks of its own
+      m_detailTracks.Wait = m_trace->RegisterTrack(RecordText::WaitTrackName, TraceTrackKind::Sequential);
+      m_detailTracks.Present = m_trace->RegisterTrack(RecordText::PresentTrackName, TraceTrackKind::Sequential);
+      m_detailTracks.Gpu = m_trace->RegisterTrack(RecordText::GpuTrackName, TraceTrackKind::Lanes);
+      m_detailTracks.Display = m_trace->RegisterTrack(RecordText::DisplayTrackName, TraceTrackKind::Sequential);
+      m_detailTracks.Run = m_trace->RegisterTrack(RecordText::RunTrackName, TraceTrackKind::Sequential);
       // On the timeline of the trace: when the marker of a frame was drawn, and when its pacer means the frame to be shown
       const TraceTrack markerTrack = m_trace->RegisterTrack("Marker", TraceTrackKind::Sequential);
       m_trace->DeclareMark("marker drawn", markerTrack, m_logColumns.MarkerDraw, TraceLink::NoLink);
@@ -317,6 +474,11 @@ namespace Fsl
         m_logFactsWritten = true;
         WriteLogFacts();
       }
+      if (m_environmentChanged || m_environmentRunId != m_runId)
+      {
+        // What the run runs on: when it starts, and when it changed
+        WriteEnvironment();
+      }
       m_trace->SetCode(m_logColumns.MarkerKind, static_cast<int64_t>(m_frameKind));
       m_trace->SetValue(m_logColumns.RunId, TraceRunId(m_runId));
       m_trace->SetCode(m_logColumns.RunState, static_cast<int64_t>(m_sequence.GetState()));
@@ -448,6 +610,252 @@ namespace Fsl
       m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerSync, markerInfo.SyncMarker);
       m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerModuleSize, PxValue(m_moduleSizePx));
     }
+  }
+
+
+  bool FramePacingMarkerService::IsTraceEnabled() const noexcept
+  {
+    return m_trace != nullptr;
+  }
+
+
+  FramePacingFrameId FramePacingMarkerService::GetFrameId() const noexcept
+  {
+    return {m_runId, m_frameIndex};
+  }
+
+
+  void FramePacingMarkerService::AddWait(const FramePacingFrameId frameId, const FramePacingWaitKind kind, const TickCount beginTime,
+                                         const TickCount endTime, const std::optional<TickCount> plannedTime) noexcept
+  {
+    if (!m_trace)
+    {
+      return;
+    }
+    std::array<TraceArgument, 2> arguments;
+    std::size_t count = 0;
+    arguments[count++] = TraceArgument(RecordText::Kind, ToRecordText(kind));
+    NanosecondTickCount planned;
+    if (plannedTime.has_value() && TryToRecordTime(*plannedTime, planned))
+    {
+      arguments[count++] = TraceArgument(RecordText::PlannedNs, planned.TotalNanoseconds());
+    }
+    const MB::FramePacing::Trace::FrameDetailName name(MB::FramePacing::Trace::FrameDetail::Wait, frameId.RunId, frameId.FrameIndex);
+    AddDetailSpan(m_detailTracks.Wait, name.View(), beginTime, endTime, std::span<const TraceArgument>(arguments.data(), count));
+  }
+
+
+  void FramePacingMarkerService::AddPresent(const FramePacingFrameId frameId, const FramePacingPresentRecord& record) noexcept
+  {
+    if (!m_trace)
+    {
+      return;
+    }
+    std::array<TraceArgument, 6> arguments;
+    std::size_t count = 0;
+    if (m_swapInterval.has_value())
+    {
+      arguments[count++] = TraceArgument(RecordText::SwapInterval, static_cast<int64_t>(*m_swapInterval));
+    }
+    arguments[count++] = TraceArgument(RecordText::Result, ToRecordText(record.Result));
+    if (record.ResultCode.has_value())
+    {
+      arguments[count++] = TraceArgument(RecordText::ResultCode, *record.ResultCode);
+    }
+    NanosecondTickCount notBefore;
+    if (record.NotBefore.has_value() && TryToRecordTime(*record.NotBefore, notBefore))
+    {
+      arguments[count++] = TraceArgument(RecordText::NotBeforeNs, notBefore.TotalNanoseconds());
+    }
+    if (record.MinimumDuration.has_value())
+    {
+      arguments[count++] = TraceArgument(RecordText::MinimumDurationNs, record.MinimumDuration->TotalNanoseconds());
+    }
+    if (record.FramesInFlight.has_value())
+    {
+      arguments[count++] = TraceArgument(RecordText::FramesInFlight, static_cast<int64_t>(*record.FramesInFlight));
+    }
+    const MB::FramePacing::Trace::FrameDetailName name(MB::FramePacing::Trace::FrameDetail::Present, frameId.RunId, frameId.FrameIndex);
+    AddDetailSpan(m_detailTracks.Present, name.View(), record.CallTime, record.ReturnTime, std::span<const TraceArgument>(arguments.data(), count));
+  }
+
+
+  void FramePacingMarkerService::AddGpuWork(const FramePacingFrameId frameId, const TickCount beginTime, const TickCount endTime) noexcept
+  {
+    if (!m_trace)
+    {
+      return;
+    }
+    const MB::FramePacing::Trace::FrameDetailName name(MB::FramePacing::Trace::FrameDetail::Gpu, frameId.RunId, frameId.FrameIndex);
+    AddDetailSpan(m_detailTracks.Gpu, name.View(), beginTime, endTime, {});
+  }
+
+
+  void FramePacingMarkerService::AddDisplayTime(const FramePacingFrameId frameId, const TickCount displayTime, const std::string_view source) noexcept
+  {
+    if (!m_trace)
+    {
+      return;
+    }
+    NanosecondTickCount time;
+    if (!TryToRecordTime(displayTime, time))
+    {
+      return;
+    }
+    const std::array<TraceArgument, 1> arguments = {TraceArgument(RecordText::Source, source)};
+    const MB::FramePacing::Trace::FrameDetailName name(MB::FramePacing::Trace::FrameDetail::Display, frameId.RunId, frameId.FrameIndex);
+    m_trace->AddMoment(m_detailTracks.Display, RecordText::Category, name.View(), time, arguments);
+  }
+
+
+  void FramePacingMarkerService::AddNotPresented(const FramePacingFrameId frameId, const TickCount time) noexcept
+  {
+    NanosecondTickCount recordTime;
+    if (!m_trace || !TryToRecordTime(time, recordTime))
+    {
+      return;
+    }
+    const MB::FramePacing::Trace::FrameDetailName name(MB::FramePacing::Trace::FrameDetail::NotPresented, frameId.RunId, frameId.FrameIndex);
+    m_trace->AddMoment(m_detailTracks.Run, RecordText::Category, name.View(), recordTime, {});
+  }
+
+
+  void FramePacingMarkerService::AddSwapchainRecreated(const std::string_view reason) noexcept
+  {
+    const std::array<TraceArgument, 1> arguments = {TraceArgument(RecordText::Reason, reason)};
+    AddRunMoment(RecordText::SwapChainRecreatedName, arguments);
+  }
+
+
+  void FramePacingMarkerService::SetSwapInterval(const uint32_t swapInterval, const FramePacingSwapIntervalChangedBy changedBy) noexcept
+  {
+    if (m_swapInterval.has_value() && *m_swapInterval != swapInterval)
+    {
+      const std::array<TraceArgument, 3> arguments = {TraceArgument(RecordText::From, static_cast<int64_t>(*m_swapInterval)),
+                                                      TraceArgument(RecordText::To, static_cast<int64_t>(swapInterval)),
+                                                      TraceArgument(RecordText::By, ToRecordText(changedBy))};
+      AddRunMoment(RecordText::SwapIntervalChangeName, arguments);
+    }
+    m_swapInterval = swapInterval;
+  }
+
+
+  void FramePacingMarkerService::SetSwapchainEnvironment(const FramePacingSwapchainEnvironment& environment)
+  {
+    if (!m_swapchainEnvironment.has_value() || *m_swapchainEnvironment != environment)
+    {
+      m_swapchainEnvironment = environment;
+      m_environmentChanged = true;
+    }
+  }
+
+
+  void FramePacingMarkerService::SetPacerEnvironment(const FramePacingPacerEnvironment& environment)
+  {
+    if (!m_pacerEnvironment.has_value() || *m_pacerEnvironment != environment)
+    {
+      m_pacerEnvironment = environment;
+      m_environmentChanged = true;
+    }
+  }
+
+
+  void FramePacingMarkerService::AddDetailSpan(const TraceTrack track, const std::string_view name, const TickCount beginTime,
+                                               const TickCount endTime, const std::span<const TraceArgument> arguments) noexcept
+  {
+    NanosecondTickCount begin;
+    NanosecondTickCount end;
+    if (!TryToRecordTime(beginTime, begin) || !TryToRecordTime(endTime, end))
+    {
+      return;
+    }
+    const int64_t durationNanoseconds = std::max(end.TotalNanoseconds() - begin.TotalNanoseconds(), int64_t{0});
+    m_trace->AddSpan(track, RecordText::Category, name, begin, NanosecondTimeSpan(durationNanoseconds), arguments);
+  }
+
+
+  void FramePacingMarkerService::AddRunMoment(const std::string_view name, const std::span<const TraceArgument> arguments) noexcept
+  {
+    NanosecondTickCount time;
+    if (!m_trace || !TryToRecordTime(m_timer.GetTimestamp(), time))
+    {
+      return;
+    }
+    // A moment of the run is named without ids: the run is an annotation of it
+    std::array<TraceArgument, LocalConfig::MaxRunMomentArguments> allArguments;
+    std::size_t count = 0;
+    allArguments[count++] = TraceArgument(RecordText::RunId, static_cast<int64_t>(m_runId));
+    for (const TraceArgument& argument : arguments)
+    {
+      if (count < allArguments.size())
+      {
+        allArguments[count++] = argument;
+      }
+    }
+    m_trace->AddMoment(m_detailTracks.Run, RecordText::Category, name, time, std::span<const TraceArgument>(allArguments.data(), count));
+  }
+
+
+  void FramePacingMarkerService::WriteEnvironment() noexcept
+  {
+    m_environmentChanged = false;
+    m_environmentRunId = m_runId;
+    // What is not known is left out
+    std::array<TraceArgument, LocalConfig::MaxRunMomentArguments - 1u> arguments;
+    std::size_t count = 0;
+    if (m_hostInfo)
+    {
+      arguments[count++] = TraceArgument(RecordText::GraphicsApi, ToGraphicsApiRecordText(m_hostInfo->GetActiveAPI().Name));
+    }
+    if (m_swapchainEnvironment.has_value())
+    {
+      const FramePacingSwapchainEnvironment& environment = *m_swapchainEnvironment;
+      if (environment.WindowSystem.has_value())
+      {
+        arguments[count++] = TraceArgument(RecordText::WindowSystem, ToRecordText(*environment.WindowSystem));
+      }
+      if (environment.PresentMode != FramePacingPresentMode::Unknown)
+      {
+        arguments[count++] = TraceArgument(RecordText::PresentMode, ToRecordText(environment.PresentMode));
+      }
+      if (environment.ImageCount.has_value())
+      {
+        arguments[count++] = TraceArgument(RecordText::ImageCount, static_cast<int64_t>(*environment.ImageCount));
+      }
+      if (environment.MaxFramesInFlight.has_value())
+      {
+        arguments[count++] = TraceArgument(RecordText::MaxFramesInFlight, static_cast<int64_t>(*environment.MaxFramesInFlight));
+      }
+      if (!environment.PlatformFeatures.empty())
+      {
+        arguments[count++] = TraceArgument(RecordText::PlatformFeatures, environment.PlatformFeatures);
+      }
+    }
+    if (m_pacerEnvironment.has_value())
+    {
+      const FramePacingPacerEnvironment& environment = *m_pacerEnvironment;
+      if (environment.RefreshPeriod.has_value())
+      {
+        arguments[count++] = TraceArgument(RecordText::RefreshPeriodNs, environment.RefreshPeriod->TotalNanoseconds());
+      }
+      if (environment.VariableRefresh.has_value())
+      {
+        arguments[count++] = TraceArgument(RecordText::VariableRefresh, *environment.VariableRefresh ? RecordText::On : RecordText::Off);
+      }
+      arguments[count++] = TraceArgument(RecordText::VsyncSource, ToRecordText(environment.VsyncSource));
+      arguments[count++] =
+        TraceArgument(RecordText::PacerTier, environment.PacerTier.empty() ? RecordText::NoPacer : std::string_view(environment.PacerTier));
+      arguments[count++] = TraceArgument(RecordText::PacerAim, ToRecordText(environment.PacerAim));
+      if (!environment.Capabilities.empty())
+      {
+        arguments[count++] = TraceArgument(RecordText::Capabilities, environment.Capabilities);
+      }
+      if (!environment.ActiveCapabilities.empty())
+      {
+        arguments[count++] = TraceArgument(RecordText::ActiveCapabilities, environment.ActiveCapabilities);
+      }
+    }
+    AddRunMoment(RecordText::EnvironmentName, std::span<const TraceArgument>(arguments.data(), count));
   }
 
 

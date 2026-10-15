@@ -49,6 +49,7 @@
 #include <FslDemoService/CpuStats/ICpuStatsService.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingDetailService.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
 #include <FslDemoService/SystemStats/ISystemStatsService.hpp>
@@ -126,13 +127,20 @@ namespace Fsl
     }
     if (m_trace)
     {
+      m_framePacingDetails = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingDetailService>();
+      if (m_framePacingDetails && !m_framePacingDetails->IsTraceEnabled())
+      {
+        m_framePacingDetails.reset();
+      }
       // What the host knows about a frame, for the trace
       ITraceService& rLog = *m_trace;
       m_framePacingLogColumns.UpdateEnd = rLog.RegisterValue("hostUpdateEndTicks", TraceUnit::Ticks, "When the update of the app was done");
       m_framePacingLogColumns.DrawEnd = rLog.RegisterValue("hostDrawEndTicks", TraceUnit::Ticks, "When the draw of the app was done");
       m_framePacingLogColumns.SwapCall =
-        rLog.RegisterValue("hostSwapCallTicks", TraceUnit::Ticks, "When the host started to swap the frame (or asked the app to present it)");
-      m_framePacingLogColumns.SwapReturn = rLog.RegisterValue("hostSwapReturnTicks", TraceUnit::Ticks, "When the swap returned");
+        rLog.RegisterValue("hostSwapCallTicks", TraceUnit::Ticks,
+                           "When the host asked the app to present the frame (Vulkan). A swap of the host itself is the present of the "
+                           "frame record");
+      m_framePacingLogColumns.SwapReturn = rLog.RegisterValue("hostSwapReturnTicks", TraceUnit::Ticks, "When the present of the app returned");
       m_framePacingLogColumns.SwapCompleted =
         rLog.RegisterValue("hostSwapCompletedTicks", TraceUnit::Ticks, "When the host was done with the frame, after the swap");
       m_framePacingLogColumns.FrameSlot =
@@ -561,7 +569,26 @@ namespace Fsl
   }
 
 
-  void DemoAppManager::OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
+  void DemoAppManager::OnHostSwapBuffers(const TickCount callTime, const TickCount returnTime, const SwapBuffersResult result) noexcept
+  {
+    if (m_framePacingMarkerServiceControl)
+    {
+      // An app that paces its frames itself asks the service when its frame was swapped
+      m_framePacingMarkerServiceControl->OnSwapBuffers(callTime, returnTime);
+    }
+    if (m_framePacingDetails && m_framePacingLogHasFrame)
+    {
+      // The swap is the present of the frame
+      FramePacingPresentRecord record;
+      record.CallTime = callTime;
+      record.ReturnTime = returnTime;
+      record.Result = result == SwapBuffersResult::Completed ? FramePacingPresentResult::Accepted : FramePacingPresentResult::Refused;
+      m_framePacingDetails->AddPresent(m_framePacingDetails->GetFrameId(), record);
+    }
+  }
+
+
+  void DemoAppManager::OnAppSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
   {
     if (m_framePacingMarkerServiceControl)
     {

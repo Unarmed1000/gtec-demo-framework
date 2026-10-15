@@ -16,7 +16,9 @@ description = "120 Hz, plain Vulkan: the frames paced on a timer and on the vert
 app = "Vulkan.FramePacing"
 frames = 1500
 expected_refresh_hz = 120.0
-args = ["--Window", "[0,0,1600,900]", "--GpuLoad", "0", "--Pacer", "--VkSwapchainMaintenance1", "false"]
+# Timed present, the GPU wait, display reports and the wait for a present (vblank-present-wait) became the defaults after this plan
+# was written: they are pinned here to what it measured, and a run that sets one itself overrides the pin.
+args = ["--Pacer.TimedPresent", "false", "--Pacer.GpuWait", "false", "--Pacer.DisplayReports", "false", "--Pacer.Kind", "vblank-period", "--Window", "[0,0,1600,900]", "--GpuLoad", "0", "--Pacer", "--VkSwapchainMaintenance1", "false"]
 
 [variables]
 # The --CpuLoad in milliseconds that is about 20, 90 and 130 % of a refresh (24, 84 and 132 %)

@@ -178,6 +178,8 @@ namespace Fsl
     void AddEvent(const std::string_view name, const std::string_view details);
     bool AddSpan(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount begin,
                  const NanosecondTimeSpan duration, const std::span<const TraceArgument> arguments) noexcept;
+    bool AddMoment(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount time,
+                   const std::span<const TraceArgument> arguments) noexcept;
     void SetFact(const std::string_view key, const std::string_view value);
     void AddAnonymousText(const std::string_view text, const std::string_view replacement);
     void AddAnonymousDirectory(const std::string_view directory, const std::string_view replacement);
@@ -199,6 +201,9 @@ namespace Fsl
     }
 
     void AddRecord(const std::string_view name, const std::string_view details, const bool isFact);
+    //! A span or a moment with its times set: its track, its texts and its arguments are added, then it is handed over
+    bool TryAddRecord(TraceSpanRecord& rRecord, const TraceTrack track, const std::string_view category, const std::string_view name,
+                      const std::span<const TraceArgument> arguments) noexcept;
     void SetNumberAt(const uint64_t frameIndex, const TraceValue value, const TraceUnit unit, const int64_t number,
                      const std::string_view given) noexcept;
     void ReportWrongUnit(const TraceValue value, const std::string_view given) noexcept;

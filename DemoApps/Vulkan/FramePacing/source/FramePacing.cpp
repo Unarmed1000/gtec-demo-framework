@@ -36,6 +36,8 @@ namespace Fsl
       //! How old the read of the device clock and the clock of the framework may get before they are read again. The two do not
       //! run at the same rate, and by time and not by frames a slow frame rate is converted as well as a fast one.
       constexpr TimeSpan MaxCalibrationAge = TimeSpan::FromMilliseconds(250);
+      //! The presents the pacer may let wait when the user did not say ('--VkPresentWait' takes at most four)
+      constexpr uint32_t MaxWaitingPresents = 4;
     }
 
     constexpr SampleSwapchainRefresh ToSampleSwapchainRefresh(const Vulkan::VUPresentRefreshMode mode) noexcept
@@ -57,6 +59,8 @@ namespace Fsl
       VulkanBasic::DemoAppVulkanSetup setup;
       // Measure when the frames reach the display (if VK_EXT_present_timing is available)
       setup.PresentTiming = true;
+      // A swapchain whose presents can be waited for (if VK_KHR_present_wait2 is available), so the pacer can name a present to wait for
+      setup.PresentWait = true;
       // Everything this app writes for a frame is per frame slot (push constants, the GPU timer, the present ids, and the batch
       // and the UI it draws with), so its frames in flight can overlap on the GPU
       setup.WaitForLastUseOfSwapchainImage = false;
@@ -106,9 +110,11 @@ namespace Fsl
 
   void FramePacing::Update(const DemoTime& demoTime)
   {
-    // A pacer that names a present to wait for needs a swapchain that can be waited on (--VkPresentWait n), and n is then the
-    // number of presents it lets wait
-    m_shared.SetPresentWaitSupport(IsPresentWaitEnabled() ? GetPresentWaitFramesBack() : 0u);
+    // A pacer that names a present to wait for needs a swapchain that can be waited on (asked for in the setup). With '--VkPresentWait n'
+    // n is the number of presents it lets wait, else as many as the user can ask for.
+    const uint32_t presentWaitFramesBack = GetPresentWaitFramesBack();
+    m_shared.SetPresentWaitSupport(IsPresentWaitEnabled() ? (presentWaitFramesBack != 0u ? presentWaitFramesBack : LocalConfig::MaxWaitingPresents)
+                                                          : 0u);
     // The app base can wait until the GPU is done with a frame the pacer names: it is its wait for a frame slot
     m_shared.SetGpuWaitSupport(true);
     m_shared.Update(demoTime);

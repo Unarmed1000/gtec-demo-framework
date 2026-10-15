@@ -58,6 +58,7 @@ namespace Fsl
     {
       rServiceInterfaceTypeDeque.push_back(std::type_index(typeid(IFramePacingMarkerService)));
       rServiceInterfaceTypeDeque.push_back(std::type_index(typeid(IFramePacingMarkerServiceControl)));
+      rServiceInterfaceTypeDeque.push_back(std::type_index(typeid(IFramePacingDetailService)));
       rServiceInterfaceTypeDeque.push_back(std::type_index(typeid(IFramePacingFrameSource)));
     }
 

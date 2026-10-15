@@ -90,19 +90,16 @@ namespace Fsl::Vulkan
     {
       FSLLOG3_INFO("Present timing: disabled by user");
     }
-    if (presentWait)
-    {
-      // After present timing, which enables the present ids as well
-      SelectPresentWait(physicalDevice, rExtensionRequests);
-      FSLLOG3_WARNING_IF(!m_features.PresentWait, "Present wait was requested but is unsupported (it needs VK_KHR_present_wait2)");
-    }
+    // After present timing, which enables the present ids as well
+    SelectPresentWait(physicalDevice, rExtensionRequests);
+    FSLLOG3_WARNING_IF(presentWait && !m_features.PresentWait, "Present wait was requested but is unsupported (it needs VK_KHR_present_wait2)");
 
     FSLLOG3_VERBOSE("Device fault: {}", m_features.DeviceFault == VUDeviceFaultApi::Khr
                                           ? "VK_KHR_device_fault"
                                           : (m_features.DeviceFault == VUDeviceFaultApi::Ext ? "VK_EXT_device_fault" : "unsupported"));
     FSLLOG3_VERBOSE("Calibrated timestamps: {}", m_features.CalibratedTimestamps ? "supported" : "unsupported");
     FSLLOG3_VERBOSE("Present timing: {}", m_features.PresentTiming ? "supported by the device" : "unsupported");
-    FSLLOG3_VERBOSE_IF(presentWait, "Present wait: {}", m_features.PresentWait ? "supported by the device" : "unsupported");
+    FSLLOG3_VERBOSE("Present wait: {}", m_features.PresentWait ? "supported by the device" : "unsupported");
     FSLLOG3_VERBOSE("Present mode FIFO latest ready: {}", m_features.PresentModeFifoLatestReady ? "supported by the device" : "unsupported");
   }
 

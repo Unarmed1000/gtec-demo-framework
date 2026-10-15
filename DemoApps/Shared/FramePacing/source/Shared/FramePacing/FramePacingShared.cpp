@@ -33,6 +33,7 @@
 #include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfo.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingDetailService.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslDemoService/Trace/ITraceService.hpp>
@@ -183,16 +184,25 @@ namespace Fsl
       }
     }
 
-    //! The text of the radio button of a tier of the pacer library: its number, and what the frame loop paces with in it. Those
-    //! words are the library's name for the tier of the same sub tier where the frame loop places the frame, as its names for the
-    //! tiers of the other major tiers say their major tier again, which the line above their radio buttons says.
-    std::string ToTierLabel(const SamplePacerTier tier)
+    //! The text of the radio button of a sub tier in a tier of the pacer library: the sub tier's number (the major tier is the
+    //! group above), and what the frame loop paces with in it. Those words are the library's name for the tier of the same sub tier
+    //! where the frame loop places the frame, as its names for the tiers of the other major tiers say their major tier again. In the
+    //! second major tier a sub tier without a wait has the display times, by the library's name of that capability.
+    std::string ToSubTierLabel(const SamplePacerTier tier)
     {
-      const SamplePacerTier loopPlacedTier = SamplePacerTierChoiceUtil::ToLoopPlacedTier(SamplePacerTierChoiceUtil::ToKind(tier));
-      return fmt::format("{}: {}", SamplePacer::GetTierNumber(tier), SamplePacer::GetTierName(loopPlacedTier));
+      const SamplePacerKind kind = SamplePacerTierChoiceUtil::ToKind(tier);
+      const std::string_view name = SamplePacer::GetTierName(SamplePacerTierChoiceUtil::ToLoopPlacedTier(kind));
+      const std::size_t subTierNumber = (SamplePacerTierChoiceUtil::ToTierIndex(tier) % SamplePacerTierChoiceUtil::SubTierCount) + 1u;
+      if (SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier) && !SamplePacerTierChoiceUtil::IsPresentWaitKind(kind))
+      {
+        SamplePacerCapabilities displayTimes;
+        displayTimes.DisplayTimes = true;
+        return fmt::format("{}: {}, {}", subTierNumber, name, SamplePacer::GetCapabilityNames(displayTimes));
+      }
+      return fmt::format("{}: {}", subTierNumber, name);
     }
 
-    //! The line above the radio buttons of a major tier: its number and the library's words for who places a frame in it
+    //! The radio button of a major tier: its number and the library's words for who places a frame in it
     std::string ToMajorTierLabel(const SamplePacerTier tier)
     {
       return fmt::format("Tier {}: {}", SamplePacer::GetMajorTierNumber(tier), SamplePacer::GetMajorTierName(tier));
@@ -247,29 +257,21 @@ namespace Fsl
     //! The colors of a value of the frame pacing overlay that asks to be looked at
     constexpr UI::UIColor StatsWarningColor(PackedColor32(0xFFFFC233));    // yellow
     constexpr UI::UIColor StatsErrorColor(PackedColor32(0xFFFF5A4D));      // red
-    //! The colors of what the frame loop paces with in a tier, the best first: vertical blank times with a wait for a present,
-    //! vertical blank times, a timer with a wait for a present, a timer. They are the ones a well known game gives the quality of
-    //! its items (legendary, epic, rare, uncommon), the last three a little lighter so they can be read on the side bar.
-    constexpr std::array<UI::UIColor, 4> TierColors = {UI::UIColor(PackedColor32(0xFFFF8000)),     // orange
-                                                       UI::UIColor(PackedColor32(0xFFC27CFF)),     // purple
-                                                       UI::UIColor(PackedColor32(0xFF4FA3FF)),     // blue
-                                                       UI::UIColor(PackedColor32(0xFF5FD35F))};    // green
+    //! The colors of the major tiers, the best first: the display places the frame against a clock, the display places it relative
+    //! to the one before, the frame loop places it. They are the ones a well known game gives the quality of its items (legendary,
+    //! epic, rare), the last two a little lighter so they can be read on the side bar.
+    constexpr std::array<UI::UIColor, 3> MajorTierColors = {UI::UIColor(PackedColor32(0xFFFF8000)),     // orange
+                                                            UI::UIColor(PackedColor32(0xFFC27CFF)),     // purple
+                                                            UI::UIColor(PackedColor32(0xFF4FA3FF))};    // blue
 
-    //! The color of a tier: the one of what the frame loop paces with in it, which is the same in every major tier
-    constexpr UI::UIColor ToTierColor(const SamplePacerTier tier) noexcept
+    //! The color of the major tier of a tier. Only the line of the major tier has it, its sub tiers have none
+    constexpr UI::UIColor ToMajorTierColor(const SamplePacerTier tier) noexcept
     {
-      switch (SamplePacerTierChoiceUtil::ToKind(tier))
+      if (SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier))
       {
-      case SamplePacerKind::VBlankWaitForPresent:
-        return TierColors[0];
-      case SamplePacerKind::VBlankPeriodOnly:
-        return TierColors[1];
-      case SamplePacerKind::TimerWaitForPresent:
-        return TierColors[2];
-      case SamplePacerKind::TimerPeriodOnly:
-        break;
+        return MajorTierColors[0];
       }
-      return TierColors[3];
+      return SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier) ? MajorTierColors[1] : MajorTierColors[2];
     }
 
     constexpr UI::UIColor ToColor(const SampleStatsLevel level, const UI::UIColor normalColor) noexcept
@@ -373,19 +375,20 @@ namespace Fsl
       // What the sample knows about a frame, and what it shows of it on the timeline of the trace
       RegisterLogColumns();
       // The frame as the pacer of the sample sees it: the wait for its start, its work and the hold before its present
+      // The wait for its start and the GPU's work on it are in the frame record (IFramePacingDetailService)
       const TraceTrack frameTrack = rTrace.RegisterTrack("Sample frame", TraceTrackKind::Sequential);
-      rTrace.DeclareSpan("wait for frame start", frameTrack, m_logColumns.FrameWaitStart, m_logColumns.FrameStart, TraceLink::NoLink);
       rTrace.DeclareSpan("work", frameTrack, m_logColumns.FrameStart, m_logColumns.EndFrame, TraceLink::NoLink);
       rTrace.DeclareSpan("hold before present", frameTrack, m_logColumns.PresentWaitBegin, m_logColumns.PresentWaitEnd, TraceLink::NoLink);
-      // The GPU can work on a frame while the next one is drawn, so its work is drawn in lanes
-      const TraceTrack gpuTrack = rTrace.RegisterTrack("GPU", TraceTrackKind::Lanes);
-      rTrace.DeclareSpan("GPU work", gpuTrack, m_logColumns.GpuWorkBegin, m_logColumns.GpuWorkEnd, TraceLink::FrameChain);
       const TraceTrack planTrack = rTrace.RegisterTrack("Pacer plan", TraceTrackKind::Sequential);
       rTrace.DeclareMark("next frame start", planTrack, m_logColumns.NextFrameStart, TraceLink::NoLink);
       rTrace.DeclareCounter("CPU work", m_logColumns.WorkCpu);
       rTrace.DeclareCounter("GPU time", m_logColumns.GpuTime);
       rTrace.DeclareCounter("Animation error", m_logColumns.AnimationError);
-      rTrace.DeclareCounter("Swap interval", m_logColumns.SwapInterval);
+      m_details = config.DemoServiceProvider.TryGet<IFramePacingDetailService>();
+      if (m_details && !m_details->IsTraceEnabled())
+      {
+        m_details.reset();
+      }
     }
     else
     {
@@ -485,30 +488,33 @@ namespace Fsl
     // The aim of the pacer: it stays disabled until the pacer paces the frames
     m_ui.SwitchLowLatency = uiFactory->CreateSwitch("Low latency (off: smoothness)", options->GetPacerAim() == SamplePacerAim::LowLatency);
     m_ui.SwitchLowLatency->SetEnabled(false);
-    // Only for a app whose present takes a time
-    m_ui.SwitchTimedPresent = uiFactory->CreateSwitch("Timed present", options->IsPacerTimedPresent());
-    m_ui.SwitchTimedPresent->SetEnabled(false);
     // Only for an app that measures its presents, so it stays disabled until the pacer is on and the presents are measured
     m_ui.SwitchPacerDisplayReports = uiFactory->CreateSwitch("Display reports to the pacer", options->IsPacerDisplayReports());
     m_ui.SwitchPacerDisplayReports->SetEnabled(false);
-    // What the frames can be paced with, one group of radio buttons: every tier of the pacer library
-    // (Doc/FramePacingPlatformSupport.md) with the best first. They start disabled: ShowTiers enables the ones that can be used and
-    // checks the one the run is paced by, once the app has said what it can do.
-    const auto pacerGroup = uiFactory->CreateRadioGroup("pacer");
-    for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
+    // What the frames can be paced with: the tiers of the pacer library (Doc/FramePacingPlatformSupport.md) as a group for the major
+    // tier, each in its color, and a group for the sub tier, the best first. They start disabled: ShowTiers enables the ones that
+    // can be used, checks the tier the run is paced by and names the sub tiers by the numbers of its major tier, once the app has
+    // said what it can do.
+    m_pacerTimedPresent = options->IsPacerTimedPresent();
     {
-      const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
-      // The tier where the frame loop places the frame is the one every app has for a kind
-      const bool isChecked = !SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier) && SamplePacerTierChoiceUtil::ToKind(tier) == m_pacerKind;
-      m_ui.RadioTiers[i] = uiFactory->CreateRadioButton(pacerGroup, ToTierLabel(tier), isChecked);
-      m_ui.RadioTiers[i]->SetFontColorChecked(ToTierColor(tier));
-      m_ui.RadioTiers[i]->SetFontColorUnchecked(ToTierColor(tier));
-      m_ui.RadioTiers[i]->SetEnabled(false);
-    }
-    for (std::size_t i = 0; i < m_ui.LabelMajorTiers.size(); ++i)
-    {
-      // The first tier of every four
-      m_ui.LabelMajorTiers[i] = uiFactory->CreateLabel(ToMajorTierLabel(SamplePacerTierChoiceUtil::Tiers[i * 4u]));
+      const SamplePacerTier tier = SamplePacerTierChoiceUtil::ToLoopPlacedTier(m_pacerKind);
+      const auto majorTierGroup = uiFactory->CreateRadioGroup("majorTier");
+      for (std::size_t i = 0; i < m_ui.RadioMajorTiers.size(); ++i)
+      {
+        // The first tier of every four, in the color of its major tier
+        const SamplePacerTier firstTier = SamplePacerTierChoiceUtil::Tiers[i * SamplePacerTierChoiceUtil::SubTierCount];
+        m_ui.RadioMajorTiers[i] = uiFactory->CreateRadioButton(majorTierGroup, ToMajorTierLabel(firstTier), i + 1u == m_ui.RadioMajorTiers.size());
+        m_ui.RadioMajorTiers[i]->SetFontColorChecked(ToMajorTierColor(firstTier));
+        m_ui.RadioMajorTiers[i]->SetFontColorUnchecked(ToMajorTierColor(firstTier));
+        m_ui.RadioMajorTiers[i]->SetEnabled(false);
+      }
+      const auto subTierGroup = uiFactory->CreateRadioGroup("subTier");
+      for (std::size_t i = 0; i < m_ui.RadioSubTiers.size(); ++i)
+      {
+        const SamplePacerTier subTier = SamplePacerTierChoiceUtil::ToLoopPlacedTier(SamplePacerTierChoiceUtil::SubTierKinds[i]);
+        m_ui.RadioSubTiers[i] = uiFactory->CreateRadioButton(subTierGroup, ToSubTierLabel(subTier), subTier == tier);
+        m_ui.RadioSubTiers[i]->SetEnabled(false);
+      }
     }
     {    // The line of the pacer library for every tier, in the order of the radio buttons
       std::vector<std::string> descriptions;
@@ -554,13 +560,14 @@ namespace Fsl
     if (SamplePacer::IsSupported())
     {
       // Without the pacer library there is no pacer to choose
-      for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
+      for (const auto& radioButton : m_ui.RadioMajorTiers)
       {
-        if ((i % 4u) == 0u)
-        {
-          stackLayout->AddChild(m_ui.LabelMajorTiers[i / 4u]);
-        }
-        stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioTiers[i]));
+        stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, radioButton));
+      }
+      stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
+      for (const auto& radioButton : m_ui.RadioSubTiers)
+      {
+        stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, radioButton));
       }
       stackLayout->AddChild(m_ui.LabelTierDescription);
       stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
@@ -569,7 +576,6 @@ namespace Fsl
     stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblTargetFps, m_ui.SliderTargetFps));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchAdaptive));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchLowLatency));
-    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchTimedPresent));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPacerDisplayReports));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblCpuLoad, m_ui.SliderCpuLoad));
@@ -816,7 +822,7 @@ namespace Fsl
     {
       // A frame has its row in the log from the draw on. A frame that starts in the update (SamplePresentMethod::SwapInterval) starts
       // before that, and what is written then lands in the row of the frame before. So what the frame started with is written here.
-      m_logFrames[m_frameId % m_logFrames.size()] = {m_frameId, m_trace->GetFrameIndex()};
+      m_logFrames[m_frameId % m_logFrames.size()] = {m_frameId, m_trace->GetFrameIndex(), m_details ? m_details->GetFrameId() : FramePacingFrameId()};
       if (m_frameStartLogPending)
       {
         m_frameStartLogPending = false;
@@ -895,7 +901,7 @@ namespace Fsl
     has.PresentSwapIntervalMax = m_presentMethod == SamplePresentMethod::SwapInterval ? m_presentSwapIntervalMax : 0u;
     has.PresentAtTime = m_presentAtTimeSupported;
     // What the display does with presents whose time has passed is only something where a present has a time
-    has.PresentSkipsOverdue = m_presentAtTimeSupported && m_presentSkipsOverdue;
+    has.PresentSkipsOverdue = m_presentSkipsOverdue;
     has.PresentAfterDuration = m_timedPresentSupported;
     // The vertical blanks of a display that refreshes at a variable rate follow the frames, so there they can not hold one
     has.VBlankTimes = m_vsyncTime.TotalNanoseconds() > 0 && m_vsyncPeriod.TotalNanoseconds() > 0 && !m_variableRefreshSeen;
@@ -910,7 +916,13 @@ namespace Fsl
 
   bool FramePacingShared::IsTimedPresentRequested() const
   {
-    return m_timedPresentSupported && m_ui.SwitchTimedPresent->IsChecked();
+    return m_timedPresentSupported && m_pacerTimedPresent;
+  }
+
+
+  bool FramePacingShared::IsDisplayReportsWanted() const
+  {
+    return IsPresentTimingWanted() && !m_variableRefreshSeen && m_presentsMeasured && m_ui.SwitchPacerDisplayReports->IsChecked();
   }
 
 
@@ -926,16 +938,25 @@ namespace Fsl
     {
       return;
     }
-    // A radio button that is checked and is not the one the sample checked: the user asks for that tier, which is what the frame
-    // loop paces with in it and if the display places the frame
-    const SamplePacerTier shownTier = *m_shownTier;
-    for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
+    // A radio button that is checked and is not the one the sample checked: the user asks for that major tier (if the display
+    // places the frame, and how) or that sub tier (what the frame loop paces with)
+    const std::size_t shownIndex = SamplePacerTierChoiceUtil::ToTierIndex(*m_shownTier);
+    const std::size_t shownMajor = shownIndex / SamplePacerTierChoiceUtil::SubTierCount;
+    const std::size_t shownSub = shownIndex % SamplePacerTierChoiceUtil::SubTierCount;
+    for (std::size_t i = 0; i < m_ui.RadioMajorTiers.size(); ++i)
     {
-      const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
-      if (tier != shownTier && m_ui.RadioTiers[i]->IsChecked())
+      if (i != shownMajor && m_ui.RadioMajorTiers[i]->IsChecked())
       {
-        SetRequestedKind(SamplePacerTierChoiceUtil::ToKind(tier));
+        const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i * SamplePacerTierChoiceUtil::SubTierCount];
         m_pacerPresentAtTime = SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier);
+        m_pacerTimedPresent = SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier);
+      }
+    }
+    for (std::size_t i = 0; i < m_ui.RadioSubTiers.size(); ++i)
+    {
+      if (i != shownSub && m_ui.RadioSubTiers[i]->IsChecked())
+      {
+        SetRequestedKind(SamplePacerTierChoiceUtil::SubTierKinds[i]);
       }
     }
   }
@@ -946,18 +967,24 @@ namespace Fsl
     // What a capability is worth is the rule of the pacer library, so each question is put to it
     const SamplePacerCapabilities has = GetPacerCapabilities();
 
-    // A tier can be used where the app has what it takes: the library rates what a run that asks for it would use. What the
-    // display does with a frame that is overdue is a fact of the system, so of the first two major tiers only one can be used.
+    // The display times reach the pacer where the run gives it the display reports (the second major tier's sub tiers without a
+    // wait for a present need them)
+    const bool displayTimes = IsDisplayReportsWanted();
+
+    // A tier can be used where the app has what it takes: the library rates what a run that asks for it would use
     for (std::size_t i = 0; i < m_tierOffered.size(); ++i)
     {
       const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
-      const SamplePacerCapabilities uses = SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerTierChoiceUtil::ToKind(tier),
-                                                                                         SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier));
+      const SamplePacerCapabilities uses = SamplePacerTierChoiceUtil::ToUsedCapabilities(
+        has, SamplePacerTierChoiceUtil::ToKind(tier), SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier),
+        SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier), displayTimes);
       m_tierOffered[i] = SamplePacer::Rate(uses).Tier == tier;
     }
 
     // The tier the run is to be in: the one that was asked for where the app has what it takes, else the tier of what is left of it
-    m_selectedTier = SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, m_pacerKind, m_pacerPresentAtTime)).Tier;
+    m_selectedTier = SamplePacer::Rate(
+                       SamplePacerTierChoiceUtil::ToUsedCapabilities(has, m_pacerKind, m_pacerPresentAtTime, IsTimedPresentRequested(), displayTimes))
+                       .Tier;
     m_selectedKind = SamplePacerTierChoiceUtil::ToKind(m_selectedTier);
   }
 
@@ -965,32 +992,49 @@ namespace Fsl
   void FramePacingShared::ShowTiers(const SamplePacerTier tier)
   {
     // A tier the system can not do is shown as disabled, like every other control that can not be used. The one the run is paced
-    // in is never disabled.
+    // in is never disabled. A major tier can be used where one of its sub tiers can, and a sub tier where it can in the major tier
+    // that is checked.
     const bool isSupported = SamplePacer::IsSupported();
-    uint32_t shownIndex = 0;
-    for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
+    const std::size_t shownIndex = SamplePacerTierChoiceUtil::ToTierIndex(tier);
+    const std::size_t shownMajor = shownIndex / SamplePacerTierChoiceUtil::SubTierCount;
+    const std::size_t shownSub = shownIndex % SamplePacerTierChoiceUtil::SubTierCount;
+    for (std::size_t i = 0; i < m_ui.RadioMajorTiers.size(); ++i)
     {
-      const bool isShownTier = SamplePacerTierChoiceUtil::Tiers[i] == tier;
-      UI::RadioButton& rRadioButton = *m_ui.RadioTiers[i];
-      const bool isEnabled = isSupported && (isShownTier || m_tierOffered[i]);
-      if (rRadioButton.IsEnabled() != isEnabled)
+      bool isOffered = false;
+      for (std::size_t j = 0; j < SamplePacerTierChoiceUtil::SubTierCount; ++j)
       {
-        rRadioButton.SetEnabled(isEnabled);
+        isOffered = isOffered || m_tierOffered[(i * SamplePacerTierChoiceUtil::SubTierCount) + j];
       }
-      if (isShownTier)
-      {
-        shownIndex = static_cast<uint32_t>(i);
-        if (!rRadioButton.IsChecked())
-        {
-          rRadioButton.SetIsChecked(true);
-        }
-      }
+      SetTierRadioButton(*m_ui.RadioMajorTiers[i], isSupported && (i == shownMajor || isOffered), i == shownMajor);
     }
-    // What the pacer does in the tier that is checked, in a line of the pacer library and in the color of the tier. The time the
-    // frame before stays on screen (the switch 'Timed present') changes no tier, so it is the same line with it.
-    m_ui.LabelTierDescription->SetSelectedIndex(shownIndex);
-    m_ui.LabelTierDescription->SetFontColor(ToTierColor(tier));
+    const bool isNewMajorTier =
+      !m_shownTier.has_value() || (SamplePacerTierChoiceUtil::ToTierIndex(*m_shownTier) / SamplePacerTierChoiceUtil::SubTierCount) != shownMajor;
+    for (std::size_t i = 0; i < m_ui.RadioSubTiers.size(); ++i)
+    {
+      const std::size_t tierIndex = (shownMajor * SamplePacerTierChoiceUtil::SubTierCount) + i;
+      if (isNewMajorTier)
+      {
+        // What a sub tier is made of in the major tier that is checked (the display times in the second)
+        m_ui.RadioSubTiers[i]->SetText(ToSubTierLabel(SamplePacerTierChoiceUtil::Tiers[tierIndex]));
+      }
+      SetTierRadioButton(*m_ui.RadioSubTiers[i], isSupported && (i == shownSub || m_tierOffered[tierIndex]), i == shownSub);
+    }
+    // What the pacer does in the tier that is checked, in a line of the pacer library
+    m_ui.LabelTierDescription->SetSelectedIndex(static_cast<uint32_t>(shownIndex));
     m_shownTier = tier;
+  }
+
+
+  void FramePacingShared::SetTierRadioButton(UI::RadioButton& rRadioButton, const bool isEnabled, const bool isChecked)
+  {
+    if (rRadioButton.IsEnabled() != isEnabled)
+    {
+      rRadioButton.SetEnabled(isEnabled);
+    }
+    if (isChecked && !rRadioButton.IsChecked())
+    {
+      rRadioButton.SetIsChecked(true);
+    }
   }
 
 
@@ -1023,13 +1067,13 @@ namespace Fsl
   {
     // The display time is only something the frame pacer aims for, and it does not know one for every frame
     const bool hasIntendedDisplayTime = m_pacer && m_schedule.IntendedDisplayTime.TotalNanoseconds() != 0;
-    m_measuredPresents.AddFrame(
-      presentId, m_frameStartTime,
-      hasIntendedDisplayTime ? std::optional<TickCount>(NanosecondTickCountUtil::ToTickCount(m_schedule.IntendedDisplayTime)) : std::nullopt);
+    const std::optional<TickCount> intendedDisplayTime =
+      hasIntendedDisplayTime ? std::optional<TickCount>(NanosecondTickCountUtil::ToTickCount(m_schedule.IntendedDisplayTime)) : std::nullopt;
+    m_measuredPresents.AddFrame(presentId, m_frameStartTime, intendedDisplayTime);
     if (m_presentsMeasured)
     {
-      // The moment the frame is drawn for, to be held against the time it is shown at
-      m_animationError.AddFrame(presentId, NanosecondTimeSpanUtil::ToTimeSpan(m_animationTime), GetTargetFrameTime(),
+      // The moment the frame is drawn for, to be held against the time it is shown at, and when the pacer meant it to be shown
+      m_animationError.AddFrame(presentId, NanosecondTimeSpanUtil::ToTimeSpan(m_animationTime), GetTargetFrameTime(), intendedDisplayTime,
                                 NanosecondTimeSpanUtil::ToTimeSpan(GetRefreshPeriod()));
     }
 
@@ -1043,11 +1087,6 @@ namespace Fsl
         // And the other way: a pacer that names a present to wait for does it by the id it gave the frame
         m_pacerFramePresents[m_schedule.FrameId % m_pacerFramePresents.size()] = {m_schedule.FrameId, presentId};
       }
-      if (m_trace)
-      {
-        rPresentFrame.LogFrameIndex = m_trace->GetFrameIndex();
-        rPresentFrame.HasLogFrame = true;
-      }
     }
 
     // So something that is measured later about this present (when the GPU worked on it) finds the frame of the sample
@@ -1055,7 +1094,8 @@ namespace Fsl
     if (m_trace)
     {
       // And the frame of the log
-      m_logPresentFrames[presentId % m_logPresentFrames.size()] = {presentId, m_trace->GetFrameIndex()};
+      m_logPresentFrames[presentId % m_logPresentFrames.size()] = {presentId, m_trace->GetFrameIndex(),
+                                                                   m_details ? m_details->GetFrameId() : FramePacingFrameId()};
     }
   }
 
@@ -1081,11 +1121,6 @@ namespace Fsl
       if (presentFrame.PresentId == presentId && presentFrame.PacerFrameId != 0u)
       {
         m_pacer->AddDisplayTime(presentFrame.PacerFrameId, displayTime.value());
-        if (m_trace && presentFrame.HasLogFrame)
-        {
-          // What the frame pacer was given about the frame
-          m_trace->SetValueAt(presentFrame.LogFrameIndex, m_logColumns.DisplayReportTime, displayTime.value());
-        }
       }
     }
   }
@@ -1310,13 +1345,12 @@ namespace Fsl
         m_frameWork.AddGpuInterval(presentFrame.FrameId, gpuStartTime, gpuEndTime);
       }
     }
-    if (m_trace)
+    if (m_details)
     {
       const LogPresentFrame& presentFrame = m_logPresentFrames[presentId % m_logPresentFrames.size()];
       if (presentFrame.PresentId == presentId)
       {
-        m_trace->SetValueAt(presentFrame.FrameIndex, m_logColumns.GpuWorkBegin, gpuStartTime);
-        m_trace->SetValueAt(presentFrame.FrameIndex, m_logColumns.GpuWorkEnd, gpuEndTime);
+        m_details->AddGpuWork(presentFrame.DetailFrameId, gpuStartTime, gpuEndTime);
       }
     }
   }
@@ -1350,9 +1384,10 @@ namespace Fsl
       {
         // The time is written to the frame it was measured on, which is a frame or more before the one that is being drawn
         m_trace->SetValueAt(logFrame.FrameIndex, m_logColumns.GpuTime, gpuTime);
-        if (gpuEndTime.has_value())
+        if (gpuEndTime.has_value() && m_details)
         {
-          m_trace->SetValueAt(logFrame.FrameIndex, m_logColumns.GpuWorkEnd, gpuEndTime.value());
+          // The work ended at the time given and lasted the GPU time
+          m_details->AddGpuWork(logFrame.DetailFrameId, gpuEndTime.value() - gpuTime, gpuEndTime.value());
         }
         m_gpuTimeLogFrameIndex = logFrame.FrameIndex;
       }
@@ -1440,6 +1475,13 @@ namespace Fsl
       // The work of the CPU ends here, and the frame pacer says how the frame is to be presented
       m_presentPlan = m_pacer->EndFrame(now);
     }
+    if (m_details)
+    {
+      // The swap interval the present of the frame is made with: a change the pacer makes is the pacer's rule, any other the app's
+      m_details->SetSwapInterval(GetSwapInterval(), m_pacer && m_schedule.Change != SamplePacerChange::Unchanged
+                                                      ? FramePacingSwapIntervalChangedBy::Pacer
+                                                      : FramePacingSwapIntervalChangedBy::Application);
+    }
     if (m_trace)
     {
       // What the frame pacer is told about the frame
@@ -1477,10 +1519,6 @@ namespace Fsl
       // The pacer gives the present a time: the frame before this one stays on screen at least that long. It is given next to
       // the wait above, which the pacer still asks for.
       m_presentRelativeTarget = NanosecondTimeSpanUtil::ToTimeSpan(m_presentPlan.MinimumDuration);
-      if (m_trace)
-      {
-        m_trace->SetValue(m_logColumns.PresentTarget, m_presentRelativeTarget);
-      }
     }
   }
 
@@ -1657,20 +1695,15 @@ namespace Fsl
     {
       m_ui.SwitchLowLatency->SetEnabled(pacerOn);
     }
-    // A present that takes a time is the pacer's to use where the app has one
-    const bool timedPresentAvailable = pacerOn && m_timedPresentSupported;
-    if (m_ui.SwitchTimedPresent->IsEnabled() != timedPresentAvailable)
-    {
-      m_ui.SwitchTimedPresent->SetEnabled(timedPresentAvailable);
-    }
     // The display reports are the display times of the presents, so they are only offered while the app is asked to measure them and
-    // only given while the swapchain does. The pacer counts the animation error from them and paces by none of it.
-    const bool displayReportsAvailable = pacerOn && IsPresentTimingWanted();
+    // only given while the swapchain does. The pacer counts the animation error from them and paces by none of it. A display that
+    // refreshes at a variable rate follows the frames, and the times it was seen to report then do not hold.
+    const bool displayReportsAvailable = pacerOn && IsPresentTimingWanted() && !m_variableRefreshSeen;
     if (m_ui.SwitchPacerDisplayReports->IsEnabled() != displayReportsAvailable)
     {
       m_ui.SwitchPacerDisplayReports->SetEnabled(displayReportsAvailable);
     }
-    pacerConfig.DisplayReports = displayReportsAvailable && m_presentsMeasured && m_ui.SwitchPacerDisplayReports->IsChecked();
+    pacerConfig.DisplayReports = pacerOn && IsDisplayReportsWanted();
 
     if (!pacerOn)
     {
@@ -1826,12 +1859,8 @@ namespace Fsl
     ITraceService& rLog = *m_trace;
     LogColumns& rColumns = m_logColumns;
     rColumns.PacerOn = rLog.RegisterValue("pacerOn", TraceUnit::Flag, "1 if the frame pacer of the sample paced the frame");
-    rColumns.SwapInterval =
-      rLog.RegisterValue("swapInterval", TraceUnit::Count, "The number of display refreshes the frame pacer holds the frame for");
     rColumns.PreferredSwapInterval =
       rLog.RegisterValue("preferredSwapInterval", TraceUnit::Count, "The swap interval of the target frame rate, the pacer never runs faster");
-    rColumns.Change = rLog.RegisterValue("pacerChange", TraceUnit::Code,
-                                         "What the frame pacer did to the swap interval at this frame: 0 unchanged, 1 slower, 2 faster");
     rColumns.AnimationStep =
       rLog.RegisterValue("animationStepTicks", TraceUnit::DurationTicks, "The step of the frame pacer from the animation time of the frame before");
     rColumns.WindowFrames = rLog.RegisterValue("pacerWindowFrames", TraceUnit::Count, "The frames in the frame window of the frame pacer");
@@ -1845,14 +1874,9 @@ namespace Fsl
                                                     "The average work of the frames in the frame window of the frame pacer");
     rColumns.WindowSpan = rLog.RegisterValue("pacerWindowSpanTicks", TraceUnit::DurationTicks, "The time the frame window of the frame pacer spans");
     rColumns.WindowFull = rLog.RegisterValue("pacerWindowFull", TraceUnit::Flag, "1 if the frame window of the frame pacer is full");
-    rColumns.FrameWaitStart = rLog.RegisterValue("frameWaitStartTicks", TraceUnit::Ticks,
-                                                 "When the sample began to wait for the start of the frame (it holds the start to the time the frame "
-                                                 "before was aimed at)");
-    rColumns.FrameWaitTarget = rLog.RegisterValue("frameWaitTargetTicks", TraceUnit::Ticks,
-                                                  "The time the start of the frame was held to (empty: it was not held). The frame started at "
-                                                  "frameStartTicks, so the difference is how late the wait woke");
-    rColumns.FrameStart =
-      rLog.RegisterValue("frameStartTicks", TraceUnit::Ticks, "When the sample started the frame, which is the start the frame pacer is given");
+    rColumns.FrameStart = rLog.RegisterValue("frameStartTicks", TraceUnit::Ticks,
+                                             "When the sample started the frame, which is the start the frame pacer is given. A start that was "
+                                             "held is the \"start time\" wait of the frame record");
     rColumns.EndFrame =
       rLog.RegisterValue("endFrameTicks", TraceUnit::Ticks, "When the work of the frame was done, which is what the frame pacer is told");
     rColumns.WorkCpu = rLog.RegisterValue("workCpuTicks", TraceUnit::DurationTicks, "How long the CPU worked on the frame");
@@ -1865,9 +1889,6 @@ namespace Fsl
     rColumns.GpuTime = rLog.RegisterValue("gpuTimeTicks", TraceUnit::DurationTicks,
                                           "The GPU time of the frame itself, written when it was measured, a frame or more later (empty: the "
                                           "frame was not measured)");
-    rColumns.GpuWorkBegin =
-      rLog.RegisterValue("gpuWorkBeginTicks", TraceUnit::Ticks, "When the GPU started on the frame, on the clock of the framework");
-    rColumns.GpuWorkEnd = rLog.RegisterValue("gpuWorkEndTicks", TraceUnit::Ticks, "When the GPU finished the frame, on the clock of the framework");
     rColumns.FlushCall = rLog.RegisterValue("flushCallTicks", TraceUnit::Ticks,
                                             "When glFlush was called after the last command of the frame: the GPU is asked to work on the "
                                             "frame from here (only with --GLFlush, without it the driver decides when, the swap at the latest)");
@@ -1890,8 +1911,6 @@ namespace Fsl
       rLog.RegisterValue("pacerDisplayReportsOn", TraceUnit::Flag,
                          "1 if the frame pacer is given the display times of the frames: it counts the animation error from them, it paces "
                          "the same");
-    rColumns.DisplayReportTime =
-      rLog.RegisterValue("pacerDisplayReportTicks", TraceUnit::Ticks, "The display time of the frame the frame pacer was given as a display report");
     rColumns.DisplayReports = rLog.RegisterValue("pacerDisplayReports", TraceUnit::Count,
                                                  "With pacerDisplayReportsOn: the display times the pacer took as display "
                                                  "reports, counted since the pacer was made. It counts the animation error from them "
@@ -1918,9 +1937,6 @@ namespace Fsl
     rColumns.DisplayLateFrames = rLog.RegisterValue("pacerDisplayLateFrames", TraceUnit::Count,
                                                     "Of those, the frames shown later: the frame before them was on screen a refresh or "
                                                     "more longer than it was made for");
-    rColumns.PresentTarget = rLog.RegisterValue("presentTargetTicks", TraceUnit::DurationTicks,
-                                                "The target time the sample asked for: the frame is not to be shown before this long after "
-                                                "the frame before it was shown");
     rColumns.CpuSpike = rLog.RegisterValue("cpuSpikeMs", TraceUnit::Count,
                                            "The milliseconds the frame was busy on top of the CPU load: a frame that runs long now and "
                                            "then (--CpuSpike), zero in the frames between");
@@ -2048,10 +2064,14 @@ namespace Fsl
     }
 
     rLog.SetValue(columns.PacerOn, pacerOn);
-    rLog.SetValue(columns.FrameWaitStart, waitStartTime);
-    if (m_frameStartLogTargetTime.Ticks() != 0)
+    if (m_details)
     {
-      rLog.SetValue(columns.FrameWaitTarget, m_frameStartLogTargetTime);
+      if (m_frameStartLogTargetTime.Ticks() != 0)
+      {
+        // The start of the frame was held to a time
+        m_details->AddWait(m_details->GetFrameId(), FramePacingWaitKind::StartTime, waitStartTime, m_frameStartTime, m_frameStartLogTargetTime);
+      }
+      LogPacerEnvironment();
     }
     rLog.SetValue(columns.FrameStart, m_frameStartTime);
     rLog.SetCount(columns.CpuLoad, UncheckedNumericCast<uint64_t>(m_ui.SliderCpuLoad->GetValue()));
@@ -2059,8 +2079,6 @@ namespace Fsl
     rLog.SetCount(columns.GpuLoad, UncheckedNumericCast<uint64_t>(m_ui.SliderGpuLoad->GetValue()));
     if (pacerOn)
     {
-      rLog.SetCount(columns.SwapInterval, m_schedule.SwapInterval);
-      rLog.SetCode(columns.Change, static_cast<int64_t>(m_schedule.Change));
       rLog.SetValue(columns.AnimationStep, m_schedule.AnimationStep);
       // The frame window as it is after the frame before this one was measured
       const SamplePacerStatus status = m_pacer->GetStatus();
@@ -2124,6 +2142,48 @@ namespace Fsl
         rLog.SetValue(columns.DisplayStartToDisplayLongest, displayErrors.StartToDisplayLongest);
       }
     }
+  }
+
+
+  void FramePacingShared::LogPacerEnvironment()
+  {
+    FramePacingPacerEnvironment environment;
+    const NanosecondTimeSpan refreshPeriod = GetRefreshPeriod();
+    if (refreshPeriod.TotalNanoseconds() > 0)
+    {
+      environment.RefreshPeriod = refreshPeriod;
+    }
+    if (m_variableRefreshSeen)
+    {
+      environment.VariableRefresh = true;
+    }
+    if (m_pacer && m_tierState.InUse.has_value())
+    {
+      // What the loop is paced by in the tier it is in: the display times where they take the place of the wait for a present
+      const SamplePacerTier tier = *m_tierState.InUse;
+      if (tier == SamplePacerTier::AfterDurationVBlankDisplayTimes || tier == SamplePacerTier::AfterDurationTimerDisplayTimes)
+      {
+        environment.VsyncSource = FramePacingVsyncSource::DisplayTiming;
+      }
+      else if (IsVBlankKind(m_pacerConfig.Kind))
+      {
+        environment.VsyncSource = FramePacingVsyncSource::VBlankTimes;
+      }
+      else
+      {
+        environment.VsyncSource = IsPresentWaitKind(m_pacerConfig.Kind) ? FramePacingVsyncSource::PresentWait : FramePacingVsyncSource::Timer;
+      }
+      // The tier as it is shown, with the marks of what is active
+      SamplePacerRating rating;
+      rating.Tier = tier;
+      rating.ReportsDisplayTimes = m_pacerConfig.DisplayReports && m_pacerConfig.Capabilities.DisplayTimes;
+      rating.SkipsOverdue = m_pacerConfig.Capabilities.PresentSkipsOverdue;
+      environment.PacerTier = SamplePacer::GetRatingText(rating);
+      environment.PacerAim = m_pacerConfig.Aim == SamplePacerAim::LowLatency ? FramePacingPacerAim::LowLatency : FramePacingPacerAim::Smoothness;
+      environment.ActiveCapabilities = SamplePacer::GetActiveCapabilityNames(m_pacerConfig);
+    }
+    environment.Capabilities = SamplePacer::GetCapabilityNames(m_pacerConfig.Capabilities);
+    m_details->SetPacerEnvironment(environment);
   }
 
 
@@ -2201,8 +2261,9 @@ namespace Fsl
     state.Best = SamplePacer::Rate(GetPacerCapabilities());
     if (m_pacer)
     {
-      // The pacer says which tier paces the frame now
+      // The pacer says which tier the run is in now, and which tier paces it
       state.InUse = m_pacer->GetTier();
+      state.PacedAs = m_pacer->GetPacedAsTier();
     }
 
     // The radio buttons say the tier the run is paced in, and the one it will be paced in while the frame pacer is off
@@ -2216,26 +2277,27 @@ namespace Fsl
     m_tierKnown = true;
     m_tierState = state;
 
-    // The tier as the pacer library writes it: its major tier and its sub tier ("3.1")
-    const std::string_view best = SamplePacer::GetTierNumber(state.Best.Tier);
+    // The tier as the pacer library writes it: its major tier and its sub tier ("3.1"), and the best one with its marks ("2.1+s")
+    const std::string best = SamplePacer::GetRatingText(state.Best);
     const std::string_view bestName = SamplePacer::GetTierLogName(state.Best.Tier);
     // "0" and "pacerOff": the pacer is off, so the run is in no tier
     const std::string_view tier = state.InUse.has_value() ? SamplePacer::GetTierNumber(*state.InUse) : std::string_view("0");
     const std::string_view tierName = state.InUse.has_value() ? SamplePacer::GetTierLogName(*state.InUse) : std::string_view("pacerOff");
+    const std::string_view pacedAs = state.PacedAs.has_value() ? SamplePacer::GetTierNumber(*state.PacedAs) : std::string_view("0");
     const int32_t displaySideHolds = state.Best.DisplaySideHolds ? 1 : 0;
     if (m_trace)
     {
       // A event and not a fact: the tier of a run can change, and its first value can be from before the window system had a
       // vsync time
-      m_trace->AddEvent("tier",
-                        fmt::format("tier={};tierName={};best={};bestName={};displaySideHolds={}", tier, tierName, best, bestName, displaySideHolds));
-      FSLLOG3_INFO("FramePacing: tier in use: {} ({}); best here: {} ({}); the display side holds: {}; vsync source '{}'", tier, tierName, best,
-                   bestName, displaySideHolds, m_vsyncSourceName);
+      m_trace->AddEvent("tier", fmt::format("tier={};tierName={};pacedAs={};best={};bestName={};displaySideHolds={}", tier, tierName, pacedAs, best,
+                                            bestName, displaySideHolds));
+      FSLLOG3_INFO("FramePacing: tier in use: {} ({}), paced as {}; best here: {} ({}); the display side holds: {}; vsync source '{}'", tier,
+                   tierName, pacedAs, best, bestName, displaySideHolds, m_vsyncSourceName);
     }
     else
     {
-      FSLLOG3_VERBOSE("FramePacing: tier in use: {} ({}); best here: {} ({}); the display side holds: {}; vsync source '{}'", tier, tierName, best,
-                      bestName, displaySideHolds, m_vsyncSourceName);
+      FSLLOG3_VERBOSE("FramePacing: tier in use: {} ({}), paced as {}; best here: {} ({}); the display side holds: {}; vsync source '{}'", tier,
+                      tierName, pacedAs, best, bestName, displaySideHolds, m_vsyncSourceName);
     }
   }
 
@@ -2766,7 +2828,7 @@ namespace Fsl
     // What the chart shows is counted, in three numbers: the stutter (the frames with a error over the threshold) of the last second,
     // and the stutter of the run by its two causes as the mb-framepacing tools tell them apart (jitter: their delta time jitter)
     m_ui.LabelStutterRecent = rUIFactory.CreateLabel("Last second: 0");
-    m_ui.LabelStutterRun = rUIFactory.CreateLabel("Run: 0 pacing, 0 jitter");
+    m_ui.LabelStutterRun = rUIFactory.CreateLabel("Run: 0 late, 0 delta time jitter");
     legend->AddChild(labelError);
     legend->AddChild(m_ui.LabelStutterRecent);
     legend->AddChild(m_ui.LabelStutterRun);
@@ -2815,7 +2877,7 @@ namespace Fsl
       {
         if (record.IsJudged)
         {
-          m_ui.AnimationErrorChart->AddError(SampleAnimationError::ToRefreshThousandths(record.Error, refreshPeriod));
+          m_ui.AnimationErrorChart->AddError(SampleAnimationError::ToRefreshThousandths(record.Error, refreshPeriod), record.IsDeltaTimeJitter);
         }
         else
         {
@@ -2839,8 +2901,8 @@ namespace Fsl
       // The legend, written a few times a second so it can be read
       m_stutterLegendTime = now;
       const SampleStutterCount runStutter = m_animationError.GetRunStutter();
-      SetFormattedContent(*m_ui.LabelStutterRecent, "Last second: {}", m_animationError.CalcRecentStutter().Total());
-      SetFormattedContent(*m_ui.LabelStutterRun, "Run: {} pacing, {} jitter", runStutter.Pacing, runStutter.DeltaTimeJitter);
+      SetFormattedContent(*m_ui.LabelStutterRecent, "Last second: {}", m_animationError.CalcRecentStutter().ErrorFrames);
+      SetFormattedContent(*m_ui.LabelStutterRun, "Run: {} late, {} delta time jitter", runStutter.Late, runStutter.DeltaTimeJitter);
     }
   }
 

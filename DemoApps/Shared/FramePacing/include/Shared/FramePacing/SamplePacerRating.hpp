@@ -32,9 +32,13 @@ namespace Fsl
   {
     //! The best tier the app reaches
     SamplePacerTier Tier{SamplePacerTier::TimerPeriodOnly};
-    //! The present can hold a frame for two refreshes or more (a time, a minimum duration, or a swap interval of two or more). It is
-    //! no tier: every pacer uses it when it is there.
+    //! The present can hold a frame for two refreshes or more (a time, a minimum duration, or a swap interval of two or more)
     bool DisplaySideHolds{false};
+    //! The app reports when its frames were shown: the "+" after the tier's number
+    bool ReportsDisplayTimes{false};
+    //! The display shows the newer of two frames that are both due and never the older: the "s" after the tier's number. It describes
+    //! the system and changes no tier.
+    bool SkipsOverdue{false};
 
     constexpr bool operator==(const SamplePacerRating&) const noexcept = default;
   };

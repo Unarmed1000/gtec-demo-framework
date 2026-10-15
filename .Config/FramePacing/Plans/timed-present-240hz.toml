@@ -11,7 +11,9 @@ app = "Vulkan.FramePacing"
 frames = 1200
 expected_refresh_hz = 240.0
 # The scene is named: the GPU load settings below were measured with it, and the default scene of the sample is another one now
-args = ["--Background", "flight", "--Window", "[0,0,1600,900]", "--CpuLoad", "0", "--Pacer"]
+# Timed present, the GPU wait, display reports and the wait for a present (vblank-present-wait) became the defaults after this plan
+# was written: they are pinned here to what it measured, and a run that sets one itself overrides the pin.
+args = ["--Pacer.TimedPresent", "false", "--Pacer.GpuWait", "false", "--Pacer.DisplayReports", "false", "--Pacer.Kind", "vblank-period", "--Background", "flight", "--Window", "[0,0,1600,900]", "--CpuLoad", "0", "--Pacer"]
 
 [variables]
 # The --GpuLoad that makes the GPU work 20 and 130 % of a refresh on a frame (the defaults were measured on a NVIDIA desktop GPU)
@@ -35,7 +37,7 @@ loaded = true
 [[run]]
 name = "fps60_timed"
 what = "60 fps (four refreshes per frame), light work, the present is given a time"
-args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
+args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent", "true"]
 loaded = true
 
 [[run]]
@@ -48,7 +50,7 @@ loaded = true
 [[run]]
 name = "fps120_timed"
 what = "120 fps (two refreshes per frame), light work, the present is given a time"
-args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
+args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent", "true"]
 frames = 2400
 loaded = true
 
@@ -64,6 +66,6 @@ loaded = true
 [[run]]
 name = "w130_timed"
 what = "GPU work of 130 % of a refresh, adaptive pacer, the present is given a time"
-args = ["--GpuLoad", "{gpu130}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
+args = ["--GpuLoad", "{gpu130}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent", "true"]
 frames = 2400
 loaded = true

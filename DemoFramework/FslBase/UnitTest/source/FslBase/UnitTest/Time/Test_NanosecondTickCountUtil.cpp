@@ -71,6 +71,26 @@ TEST(TestTime_NanosecondTickCountUtil, FromTickCount_OutOfRange)
 }
 
 
+TEST(TestTime_NanosecondTickCountUtil, TryFromTickCount)
+{
+  constexpr int64_t MaxTicks = std::numeric_limits<int64_t>::max() / 100;
+  constexpr int64_t MinTicks = std::numeric_limits<int64_t>::min() / 100;
+  NanosecondTickCount result(42);
+  EXPECT_TRUE(NanosecondTickCountUtil::TryFromTickCount(TickCount(-1), result));
+  EXPECT_EQ(-100, result.TotalNanoseconds());
+  EXPECT_TRUE(NanosecondTickCountUtil::TryFromTickCount(TickCount(MaxTicks), result));
+  EXPECT_EQ(MaxTicks * 100, result.TotalNanoseconds());
+  EXPECT_TRUE(NanosecondTickCountUtil::TryFromTickCount(TickCount(MinTicks), result));
+  EXPECT_EQ(MinTicks * 100, result.TotalNanoseconds());
+
+  // Outside of the range the result is left as it was
+  result = NanosecondTickCount(42);
+  EXPECT_FALSE(NanosecondTickCountUtil::TryFromTickCount(TickCount(MaxTicks + 1), result));
+  EXPECT_FALSE(NanosecondTickCountUtil::TryFromTickCount(TickCount(MinTicks - 1), result));
+  EXPECT_EQ(42, result.TotalNanoseconds());
+}
+
+
 TEST(TestTime_NanosecondTickCountUtil, ToTickCount_FromTickCount_RoundTrip)
 {
   for (const int64_t ticks : {int64_t{0}, int64_t{1}, int64_t{-1}, int64_t{41664}, TickCount::TicksPerDay, -TickCount::TicksPerHour})

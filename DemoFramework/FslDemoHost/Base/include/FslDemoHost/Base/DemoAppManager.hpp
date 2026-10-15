@@ -43,6 +43,7 @@
 #include <FslDemoHost/Base/DemoAppTiming.hpp>
 #include <FslDemoHost/Base/DemoState.hpp>
 #include <FslDemoHost/Base/LogStatsMode.hpp>
+#include <FslDemoHost/Base/SwapBuffersResult.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
 #include <memory>
 #include <utility>
@@ -55,6 +56,7 @@ namespace Fsl
   class ICpuStatsService;
   class ISystemStatsService;
   class IFramePacingOverlay;
+  class IFramePacingDetailService;
   class IFramePacingMarkerServiceControl;
   class IGraphicsServiceControl;
   class INativeWindow;
@@ -119,6 +121,9 @@ namespace Fsl
     TraceZone m_traceZoneEndDraw;
     TraceZone m_traceZoneProfilerDraw;
     std::shared_ptr<IFramePacingMarkerServiceControl> m_framePacingMarkerServiceControl;
+    //! The second part of the frame record, where the swap of the host is the present of a frame (null: the trace is off or the platform
+    //! has no marker service)
+    std::shared_ptr<IFramePacingDetailService> m_framePacingDetails;
 
     //! The values of a frame the host adds to the trace
     struct FramePacingLogColumns
@@ -202,8 +207,10 @@ namespace Fsl
     //! @brief Should be called after a buffer swap has been completed
     void OnFrameSwapCompleted();
 
-    //! @brief The host swapped the frame (or asked the app to do it): when the call was made and when it returned.
-    void OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept;
+    //! @brief The host swapped the frame itself: when the call was made, when it returned and what it returned.
+    void OnHostSwapBuffers(const TickCount callTime, const TickCount returnTime, const SwapBuffersResult result) noexcept;
+    //! @brief The host asked the app to present the frame: when the call was made and when it returned.
+    void OnAppSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept;
     void OnDemandDrawSkipped();
     void ProcessDone();
 

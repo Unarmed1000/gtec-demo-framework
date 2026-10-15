@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
 
 namespace Fsl
@@ -205,13 +206,24 @@ namespace Fsl
     [[nodiscard]] static bool IsSupported() noexcept;
 
     //! @brief What a app with the given capabilities is worth, by the definition of the pacer library (its rating of a set of
-    //!        capabilities): the best tier it reaches and if the display side can hold a frame. It needs no pacer. Without the
-    //!        pacer library it is the baseline.
+    //!        capabilities): the best tier it reaches, if the display side can hold a frame, and its marks. It needs no pacer.
+    //!        Without the pacer library it is the baseline.
     [[nodiscard]] static SamplePacerRating Rate(const SamplePacerCapabilities& capabilities) noexcept;
 
     //! @brief How the pacer library writes a tier: its major tier and its sub tier. "1.1" is the best and "3.4" the baseline every
     //!        app reaches. Empty without the pacer library.
     [[nodiscard]] static std::string_view GetTierNumber(const SamplePacerTier tier) noexcept;
+
+    //! @brief How the pacer library writes a rating: the number of its tier and its marks after it, "+" where the app reports when its
+    //!        frames were shown and "s" where the display skips a frame that is overdue ("2.1+s"). Empty without the pacer library.
+    [[nodiscard]] static std::string GetRatingText(const SamplePacerRating& rating);
+
+    //! @brief The capabilities of a set by the names the pacer library gives them, separated by ", ". Empty for none, and without the
+    //!        pacer library.
+    [[nodiscard]] static std::string GetCapabilityNames(const SamplePacerCapabilities& capabilities);
+
+    //! @brief The capabilities a pacer with the config uses of those the app has, the same way.
+    [[nodiscard]] static std::string GetActiveCapabilityNames(const SamplePacerConfig& config);
 
     //! @brief How the pacer library writes the major tier of a tier ("1" to "3"), and its words for it: who places a frame on its
     //!        refresh. Empty without the pacer library.
@@ -244,9 +256,15 @@ namespace Fsl
     //!        SamplePacerConfig::TimedPresent are part of that set.
     void SetConfig(const SamplePacerConfig& config);
 
-    //! @brief The tier that paces the frame now, as the pacer says it (its working tier). It is below the tier of the kind until a
-    //!        vertical blank was read and while the waits for a present are stopped. The baseline without the pacer library.
+    //! @brief The tier the run is in now: the tier of what is active (the pacer's active rating), or, while something it promised is
+    //!        missing (no vertical blank read so far, the waits for a present stopped), the lower tier that paces instead. A tier
+    //!        without a pacer of its own is paced as another (GetPacedAsTier), and is still the tier the run is in. The baseline
+    //!        without the pacer library.
     [[nodiscard]] SamplePacerTier GetTier() const noexcept;
+
+    //! @brief The tier that paces the frame now, as the pacer says it (its working tier): GetTier, or the tier of the frame loop that
+    //!        paces a tier without a pacer of its own. The baseline without the pacer library.
+    [[nodiscard]] SamplePacerTier GetPacedAsTier() const noexcept;
 
     //! @brief True if the pacer plans the time before which a frame is not shown (SamplePacerPresentPlan::NotBeforeTime), where the
     //!        app has such a present and the config asks for it: the display places the frame.

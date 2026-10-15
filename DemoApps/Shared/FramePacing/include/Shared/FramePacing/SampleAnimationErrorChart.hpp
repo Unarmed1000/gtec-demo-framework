@@ -35,7 +35,8 @@ namespace Fsl
   //! The chart of the animation error of the FramePacing samples. It draws as the animation error panel of the report of the
   //! mb-framepacing tools does, so the two read the same:
   //! - A bar for each frame, from the line of no error: up when the frame was shown too soon, down when it was shown too late. A
-  //!   frame without error draws nothing, and neither does a frame that is not judged, which is a gap.
+  //!   frame without error draws nothing, and neither does a frame that is not judged, which is a gap. Any other error is at least a
+  //!   pixel long. A delta time jitter frame (SampleAnimationErrorRecord::IsDeltaTimeJitter) is yellow, every other one red.
   //! - A faint band around the line of no error: what is inside it counts as no error (SampleAnimationError::ErrorThreshold).
   //! - A dashed line where a frame was shown a whole refresh too soon and one where it was shown a whole refresh too late.
   //! The scale is fixed, two refreshes to each side: a bar that would be longer ends at the edge and gets a mark there.
@@ -69,7 +70,8 @@ namespace Fsl
 
     //! @brief Add a frame.
     //! @param refreshThousandths its animation error in thousandths of a refresh (SampleAnimationError::ToRefreshThousandths)
-    void AddError(const int32_t refreshThousandths);
+    //! @param isDeltaTimeJitter true for a delta time jitter frame (SampleAnimationErrorRecord::IsDeltaTimeJitter), drawn yellow
+    void AddError(const int32_t refreshThousandths, const bool isDeltaTimeJitter);
 
     //! @brief Add a frame that is not judged: a gap
     void AddGap();
@@ -82,7 +84,7 @@ namespace Fsl
     void WinDraw(const UI::UIDrawContext& context) final;
 
   private:
-    void AddEntry(const int16_t value);
+    void AddEntry(const int16_t value, const bool isDeltaTimeJitter);
   };
 }
 

@@ -24,6 +24,7 @@
 
 #include <FslBase/System/HighResolutionTimer.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingDetailService.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingSequence.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/IFramePacingFrameSource.hpp>
@@ -51,6 +52,7 @@ namespace Fsl
     : public ThreadLocalService
     , public IFramePacingMarkerService
     , public IFramePacingMarkerServiceControl
+    , public IFramePacingDetailService
     , public IFramePacingFrameSource
   {
     struct PendingRun
@@ -140,6 +142,26 @@ namespace Fsl
     //! When the load of the machine was last written to the log (zero = never)
     TickCount m_logSystemSampleTime;
 
+    //! The tracks of the second part of the frame record (IFramePacingDetailService)
+    struct DetailTracks
+    {
+      TraceTrack Wait;
+      TraceTrack Present;
+      TraceTrack Gpu;
+      TraceTrack Display;
+      TraceTrack Run;
+    };
+    DetailTracks m_detailTracks;
+    //! The swap interval the presents are made with (empty until the app said)
+    std::optional<uint32_t> m_swapInterval;
+    //! What the run runs on, as the one who presents and the app said it (empty until they did)
+    std::optional<FramePacingSwapchainEnvironment> m_swapchainEnvironment;
+    std::optional<FramePacingPacerEnvironment> m_pacerEnvironment;
+    //! True if the environment changed since it was written
+    bool m_environmentChanged{false};
+    //! The run the environment was last written for (zero: none)
+    uint32_t m_environmentRunId{0};
+
   public:
     FramePacingMarkerService(const ServiceProvider& serviceProvider, const std::shared_ptr<FramePacingMarkerServiceOptionParser>& optionParser);
     ~FramePacingMarkerService() final;
@@ -165,6 +187,20 @@ namespace Fsl
     void SetFrameSchedule(const FramePacingFrameSchedule& schedule) noexcept final;
     bool TryGetLastSwapTimes(TickCount& rCallTime, TickCount& rReturnTime) const noexcept final;
 
+    // From IFramePacingDetailService
+    [[nodiscard]] bool IsTraceEnabled() const noexcept final;
+    [[nodiscard]] FramePacingFrameId GetFrameId() const noexcept final;
+    void AddWait(const FramePacingFrameId frameId, const FramePacingWaitKind kind, const TickCount beginTime, const TickCount endTime,
+                 const std::optional<TickCount> plannedTime) noexcept final;
+    void AddPresent(const FramePacingFrameId frameId, const FramePacingPresentRecord& record) noexcept final;
+    void AddGpuWork(const FramePacingFrameId frameId, const TickCount beginTime, const TickCount endTime) noexcept final;
+    void AddDisplayTime(const FramePacingFrameId frameId, const TickCount displayTime, const std::string_view source) noexcept final;
+    void AddNotPresented(const FramePacingFrameId frameId, const TickCount time) noexcept final;
+    void AddSwapchainRecreated(const std::string_view reason) noexcept final;
+    void SetSwapInterval(const uint32_t swapInterval, const FramePacingSwapIntervalChangedBy changedBy) noexcept final;
+    void SetSwapchainEnvironment(const FramePacingSwapchainEnvironment& environment) final;
+    void SetPacerEnvironment(const FramePacingPacerEnvironment& environment) final;
+
     // From IFramePacingMarkerServiceControl
     void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) final;
     void OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept final;
@@ -181,6 +217,10 @@ namespace Fsl
     void WriteLogFacts();
     void WriteLogSystemLoad(const TickCount currentTime);
     uint32_t CreateRunId();
+    void AddDetailSpan(const TraceTrack track, const std::string_view name, const TickCount beginTime, const TickCount endTime,
+                       const std::span<const TraceArgument> arguments) noexcept;
+    void AddRunMoment(const std::string_view name, const std::span<const TraceArgument> arguments) noexcept;
+    void WriteEnvironment() noexcept;
     FramePacingSequenceId CreateSequenceId();
   };
 }

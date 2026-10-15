@@ -22,7 +22,8 @@
 # ****************************************************************************************************************************************************
 
 # Reads the trace '--Trace <file>' writes (see Doc/Trace.md) as a FramePacingLog: the values of the 'Frame' spans are the rows, the 'Events'
-# track the events and the 'Facts' track the facts. It is read with the trace processor of Perfetto, which the 'perfetto' package of Python
+# track the events and the 'Facts' track the facts. What happened around each frame is in the second part of the frame record of
+# mb-framepacing, which is read into 'mbfp.' columns of the frames and events of the moments of the run. It is read with the trace processor of Perfetto, which the 'perfetto' package of Python
 # brings (pip install perfetto). The package downloads the trace processor the first time it is used.
 
 from dataclasses import dataclass
@@ -42,6 +43,45 @@ _g_schemaValueName = "value"
 _g_formatVersionFact = "trace.formatVersion"
 _g_supportedFormatVersion = "1"
 _g_nanosecondsPerTick = 100
+
+# The second part of the frame record of mb-framepacing (its sdk/doc/trace-frame-record.md): what happened around each frame, named by the
+# frame's run id and frame index. It is read into columns of the frame it names, all in ticks but the counts, under these names
+_g_runIdColumnName = "runId"
+_g_detailPrefixes = {
+    "mbfp wait ": "wait",
+    "mbfp present ": "present",
+    "mbfp gpu ": "gpu",
+    "mbfp display ": "display",
+    "mbfp not presented ": "notPresented",
+}
+# The waits by their kind: the first begin and the last end of the waits of a kind before the frame, and the time a wait waited for
+_g_waitKindNames = {
+    "frame slot": "frameSlot",
+    "acquire": "acquire",
+    "present": "present",
+    "gpu": "gpu",
+    "start time": "startTime",
+    "vblank": "vblank",
+    "other": "other",
+}
+g_presentCallColumnName = "mbfp.presentCallTicks"
+g_presentReturnColumnName = "mbfp.presentReturnTicks"
+g_presentResultCodeColumnName = "mbfp.presentResultCode"
+g_swapIntervalColumnName = "mbfp.swapInterval"
+g_gpuBeginColumnName = "mbfp.gpuBeginTicks"
+g_gpuEndColumnName = "mbfp.gpuEndTicks"
+g_displayColumnName = "mbfp.displayTicks"
+g_notPresentedColumnName = "mbfp.notPresented"
+# The moments of a run are events of these names, with their annotations as the details
+g_environmentEventName = "mbfp environment"
+g_swapChainRecreatedEventName = "mbfp swap chain recreated"
+g_swapIntervalChangeEventName = "mbfp swap interval change"
+_g_runMomentNames = (g_environmentEventName, g_swapChainRecreatedEventName, g_swapIntervalChangeEventName)
+
+
+def WaitColumnName(kindName: str, what: str) -> str:
+    """The column of the waits of a kind of the frame record: what is 'BeginTicks', 'EndTicks' or 'PlannedTicks'"""
+    return f"mbfp.{kindName}Wait{what}"
 
 
 class TraceReadError(Exception):
@@ -84,8 +124,10 @@ class FramePacingTraceFile(FramePacingLog):
             self._ReadProblems(traceProcessor)
             self._ReadSchema(traceProcessor)
             self._ReadFrames(traceProcessor)
+            self._ReadFrameRecordDetails(traceProcessor)
             self._ReadFacts(traceProcessor)
             self._ReadEvents(traceProcessor)
+            self._ReadRunMoments(traceProcessor)
         finally:
             traceProcessor.close()
         formatVersion = self.Facts.get(_g_formatVersionFact)
@@ -128,6 +170,91 @@ class FramePacingTraceFile(FramePacingLog):
             for name in self.ColumnNames:
                 columns[name][row] = values.get(name)
         self._columns = columns
+
+    def _ReadFrameRecordDetails(self, traceProcessor: Any) -> None:
+        """Part 2 of the frame record: each slice and moment goes to the row of the frame its name has"""
+        rows: dict[tuple[int, int], int] = {}
+        for row, (frameIndex, runId) in enumerate(zip(self.GetColumn(g_frameIndexColumnName), self.GetColumn(_g_runIdColumnName))):
+            if frameIndex is not None and runId is not None:
+                rows[(runId, frameIndex)] = row
+        wanted = " or ".join(f"s.name glob '{prefix}*'" for prefix in _g_detailPrefixes)
+        arguments = self._ReadArgumentsWhere(traceProcessor, wanted)
+        columns: dict[str, list[int | None]] = {}
+
+        def SetValue(name: str, row: int, value: int, keep: str = "last") -> None:
+            column = columns.setdefault(name, [None] * self.RowCount)
+            old = column[row]
+            if old is None or keep == "last":
+                column[row] = value
+            elif keep == "min":
+                column[row] = min(old, value)
+            else:
+                column[row] = max(old, value)
+
+        unknown = 0
+        for record in traceProcessor.query(f"select s.name as name, s.ts as ts, s.dur as dur, s.arg_set_id as arg_set_id from slice s where {wanted} "
+                                          "order by s.ts, s.id"):
+            prefix = next(prefix for prefix in _g_detailPrefixes if record.name.startswith(prefix))
+            ids = record.name[len(prefix):].split(" ")
+            row = rows.get((int(ids[0]), int(ids[1]))) if len(ids) == 2 and ids[0].isdigit() and ids[1].isdigit() else None
+            if row is None:
+                # A frame the trace has no row of: before its first frame was written or after its last
+                unknown += 1
+                continue
+            begin = record.ts // _g_nanosecondsPerTick
+            end = (record.ts + max(record.dur, 0)) // _g_nanosecondsPerTick
+            values = arguments.get(record.arg_set_id, {})
+            detail = _g_detailPrefixes[prefix]
+            if detail == "wait":
+                kindName = _g_waitKindNames.get(str(values.get("kind", "other")), "other")
+                SetValue(WaitColumnName(kindName, "BeginTicks"), row, begin, "min")
+                SetValue(WaitColumnName(kindName, "EndTicks"), row, end, "max")
+                planned = values.get("plannedNs")
+                if isinstance(planned, int):
+                    SetValue(WaitColumnName(kindName, "PlannedTicks"), row, planned // _g_nanosecondsPerTick)
+            elif detail == "present":
+                SetValue(g_presentCallColumnName, row, begin)
+                SetValue(g_presentReturnColumnName, row, end)
+                for name, key in ((g_swapIntervalColumnName, "swapInterval"), (g_presentResultCodeColumnName, "resultCode")):
+                    value = values.get(key)
+                    if isinstance(value, int):
+                        SetValue(name, row, value)
+            elif detail == "gpu":
+                SetValue(g_gpuBeginColumnName, row, begin)
+                SetValue(g_gpuEndColumnName, row, end)
+            elif detail == "display":
+                SetValue(g_displayColumnName, row, begin)
+            else:
+                SetValue(g_notPresentedColumnName, row, 1)
+        if unknown > 0:
+            self.ReadProblems.append(f"{unknown} records of part 2 of the frame record name a frame the trace has no row of, they were left out")
+        for name in sorted(columns):
+            self.ColumnNames.append(name)
+            self._columns[name] = columns[name]
+
+    def _ReadRunMoments(self, traceProcessor: Any) -> None:
+        """The moments of the run of part 2 of the frame record, as events with their annotations as the details"""
+        wanted = " or ".join(f"s.name = '{name}'" for name in _g_runMomentNames)
+        arguments = self._ReadArgumentsWhere(traceProcessor, wanted)
+        moments: list[LogEvent] = []
+        for row in traceProcessor.query(f"select s.name as name, s.ts as ts, s.arg_set_id as arg_set_id from slice s where {wanted} order by s.ts, s.id"):
+            details = ";".join(f"{key}={value}" for key, value in arguments.get(row.arg_set_id, {}).items())
+            moments.append(LogEvent(0, row.ts // _g_nanosecondsPerTick, row.name, details))
+        self.Events = sorted(self.Events + moments, key=lambda event: event.TimeTicks)
+
+    @staticmethod
+    def _ReadArgumentsWhere(traceProcessor: Any, where: str) -> dict[int, dict[str, int | str]]:
+        """The arguments of the slices the condition selects, for each set of arguments by their name"""
+        result: dict[int, dict[str, int | str]] = {}
+        query = ("select a.arg_set_id as arg_set_id, a.key as key, a.int_value as int_value, a.string_value as string_value from slice s "
+                 f"join args a on a.arg_set_id = s.arg_set_id where {where}")
+        for row in traceProcessor.query(query):
+            if not row.key.startswith(_g_argumentPrefix):
+                continue
+            value: int | str | None = row.int_value if row.int_value is not None else row.string_value
+            if value is not None:
+                result.setdefault(row.arg_set_id, {})[row.key[len(_g_argumentPrefix):]] = value
+        return result
 
     def _ReadFacts(self, traceProcessor: Any) -> None:
         arguments = self._ReadArguments(traceProcessor, _g_factsTrackName)

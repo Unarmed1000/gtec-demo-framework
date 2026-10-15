@@ -473,6 +473,13 @@ namespace Fsl
   }
 
 
+  bool TraceService::AddMoment(const TraceTrack track, const std::string_view category, const std::string_view name, const NanosecondTickCount time,
+                               const std::span<const TraceArgument> arguments) noexcept
+  {
+    return m_log ? m_log->AddMoment(track, category, name, time, arguments) : false;
+  }
+
+
   void TraceService::SetFact(const std::string_view key, const std::string_view value)
   {
     if (m_log)

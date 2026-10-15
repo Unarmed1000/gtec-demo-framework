@@ -221,7 +221,8 @@ namespace Fsl
     rOptions.emplace_back("VkPresentWait", OptionArgument::OptionRequired, CommandId::VkPresentWait,
                           "Before a frame starts the app base waits until an earlier present was presented (VK_KHR_present_wait2, where the "
                           "device and the surface have it). 0 (the default): no wait. 1: the present of the frame before. 2: the present "
-                          "before that one, so one present may wait for the display while the next frame is made. At most 4.",
+                          "before that one, so one present may wait for the display while the next frame is made. At most 4. A app can "
+                          "ask for a swapchain whose presents it waits for itself, which this does not change.",
                           OptionGroup::Host);
     rOptions.emplace_back("VkAcquireFenceWait", OptionArgument::OptionRequired, CommandId::VkAcquireFenceWait,
                           "true: the acquire of a swapchain image gets a fence and the app base waits for it before it goes on with the "
