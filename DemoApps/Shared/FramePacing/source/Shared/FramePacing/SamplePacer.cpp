@@ -598,6 +598,7 @@ namespace Fsl
     schedule.IntendedDisplayTime = ToFrameworkNanoseconds(src.IntendedDisplayTime);
     schedule.TargetFrameTime = ToFrameworkNanoseconds(src.TargetFrameTime);
     schedule.PreferredFrameTime = ToFrameworkNanoseconds(src.PreferredFrameTime);
+    schedule.RefreshPeriod = ToFrameworkNanoseconds(src.RefreshPeriod);
     schedule.Change = ToSamplePacerChange(src.Change);
     return schedule;
   }

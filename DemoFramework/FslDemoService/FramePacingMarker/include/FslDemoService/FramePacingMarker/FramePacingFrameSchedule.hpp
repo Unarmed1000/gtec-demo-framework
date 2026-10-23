@@ -49,6 +49,9 @@ namespace Fsl
     std::optional<NanosecondTimeSpan> TargetFrameTime;
     //! The frame time the application wants to run at
     std::optional<NanosecondTimeSpan> PreferredFrameTime;
+    //! The refresh period of the display the frame is paced for: what the app gives its frame pacer or what its swap chain reports.
+    //! Left empty under variable refresh.
+    std::optional<NanosecondTimeSpan> RefreshPeriod;
     //! True if nothing animates while this frame is on screen, for an app that knows it while it draws the frame (the marker's static
     //! after flag). A app that does not know needs to do nothing: the service flags a frame that has the animation time of the frame
     //! before it by itself (static before).

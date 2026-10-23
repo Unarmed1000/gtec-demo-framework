@@ -116,6 +116,12 @@ namespace Fsl
       return FP::NanosecondTimeDuration::Min(FP::NanosecondTimeDuration::FromNanoseconds(nanoseconds), FM::Payload::MaxFrameTime);
     }
 
+    //! A refresh period as the marker takes it: zero if it is unknown, one that is longer is the longest refresh period a marker carries.
+    constexpr FP::NanosecondTimeDuration ToMarkerRefreshPeriod(const int64_t nanoseconds) noexcept
+    {
+      return FP::NanosecondTimeDuration::Min(FP::NanosecondTimeDuration::FromNanoseconds(nanoseconds), FM::Payload::MaxRefreshPeriod);
+    }
+
     int32_t ToInt32(const uint32_t value) noexcept
     {
       return value <= static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) ? static_cast<int32_t>(value) : std::numeric_limits<int32_t>::max();
@@ -227,7 +233,7 @@ namespace Fsl
     const FM::Options options =
       record.CaptureHeightPx > 0 ? FM::Options::Recommended(windowHeightPx, record.CaptureHeightPx) : FM::Options(record.ModuleSizePx);
     const int32_t alignPx = CalcAlignPx(windowHeightPx, record.CaptureHeightPx);
-    // The framework has no frame pacer, so the intended display time, the target frame time and the preferred frame time are unknown (0)
+    // The framework has no frame pacer, so the intended display time, the target and preferred frame time and the refresh period are unknown (0)
     // unless the app supplied the values of the frame (IFramePacingMarkerService::SetFrameSchedule). A frame is flagged as static after
     // if the app said so, and as static before if the service found that it has the animation time of the frame before it.
     // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now, unless the app gave the
@@ -249,6 +255,7 @@ namespace Fsl
                               FP::NanosecondTimeSpan(record.AnimationNanoseconds),
                               ToMarkerFrameTime(record.PreferredFrameNanoseconds),
                               ToMarkerFrameTime(record.TargetFrameNanoseconds),
+                              ToMarkerRefreshPeriod(record.RefreshPeriodNanoseconds),
                               FP::NanosecondTickCount(record.IntendedDisplayNanoseconds),
                               FP::NanosecondTickCount(record.CpuStartNanoseconds),
                               cpuBusy};
@@ -334,6 +341,10 @@ namespace Fsl
     if (payload.PreferredFrameTime() > FP::NanosecondTimeDuration())
     {
       markerInfo.PreferredFrameTime = ToNanosecondTimeSpan(payload.PreferredFrameTime());
+    }
+    if (payload.RefreshPeriod() > FP::NanosecondTimeDuration())
+    {
+      markerInfo.RefreshPeriod = ToNanosecondTimeSpan(payload.RefreshPeriod());
     }
     markerInfo.Static = record.Static;
     markerInfo.StaticBefore = record.StaticBefore;

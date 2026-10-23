@@ -50,6 +50,7 @@ namespace Fsl::FramePacingFrameRecordUtil
     rRecord.IntendedDisplayNanoseconds = ToKnownNanoseconds(schedule.IntendedDisplayTime);
     rRecord.TargetFrameNanoseconds = ToKnownNanoseconds(schedule.TargetFrameTime);
     rRecord.PreferredFrameNanoseconds = ToKnownNanoseconds(schedule.PreferredFrameTime);
+    rRecord.RefreshPeriodNanoseconds = ToKnownNanoseconds(schedule.RefreshPeriod);
     rRecord.Static = schedule.Static;
   }
 

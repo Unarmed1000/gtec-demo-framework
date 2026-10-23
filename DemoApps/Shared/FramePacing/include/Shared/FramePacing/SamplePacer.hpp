@@ -134,6 +134,8 @@ namespace Fsl
     NanosecondTimeSpan TargetFrameTime;
     //! The frame time the app wants: the swap interval of the target frame rate as a time
     NanosecondTimeSpan PreferredFrameTime;
+    //! The refresh period the pacer is on, whether the app paces or not
+    NanosecondTimeSpan RefreshPeriod;
     SamplePacerChange Change{SamplePacerChange::Unchanged};
   };
 

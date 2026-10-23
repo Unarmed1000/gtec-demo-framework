@@ -859,6 +859,11 @@ namespace Fsl
         frameSchedule.IntendedDisplayTime = m_schedule.IntendedDisplayTime;
         frameSchedule.TargetFrameTime = m_schedule.TargetFrameTime;
         frameSchedule.PreferredFrameTime = m_schedule.PreferredFrameTime;
+        // The marker has no refresh period under variable refresh
+        if (!m_variableRefreshSeen)
+        {
+          frameSchedule.RefreshPeriod = m_schedule.RefreshPeriod;
+        }
         // The CPU busy time of the marker is the pacer's to count. The marker is drawn after this, so this is the last thing of the
         // draw: what is left of the frame is the host drawing the marker.
         const TimeSpan cpuBusy = m_pacer->GetCpuBusyAt(m_timer.GetTimestamp());
@@ -2673,6 +2678,7 @@ namespace Fsl
     rStats.RunId = addStatsRow(*markerGrid, markerRow, "Run id");
     rStats.IntendedDisplayTime = addStatsRow(*markerGrid, markerRow, "Intended display time");
     rStats.TargetFrameTime = addStatsRow(*markerGrid, markerRow, "Target frame time");
+    rStats.RefreshPeriod = addStatsRow(*markerGrid, markerRow, "Refresh period");
     rStats.CpuStartTime = addStatsRow(*markerGrid, markerRow, "CPU start time");
     rStats.CpuBusyTime = addStatsRow(*markerGrid, markerRow, "CPU busy");
     rStats.PreferredFrameTime = addStatsRow(*markerGrid, markerRow, "Preferred frame time");
@@ -2949,8 +2955,8 @@ namespace Fsl
       rStats.Kind->SetContent("none drawn yet");
       for (UI::Label* pLabel :
            {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(), rStats.TargetFrameTime.get(),
-            rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.PreferredFrameTime.get(), rStats.Static.get(), rStats.RunStartTime.get(),
-            rStats.RunSequenceId.get(), rStats.FrameRecord.get(), rStats.SyncMarker.get()})
+            rStats.RefreshPeriod.get(), rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.PreferredFrameTime.get(), rStats.Static.get(),
+            rStats.RunStartTime.get(), rStats.RunSequenceId.get(), rStats.FrameRecord.get(), rStats.SyncMarker.get()})
       {
         pLabel->SetContent(UnknownValue);
       }
@@ -3016,6 +3022,14 @@ namespace Fsl
     else
     {
       rStats.TargetFrameTime->SetContent(UnknownValue);
+    }
+    if (info.RefreshPeriod.has_value())
+    {
+      SetFormattedContent(*rStats.RefreshPeriod, "{:.3f} ms", info.RefreshPeriod->TotalMilliseconds());
+    }
+    else
+    {
+      rStats.RefreshPeriod->SetContent(UnknownValue);
     }
     if (info.CpuStartTime.has_value() && m_markerStep.CpuStartStep.has_value())
     {

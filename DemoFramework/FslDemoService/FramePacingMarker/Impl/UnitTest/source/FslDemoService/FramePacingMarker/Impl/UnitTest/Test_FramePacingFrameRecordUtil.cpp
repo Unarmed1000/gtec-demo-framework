@@ -66,6 +66,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AnimationTimeOnly)
   EXPECT_EQ(0, record.IntendedDisplayNanoseconds);
   EXPECT_EQ(0, record.TargetFrameNanoseconds);
   EXPECT_EQ(0, record.PreferredFrameNanoseconds);
+  EXPECT_EQ(0, record.RefreshPeriodNanoseconds);
   EXPECT_FALSE(record.Static);
   // The values that are not part of the schedule are untouched
   EXPECT_EQ(42u, record.FrameIndex);
@@ -83,6 +84,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AllValues)
   schedule.IntendedDisplayTime = NanosecondTickCount(335433);
   schedule.TargetFrameTime = NanosecondTimeSpan(33333333);
   schedule.PreferredFrameTime = NanosecondTimeSpan(16666667);
+  schedule.RefreshPeriod = NanosecondTimeSpan(16666667);
   schedule.Static = true;
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
@@ -93,6 +95,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AllValues)
   EXPECT_EQ(335433, record.IntendedDisplayNanoseconds);
   EXPECT_EQ(33333333, record.TargetFrameNanoseconds);
   EXPECT_EQ(16666667, record.PreferredFrameNanoseconds);
+  EXPECT_EQ(16666667, record.RefreshPeriodNanoseconds);
   EXPECT_TRUE(record.Static);
 }
 
@@ -103,6 +106,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_ReplacesPreviousPacingValues
   record.IntendedDisplayNanoseconds = 111;
   record.TargetFrameNanoseconds = 222;
   record.PreferredFrameNanoseconds = 333;
+  record.RefreshPeriodNanoseconds = 444;
   record.Static = true;
   FramePacingFrameSchedule schedule;
   schedule.AnimationTime = NanosecondTimeSpan(5000);
@@ -112,6 +116,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_ReplacesPreviousPacingValues
   EXPECT_EQ(0, record.IntendedDisplayNanoseconds);
   EXPECT_EQ(0, record.TargetFrameNanoseconds);
   EXPECT_EQ(0, record.PreferredFrameNanoseconds);
+  EXPECT_EQ(0, record.RefreshPeriodNanoseconds);
   EXPECT_FALSE(record.Static);
 }
 
@@ -125,6 +130,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_NotPositiveTimesAreUnknown)
   schedule.IntendedDisplayTime = NanosecondTickCount(-1);
   schedule.TargetFrameTime = NanosecondTimeSpan(0);
   schedule.PreferredFrameTime = NanosecondTimeSpan(-16666667);
+  schedule.RefreshPeriod = NanosecondTimeSpan(0);
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
@@ -132,6 +138,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_NotPositiveTimesAreUnknown)
   EXPECT_EQ(0, record.IntendedDisplayNanoseconds);
   EXPECT_EQ(0, record.TargetFrameNanoseconds);
   EXPECT_EQ(0, record.PreferredFrameNanoseconds);
+  EXPECT_EQ(0, record.RefreshPeriodNanoseconds);
 }
 
 
@@ -146,6 +153,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_ANanosecondIsKept)
   schedule.IntendedDisplayTime = NanosecondTickCount(390293217625389);
   schedule.TargetFrameTime = NanosecondTimeSpan(4166389);
   schedule.PreferredFrameTime = NanosecondTimeSpan(4166389);
+  schedule.RefreshPeriod = NanosecondTimeSpan(4166389);
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
@@ -155,6 +163,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_ANanosecondIsKept)
   EXPECT_EQ(390293217625389, record.IntendedDisplayNanoseconds);
   EXPECT_EQ(4166389, record.TargetFrameNanoseconds);
   EXPECT_EQ(4166389, record.PreferredFrameNanoseconds);
+  EXPECT_EQ(4166389, record.RefreshPeriodNanoseconds);
 }
 
 

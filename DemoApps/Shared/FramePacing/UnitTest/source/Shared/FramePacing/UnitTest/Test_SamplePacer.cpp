@@ -124,6 +124,21 @@ TEST(TestSamplePacer, TimerPeriodOnly_NextFrameIsDueARefreshLater)
 }
 
 
+TEST(TestSamplePacer, BeginFrame_TheScheduleHasTheRefreshPeriodOfEveryKind)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  for (const SamplePacerKind kind : {SamplePacerKind::TimerPeriodOnly, SamplePacerKind::TimerWaitForPresent, SamplePacerKind::VBlankPeriodOnly,
+                                     SamplePacerKind::VBlankWaitForPresent})
+  {
+    SamplePacer pacer(Config(kind));
+    EXPECT_EQ(RefreshPeriod, pacer.BeginFrame(At(0)).RefreshPeriod);
+  }
+}
+
+
 TEST(TestSamplePacer, TimerPeriodOnly_PlanFrameChangesNothing)
 {
   if (!SamplePacer::IsSupported())

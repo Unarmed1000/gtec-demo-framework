@@ -54,6 +54,8 @@ namespace Fsl
     std::optional<NanosecondTimeSpan> CpuBusyTime;
     //! The frame time the application wants to run at (empty unless the app supplied it with SetFrameSchedule)
     std::optional<NanosecondTimeSpan> PreferredFrameTime;
+    //! The refresh period of the display the frame was paced for (empty unless the app supplied it with SetFrameSchedule)
+    std::optional<NanosecondTimeSpan> RefreshPeriod;
     //! True if the marker flagged the frame as static after: nothing animates while it is on screen (only set if the app supplied it with
     //! SetFrameSchedule)
     bool Static{false};

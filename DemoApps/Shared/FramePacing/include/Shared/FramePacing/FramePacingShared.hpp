@@ -119,6 +119,7 @@ namespace Fsl
       std::shared_ptr<UI::Label> RunId;
       std::shared_ptr<UI::Label> IntendedDisplayTime;
       std::shared_ptr<UI::Label> TargetFrameTime;
+      std::shared_ptr<UI::Label> RefreshPeriod;
       std::shared_ptr<UI::Label> CpuStartTime;
       std::shared_ptr<UI::Label> CpuBusyTime;
       std::shared_ptr<UI::Label> PreferredFrameTime;

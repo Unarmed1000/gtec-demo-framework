@@ -48,6 +48,8 @@ namespace Fsl
     int64_t TargetFrameNanoseconds{0};
     //! The frame time the application wants to run at in nanoseconds, 0 if unknown.
     int64_t PreferredFrameNanoseconds{0};
+    //! The refresh period of the display the frame is paced for in nanoseconds, 0 if unknown (and under variable refresh).
+    int64_t RefreshPeriodNanoseconds{0};
     //! True if nothing animates while the frame is on screen (the app said so).
     bool Static{false};
     //! True if nothing animated while the frame before this one was on screen (the service found it has the same animation time).

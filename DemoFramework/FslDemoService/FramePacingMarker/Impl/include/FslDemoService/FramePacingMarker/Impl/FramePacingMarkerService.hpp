@@ -110,6 +110,7 @@ namespace Fsl
       TraceValue IntendedDisplay;
       TraceValue TargetFrameTime;
       TraceValue PreferredFrameTime;
+      TraceValue RefreshPeriod;
       TraceValue MarkerDrawn;
       TraceValue MarkerDraw;
       TraceValue MarkerCpuBusy;

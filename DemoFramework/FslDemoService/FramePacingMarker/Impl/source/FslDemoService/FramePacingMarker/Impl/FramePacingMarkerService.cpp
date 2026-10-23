@@ -535,6 +535,10 @@ namespace Fsl
       {
         m_trace->SetValue(m_logColumns.PreferredFrameTime, *schedule.PreferredFrameTime);
       }
+      if (schedule.RefreshPeriod.has_value())
+      {
+        m_trace->SetValue(m_logColumns.RefreshPeriod, *schedule.RefreshPeriod);
+      }
     }
   }
 
@@ -554,6 +558,7 @@ namespace Fsl
     rRecord.IntendedDisplayNanoseconds = 0;
     rRecord.TargetFrameNanoseconds = 0;
     rRecord.PreferredFrameNanoseconds = 0;
+    rRecord.RefreshPeriodNanoseconds = 0;
     rRecord.Static = false;
     if (m_frameSchedule.has_value())
     {
@@ -604,6 +609,11 @@ namespace Fsl
       if (markerInfo.PreferredFrameTime.has_value())
       {
         m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.PreferredFrameTime, *markerInfo.PreferredFrameTime);
+      }
+      // A refresh period of the marker is the one that was given, or the longest one a marker carries
+      if (markerInfo.RefreshPeriod.has_value())
+      {
+        m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.RefreshPeriod, *markerInfo.RefreshPeriod);
       }
       m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStatic, markerInfo.Static);
       m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStaticBefore, markerInfo.StaticBefore);
@@ -887,6 +897,9 @@ namespace Fsl
                                                       "The frame time the frame pacer of the app aims for in nanoseconds, as the marker carries it");
     m_logColumns.PreferredFrameTime = rLog.RegisterValue("preferredFrameTimeNs", TraceUnit::Nanoseconds,
                                                          "The frame time the app wants to run at in nanoseconds, as the marker carries it");
+    m_logColumns.RefreshPeriod =
+      rLog.RegisterValue("refreshPeriodNs", TraceUnit::Nanoseconds,
+                         "The refresh period of the display the app paces the frame for in nanoseconds, as the marker carries it");
     m_logColumns.MarkerDrawn = rLog.RegisterValue("markerDrawn", TraceUnit::Flag, "1 if the marker was drawn on the frame");
     m_logColumns.MarkerDraw = rLog.RegisterValue("markerDrawTicks", TraceUnit::Ticks, "When the marker was drawn, the last thing of the frame");
     m_logColumns.MarkerCpuBusy =
