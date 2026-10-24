@@ -37,3 +37,6 @@ CONTENT_BUILD_FOLDER_NAME = "Content.bld"
 CONTENT_BUILD_FILE_NAME = "Content.json"
 
 CONTENT_SYNC_CACHE_FILENAME = "_ContentSyncCache.fsl"
+
+# The licence file of a resource, next to it (FslBuildCheck --ScanLicense)
+LICENSE_FILE_NAME = "License.json"

@@ -40,8 +40,11 @@
 #   same paths can not collide. The name is the one the package declares, which every flavor instance of it shares.
 # - Each file says what it is: its content type and the profile its owner gives the file it comes from (ContentProfileList), so the
 #   importer of a platform and a content builder build it the way its owner means.
+# - Documentation of the content ('SOURCE.md') is not content of the app. The licence file of a resource ('License.json') is, unless the
+#   project says otherwise (ContentConfiguration ShipLicenseFiles). What is not content is not checked for collisions either.
 
-from FslBuildGen.BuildContent import ContentBuilder, ContentBuildSteps
+from FslBuildGen.BuildContent import ContentBuilder, ContentBuildSteps, ContentProfile
+from FslBuildGen.BuildContent.ContentProfile import ContentType
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Exceptions import UsageErrorException
@@ -68,6 +71,8 @@ def Resolve(log: Log, toolConfig: ToolConfig, package: Package) -> list[PackageA
     contentProcessorManager: ContentBuilder.ContentProcessorManager | None = None
 
     result: list[PackageAppContentEntry] = []
+    # The content types that are about the content and are not content of the app
+    notContent = {ContentType.Documentation} if toolConfig.ShipLicenseFiles else {ContentType.Documentation, ContentType.License}
     # A package with flavors can be in the build order as more than one instance, they share their directory: each file once
     added: set[tuple[str, str]] = set()
 
@@ -79,6 +84,8 @@ def Resolve(log: Log, toolConfig: ToolConfig, package: Package) -> list[PackageA
         builderName: str | None = None,
         builderArguments: list[str] | None = None,
     ) -> None:
+        if ContentProfile.GetContentType(appPath) in notContent:
+            return
         if owner.UseContentNamespace:
             appPath = f"{owner.NameInfo.SourceName}/{appPath}"
         key = (source.ResolvedPath, appPath)

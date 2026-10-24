@@ -408,6 +408,9 @@ class ToolConfig:
         self.ContentDirectory = ContentDirectoryConfig.Parse(
             basedUponXML.ContentBuilderConfiguration.ContentDirectory if basedUponXML.ContentBuilderConfiguration is not None else None, filename
         )
+        # The licence file next to a resource is content of the apps that get the resource, unless the project says otherwise
+        contentConfiguration = projectRootConfig.XmlContentConfiguration
+        self.ShipLicenseFiles: bool = contentConfiguration.ShipLicenseFiles if contentConfiguration is not None else True
         self.UnitTestPath = self.__TryResolveUnitTestPath()
         self.DefaultPackageLanguage = projectRootConfig.DefaultPackageLanguage
         self.DefaultCompany = projectRootConfig.DefaultCompany

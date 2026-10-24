@@ -32,7 +32,9 @@
 # - Texture: TextureImporter and TextureProcessor. Mipmaps and compression from the profile. No colour key and no premultiplied alpha:
 #   neither is a property of the content, a texture keeps the alpha it has. Encoding has no parameter, the runtime picks the format.
 # - Effect: EffectImporter and EffectProcessor. Sound: the importer of the extension and SoundEffectProcessor with the quality.
-# - Data: copied as it is. Include: not in the project, an effect reads it from beside itself.
+# - Data and a licence file: copied as they are. Include: not in the project, an effect reads it from beside itself. Documentation is not
+#   content of the app, so it never gets here.
+# - The project never premultiplies alpha and never keys a colour (ContentProfile): a texture that must be premultiplied is baked so.
 # - The file is written only when its text changes, so MGCB keeps its own state of what is up to date.
 
 from collections.abc import Sequence
@@ -63,7 +65,7 @@ def _Entry(entry: PackageAppContentEntry) -> list[str]:
     profile = entry.Profile
     # A built file of another content type than its source has the default of its own type: the profile is about the source
     properties = profile.Properties if profile.ContentType == entry.ContentType else ContentProfile.GetDefault(entry.ContentType).Properties
-    if entry.ContentType == ContentType.Include:
+    if entry.ContentType in (ContentType.Include, ContentType.Documentation):
         return []
     if entry.ContentType == ContentType.Texture:
         return [

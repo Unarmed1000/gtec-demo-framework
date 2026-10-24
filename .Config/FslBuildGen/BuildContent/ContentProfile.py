@@ -25,7 +25,10 @@
 # means: MGCB for MonoGame, the editor for Unity, a content builder of the tool.
 #
 # - The content type of a file comes from its extension: a texture, an effect, a sound, a file an effect includes, or data that is used as it
-#   is.
+#   is. Two are about the content and not content themselves: the licence file of a resource ('License.json', by its name), which ships
+#   with the app unless its project says otherwise, and documentation ('*.md', like the 'SOURCE.md' of an atlas), which never does.
+# - The content build never premultiplies alpha and never keys a colour: a texture that must be premultiplied is baked so by the tool
+#   that makes it (TexturePacker), the content build uses the image as it is.
 # - A texture and a sound have properties. A property is only here when every platform can express it: Unity can not key a colour or
 #   premultiply in its importer, so neither is a property.
 # - The profiles are a standard set of the tool: every project means the same by a name and every backend is written against one list.
@@ -36,7 +39,7 @@
 from collections.abc import Mapping
 from enum import Enum
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, ToolSharedValues
 
 
 class ContentType(Enum):
@@ -45,6 +48,10 @@ class ContentType(Enum):
     Sound = "Sound"
     # A source file an effect includes ('#include "Common.fxh"'): it is next to the effect for the build, it is not content by itself
     Include = "Include"
+    # The licence file of a resource ('License.json'): it ships with the app unless its project says otherwise (ContentConfiguration)
+    License = "License"
+    # Documentation of the content ('SOURCE.md'): it is not content of an app
+    Documentation = "Documentation"
     # Used as it is, also an image that is already in a GPU format (dds, ktx)
     Data = "Data"
 
@@ -59,6 +66,7 @@ _g_typeOfExtension: dict[str, ContentType] = {
     ".fxh": ContentType.Include,
     ".hlsl": ContentType.Include,
     ".hlsli": ContentType.Include,
+    ".md": ContentType.Documentation,
     ".wav": ContentType.Sound,
     ".ogg": ContentType.Sound,
     ".mp3": ContentType.Sound,
@@ -87,6 +95,8 @@ _g_properties: dict[ContentType, dict[str, tuple[str, ...]]] = {
     ContentType.Sound: {PropertyQuality: ("Best", "Medium", "Low")},
     ContentType.Effect: {},
     ContentType.Include: {},
+    ContentType.License: {},
+    ContentType.Documentation: {},
     ContentType.Data: {},
 }
 
@@ -128,6 +138,8 @@ _g_defaults: dict[ContentType, dict[str, str]] = {
     ContentType.Sound: {PropertyQuality: "Best"},
     ContentType.Effect: {},
     ContentType.Include: {},
+    ContentType.License: {},
+    ContentType.Documentation: {},
     ContentType.Data: {},
 }
 
@@ -154,7 +166,9 @@ class ResolvedContentProfile:
 
 
 def GetContentType(path: str) -> ContentType:
-    """The content type of a file, by its extension (in any case)"""
+    """The content type of a file, by its extension (in any case). The licence file is known by its name, with the case it has"""
+    if IOUtil.GetFileName(path) == ToolSharedValues.LICENSE_FILE_NAME:
+        return ContentType.License
     return _g_typeOfExtension.get(IOUtil.GetFileNameExtension(path).lower(), ContentType.Data)
 
 

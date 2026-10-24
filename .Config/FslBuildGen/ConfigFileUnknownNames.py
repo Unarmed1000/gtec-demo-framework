@@ -137,6 +137,7 @@ def _ReadToolConfigFile(log: Log, fileName: str) -> object:
         XmlCMakeConfiguration=[],
         XmlCompilerConfiguration=[],
         XmlExperimental=None,
+        XmlContentConfiguration=None,
     )
     return XmlToolConfigFile(log, fileName, cast(XmlProjectRootConfigFile, projectRootConfig))
 

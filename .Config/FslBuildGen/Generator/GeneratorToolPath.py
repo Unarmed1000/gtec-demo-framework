@@ -30,14 +30,19 @@
 # A project file can be committed and is then the same file for everyone. So the directory is written below a root directory of the
 # project when it is in one, by the variable of that root ('$(MB_BUILD)\.build\FslBuild'), which is a path of the same form on every
 # machine that has the variable. A tool outside every root directory is written with its full path.
+#
+# The script is run by the python that runs the generator ('##FSLBUILD_PYTHON##'), as the CMake generator does (ToolScriptCommand): the first
+# python on the PATH can be another one, like a virtual environment of the repository whose python is gone or is too old for the tool.
 
 import os
+import sys
 
 import FslBuildGen
 from FslBuildGen import IOUtil
 from FslBuildGen.ToolConfig import ToolConfig
 
 Token = "##FSLBUILD_TOOL_PATH##"
+PythonToken = "##FSLBUILD_PYTHON##"
 
 
 def GetToolDirectory() -> str:
@@ -53,3 +58,8 @@ def GetVisualStudioToolPath(toolConfig: ToolConfig, toolDirectory: str | None = 
     rootedPath = toolConfig.TryToPath(toolDirectory)
     path = rootedPath if rootedPath is not None else toolDirectory
     return path.rstrip("/").replace("/", "\\")
+
+
+def GetVisualStudioPython() -> str:
+    """The python that runs the tool, as a Visual Studio project writes it"""
+    return IOUtil.NormalizePath(sys.executable).replace("/", "\\")

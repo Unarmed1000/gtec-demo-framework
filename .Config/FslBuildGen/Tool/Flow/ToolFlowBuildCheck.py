@@ -36,7 +36,7 @@ from enum import Enum
 from typing import Any
 
 # from FslBuildGen import ParseUtil
-from FslBuildGen import IOUtil, PackageListUtil, PluginSharedValues
+from FslBuildGen import IOUtil, PackageListUtil, PluginSharedValues, ToolSharedValues
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.BuildConfig import ScanGenFiles, ScanResourceLicenseFiles, ScanSourceFiles, Validate
@@ -481,7 +481,7 @@ class ToolFlowBuildCheck(AToolAppFlow):
             disableWrite = config.DisableWrite
             if not localToolConfig.ScanLicense:
                 disableWrite = True
-            licenseConfig = LicenseConfig("License.json", toolConfig.DefaultCompany, "CC0-1.0", "Example.jpg")
+            licenseConfig = LicenseConfig(ToolSharedValues.LICENSE_FILE_NAME, toolConfig.DefaultCompany, "CC0-1.0", "Example.jpg")
             self.__ScanResourceLicenses(
                 self.Log,
                 localToolConfig,

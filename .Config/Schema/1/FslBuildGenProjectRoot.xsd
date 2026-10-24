@@ -245,6 +245,14 @@
   </xs:complexType>
 
 
+  <xs:complexType name="_T_ContentConfiguration">
+    <xs:annotation>
+      <xs:documentation>How the content of the apps of the project is put together. ShipLicenseFiles: the licence file next to a resource ('License.json') is content of the apps that get the resource, true by default; false leaves it out of every app. Documentation next to content ('*.md') is never content of an app. Only the project itself sets it, not a project that extends it</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="ShipLicenseFiles" type="_TP_Bool" use="optional"/>
+  </xs:complexType>
+
+
   <xs:complexType name="_T_DefaultThirdPartyInstallDirectory">
     <xs:annotation>
       <xs:documentation>The directory third party source is built in and installed to. Only the project itself sets it, not a project that extends it</xs:documentation>
@@ -408,6 +416,13 @@
   </xs:group>
 
 
+  <xs:group name="_G_ContentConfiguration">
+    <xs:choice>
+      <xs:element name="ContentConfiguration" type="_T_ContentConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
   <xs:group name="_G_ExperimentalPlatform">
     <xs:choice>
       <xs:element name="Platform" type="_T_ExperimentalPlatform"/>
@@ -499,7 +514,7 @@
 
   <xs:group name="_G_ExtendedProjectCommandList">
     <xs:annotation>
-      <xs:documentation>The elements of a project that extends another one, in any order. What configures a project as a whole (documentation, formatters, clang tidy, CMake, experimental settings) is an element of the project that is extended</xs:documentation>
+      <xs:documentation>The elements of a project that extends another one, in any order. What configures a project as a whole (documentation, formatters, clang tidy, CMake, content, experimental settings) is an element of the project that is extended</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -530,6 +545,7 @@
         <xs:group ref="_G_ClangTidyConfiguration"/>
         <xs:group ref="_G_CMakeConfiguration"/>
         <xs:group ref="_G_CompilerConfiguration"/>
+        <xs:group ref="_G_ContentConfiguration"/>
         <xs:group ref="_G_Experimental"/>
         <xs:group ref="_G_GenFileSchema"/>
         <xs:group ref="_G_PlatformTemplate"/>

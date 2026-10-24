@@ -68,7 +68,7 @@ from FslBuildGen.Xml.XmlNameCheck import XmlNamePlace
 #
 # An extended project adds to the project it extends: root directories, package locations, template directories, compilers and base
 # packages for its own packages, and it has its own schema location. What a project configures once (its documentation, its formatters,
-# clang tidy, CMake and the experimental settings) is the business of the project that is extended: such an element of a 'Project' is
+# clang tidy, CMake, its content and the experimental settings) is the business of the project that is extended: such an element of a 'Project' is
 # one of the names of the file too, it is reported as not valid in an ExtendedProject.
 
 _g_elementProject = "Project"
@@ -81,6 +81,7 @@ _g_elementClangFormatConfiguration = "ClangFormatConfiguration"
 _g_elementDotnetFormatConfiguration = "DotnetFormatConfiguration"
 _g_elementClangTidyConfiguration = "ClangTidyConfiguration"
 _g_elementCompilerConfiguration = "CompilerConfiguration"
+_g_elementContentConfiguration = "ContentConfiguration"
 _g_elementExperimental = "Experimental"
 
 _g_attribVersion = "Version"
@@ -108,6 +109,7 @@ _g_projectElements = frozenset(
         _g_elementClangTidyConfiguration,
         _g_elementCMakeConfiguration,
         _g_elementCompilerConfiguration,
+        _g_elementContentConfiguration,
         _g_elementExperimental,
         ElementGenFileSchema,
         ElementPlatformTemplate,
@@ -121,6 +123,7 @@ _g_elementsNotInAnExtendedProject = frozenset(
         _g_elementDotnetFormatConfiguration,
         _g_elementClangTidyConfiguration,
         _g_elementCMakeConfiguration,
+        _g_elementContentConfiguration,
         _g_elementExperimental,
         ElementPlatformTemplate,
     }
@@ -228,6 +231,18 @@ class XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory(XmlBase):
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName})
         self.Name = self._ReadAttrib(xmlElement, "Name")
+
+
+class XmlContentConfiguration(XmlBase):
+    """How the content of the apps of the project is put together"""
+
+    __AttribShipLicenseFiles = "ShipLicenseFiles"
+
+    def __init__(self, log: Log, xmlElement: ET.Element) -> None:
+        super().__init__(log, xmlElement)
+        self._CheckAttributes({self.__AttribShipLicenseFiles})
+        # The licence file next to a resource ('License.json') is content of the apps that get the resource: true by default
+        self.ShipLicenseFiles: bool = self._ReadBoolAttrib(xmlElement, self.__AttribShipLicenseFiles, True)
 
 
 class XmlExperimental(XmlBase):
@@ -373,6 +388,11 @@ def _LoadCompilerConfiguration(log: Log, xmlElement: ET.Element, filename: str) 
     return res
 
 
+def _TryLoadContentConfiguration(log: Log, xmlElement: ET.Element) -> XmlContentConfiguration | None:
+    foundElement = xmlElement.find(_g_elementContentConfiguration)
+    return XmlContentConfiguration(log, foundElement) if foundElement is not None else None
+
+
 def _TryLoadExperimental(log: Log, xmlElement: ET.Element, filename: str) -> XmlExperimental | None:
     extendedElement = xmlElement.find(_g_elementExperimental)
     if extendedElement is None:
@@ -458,6 +478,7 @@ class XmlProjectRootConfigFile(XmlBase):
         self.AllowExeDependency: bool = False
         self.RequirePackageCreationYear = False
         self.XmlExperimental: XmlExperimental | None = None
+        self.XmlContentConfiguration: XmlContentConfiguration | None = None
         self.XmlPackageConfiguration: list[XmlConfigPackageConfiguration] = []
         self.XmlBasePackages: list[XmlConfigFileAddBasePackage] = []
         self.XmlRootDirectories: list[XmlConfigFileAddRootDirectory] = []
@@ -507,6 +528,7 @@ class XmlProjectRootConfigFile(XmlBase):
                 self.XmlCMakeConfiguration = _LoadCMakeConfiguration(log, projectElem, filename)
                 self.XmlCompilerConfiguration = _LoadCompilerConfiguration(log, projectElem, filename)
                 self.XmlExperimental = _TryLoadExperimental(log, projectElem, filename)
+                self.XmlContentConfiguration = _TryLoadContentConfiguration(log, projectElem)
                 # Where the schema versions of the gen files of the root project are, an extended project has its own
                 self.GenFileSchemaLocation: GenFileSchemaLocation = LoadGenFileSchemaLocation(log, projectElem, filename, rootDirectory)
                 _CheckHasRootDirectory(self.XmlRootDirectories, filename)

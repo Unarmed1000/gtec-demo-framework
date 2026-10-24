@@ -466,6 +466,7 @@ class GeneratorVC(GeneratorBase):
         # Before the names below: the section of the template has them too
         build = build.replace("##ADD_APP_CONTENT##", template.AppContent if GeneratorVC.__HasAppContent(package) else "")
         build = build.replace(GeneratorToolPath.Token, GeneratorToolPath.GetVisualStudioToolPath(config.ToolConfig))
+        build = build.replace(GeneratorToolPath.PythonToken, GeneratorToolPath.GetVisualStudioPython())
         build = build.replace("##ADD_EXCLUDE_PACKAGE_DIRS##", excludeDirs)
         build = build.replace("##ADD_SOURCE_GENERATION_PROPERTIES##", sourceGenerationProperties)
         build = build.replace("##ADD_ADDITIONAL_FILES##", additionalFiles)
