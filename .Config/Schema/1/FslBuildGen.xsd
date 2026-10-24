@@ -666,6 +666,11 @@
     <xs:attribute name="OverrideIncludePriority" type="_TP_IncludePriority" use="optional"/>
     <xs:attribute name="ShowInMainReadme" type="_TP_Bool" use="optional"/>
     <xs:attribute name="UnitTest" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="UseContentNamespace" type="_TP_Bool" use="optional">
+      <xs:annotation>
+        <xs:documentation>When true, the content of the library is put below a directory named after the package in the content of the apps that use it ('Content/Textures/Atlas.png' of 'MB.Theme' is 'MB.Theme/Textures/Atlas.png' there), so libraries can not collide. The namespace is the package name, not a C# namespace. Default false: a file keeps the path it has below 'Content'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="_T_ExternalLibrary">

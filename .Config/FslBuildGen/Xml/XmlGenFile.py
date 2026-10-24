@@ -129,6 +129,7 @@ class XmlGenFile(XmlCommonFslBuild):
     __AttribShowInMainReadme = "ShowInMainReadme"
     __AttribTemplateType = "TemplateType"
     __AttribUnitTest = "UnitTest"
+    __AttribUseContentNamespace = "UseContentNamespace"
 
     __ValidAttribs = {
         __AttribAllowCheck,
@@ -145,6 +146,7 @@ class XmlGenFile(XmlCommonFslBuild):
         __AttribShowInMainReadme,
         __AttribTemplateType,
         __AttribUnitTest,
+        __AttribUseContentNamespace,
     }
 
     # The element of a package, by the type of the package. In the order they are looked for.
@@ -185,17 +187,20 @@ class XmlGenFile(XmlCommonFslBuild):
     #   'Generate' (the file is written) and 'SourceGeneration' (the package depends on the generator). In an
     #   ExternalLibrary: 'FindPackage' (it is in the CMake file of the package). In a ToolRecipe: 'ExternalDependency' and
     #   'ImportTemplate' (what they add reaches the packages that depend on it).
+    # - Only a Library supplies content to the apps that use it, so only a Library can put its content in a namespace.
     __ElementsNotInAnExternalLibrary = frozenset({"BuildCustomization.Debug.Optimization", "CopyFile", "GenerateGrpcProtoFile", "Ignore"})
     __ElementsNotInAToolRecipe = __ElementsNotInAnExternalLibrary | {"FindPackage"}
-    __AttribsNotInAnExternalLibrary = frozenset(
-        {__AttribAllowCombinedDirectory, __AttribOverrideInclude, __AttribOverrideSource, __AttribPackageNameBasedIncludePath}
+    __AttribsOfALibraryOnly = frozenset({__AttribUseContentNamespace})
+    __AttribsNotInAnExternalLibrary = (
+        frozenset({__AttribAllowCombinedDirectory, __AttribOverrideInclude, __AttribOverrideSource, __AttribPackageNameBasedIncludePath})
+        | __AttribsOfALibraryOnly
     )
     __AttribsNotInAToolRecipe = __AttribsNotInAnExternalLibrary | {__AttribAllowCheck, __AttribTemplateType}
     # The type of a package -> (what a package of the type is called, the attributes it can not have, the elements it can not hold)
     __NamesNotInType: dict[PackageType, tuple[str, frozenset[str], frozenset[str]]] = {
-        PackageType.Executable: ("an Executable", frozenset(), frozenset({__ElementRecipe})),
+        PackageType.Executable: ("an Executable", __AttribsOfALibraryOnly, frozenset({__ElementRecipe})),
         PackageType.Library: ("a Library", frozenset(), frozenset({__ElementRecipe})),
-        PackageType.HeaderLibrary: ("a HeaderLibrary", frozenset(), frozenset({__ElementRecipe})),
+        PackageType.HeaderLibrary: ("a HeaderLibrary", __AttribsOfALibraryOnly, frozenset({__ElementRecipe})),
         PackageType.ExternalLibrary: ("an ExternalLibrary", __AttribsNotInAnExternalLibrary, __ElementsNotInAnExternalLibrary),
         PackageType.ToolRecipe: ("a ToolRecipe", __AttribsNotInAToolRecipe, __ElementsNotInAToolRecipe),
     }
@@ -240,6 +245,7 @@ class XmlGenFile(XmlCommonFslBuild):
         self.EnableExtendedSourceExtensions = False
         self.AllowCombinedDirectory = False
         self.PackageNameBasedIncludePath = True
+        self.UseContentNamespace = False
         self.PlatformDefaultSupportedValue = True
         self.SystemDefaultValues = LocalPackageDefaultValues()
         self.UnitTest = False
@@ -308,6 +314,8 @@ class XmlGenFile(XmlCommonFslBuild):
         self.BaseSourcePath = self._ReadAttrib(elem, self.__AttribOverrideSource, "source")
         self.AllowCombinedDirectory = self._ReadBoolAttrib(elem, self.__AttribAllowCombinedDirectory, False)
         self.PackageNameBasedIncludePath = self._ReadBoolAttrib(elem, self.__AttribPackageNameBasedIncludePath, True)
+        # Its content is put below its package name in the apps that use it (PackageAppContentResolver)
+        self.UseContentNamespace = self._ReadBoolAttrib(elem, self.__AttribUseContentNamespace, False)
 
         self.BaseLoad(elem)
         attribsOfType, elementsOfType, placeOfType = self.__NamesOfType[theType]

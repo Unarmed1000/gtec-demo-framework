@@ -71,6 +71,7 @@ class ProcessedPackageFlags:
         packageNameBasedIncludePath: bool,
         platformDefaultSupportedValue: bool,
         enableExtendedSourceExtensions: bool,
+        useContentNamespace: bool,
     ) -> None:
         super().__init__()
         self.IsVirtual = isVirtual
@@ -80,6 +81,7 @@ class ProcessedPackageFlags:
         self.PackageNameBasedIncludePath = packageNameBasedIncludePath
         self.PlatformDefaultSupportedValue = platformDefaultSupportedValue
         self.EnableExtendedSourceExtensions = enableExtendedSourceExtensions
+        self.UseContentNamespace = useContentNamespace
 
 
 class ProcessedPackagePaths:

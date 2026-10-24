@@ -25,6 +25,9 @@
 
 from enum import Enum
 
+from FslBuildGen.BuildContent import ContentProfile
+from FslBuildGen.BuildContent.ContentProfile import ContentType, ResolvedContentProfile
+
 
 class PackageAppContentKind(Enum):
     # A file of a 'Content' directory, used as it is
@@ -45,6 +48,7 @@ class PackageAppContentEntry:
         kind: PackageAppContentKind,
         builderName: str | None = None,
         builderArguments: list[str] | None = None,
+        profile: ResolvedContentProfile | None = None,
     ) -> None:
         """ownerName: the package the file belongs to
         sourceRootPath: the directory the file was found from: a content directory of its owner, or where a command copies from
@@ -52,6 +56,8 @@ class PackageAppContentEntry:
         appPath: where it is in the content directory of the app, with '/' and in the case its owner gave it
         builderName: for a built file a build rule is for: the content builder the rule names (None: the builder of its extension)
         builderArguments: for such a file: the parameters the rule gives the builder (None: its own)
+        profile: what the file it comes from is (ContentProfileList), None for the default of its content type. A built file can be of another
+                 content type than its source ('.png' into '.ktx'): the profile is the one of the source, for the builder
         """
         super().__init__()
         self.OwnerName = ownerName
@@ -61,3 +67,6 @@ class PackageAppContentEntry:
         self.Kind = kind
         self.BuilderName = builderName
         self.BuilderArguments = builderArguments
+        # What the file is in the app, by the extension of its path there
+        self.ContentType: ContentType = ContentProfile.GetContentType(appPath)
+        self.Profile = profile if profile is not None else ContentProfile.GetDefault(ContentProfile.GetContentType(sourcePath))

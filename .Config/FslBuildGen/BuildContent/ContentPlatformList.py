@@ -40,13 +40,11 @@
 #   is a list that does not say what its writer meant.
 
 import fnmatch
-import json
 from collections.abc import Iterable, Sequence
 from typing import Any
 
-from FslBuildGen import ContentDirectoryConfig, IOUtil, PackageConfig, TextFileReader, ToolSharedValues
+from FslBuildGen import IOUtil, PackageConfig
 from FslBuildGen.Exceptions import UsageErrorException
-from FslBuildGen.Log import Log
 
 RootElement = "ContentBuilder"
 VersionElement = "Version"
@@ -180,33 +178,3 @@ def CheckPattern(pattern: str, where: str) -> None:
             f"'{pattern}' in '{_g_content}' of {where} has a '*' in a directory name. A '*' is for the file name; a pattern without a "
             "directory part matches in every directory"
         )
-
-
-def TryReadContentDirectoryList(log: Log, contentPath: str) -> ContentPlatformList | None:
-    """The platform lists of a 'Content' directory: its helper file has nothing else. None if the directory has no helper file"""
-    filename = IOUtil.Join(contentPath, ToolSharedValues.CONTENT_BUILD_FILE_NAME)
-    fileContent = TextFileReader.TryReadUTF8OrLocaleIfExists(log, filename, "content helper file", skipBom=True)
-    if fileContent is None:
-        return None
-    try:
-        jsonContent = json.loads(fileContent)
-    except ValueError as ex:
-        raise UsageErrorException(f"The file '{filename}' is not valid json: {ex}") from ex
-
-    if not isinstance(jsonContent, dict) or len(jsonContent) != 1 or not isinstance(jsonContent.get(RootElement), dict):
-        raise UsageErrorException(f"The file '{filename}' is not of the expected format: one '{RootElement}' object")
-    jsonRoot = jsonContent[RootElement]
-    # The name the directory has: a tool config can give the content directory another name than 'Content'
-    directoryName = IOUtil.GetFileName(contentPath)
-    if jsonRoot.get(VersionElement) != VersionWithPlatforms:
-        raise UsageErrorException(
-            f"The file '{filename}' is version {jsonRoot.get(VersionElement)!r} and we expected {VersionWithPlatforms!r}: it is the helper "
-            f"file of a '{directoryName}' directory, which holds '{PlatformsElement}'"
-        )
-    unknownKeys = sorted(str(key) for key in jsonRoot if key not in (VersionElement, PlatformsElement))
-    if len(unknownKeys) > 0:
-        raise UsageErrorException(
-            f"Unsupported element '{unknownKeys[0]}' in file '{filename}'. The helper file of a '{directoryName}' directory "
-            f"holds '{PlatformsElement}'; the commands belong in the one of '{directoryName}{ContentDirectoryConfig.BuildPostfix}'"
-        )
-    return ContentPlatformList.Parse(jsonRoot.get(PlatformsElement, []), filename)

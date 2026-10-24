@@ -398,8 +398,16 @@ class PackageManager2:
         packageNameBasedIncludePath = flags.PackageNameBasedIncludePath
         platformDefaultSupportedValue = flags.PlatformDefaultSupportedValue
         enableExtendedSourceExtensions = flags.EnableExtendedSourceExtensions
+        useContentNamespace = flags.UseContentNamespace
         return ProcessedPackageFlags(
-            isVirtual, allowCheck, unitTest, showInMainReadme, packageNameBasedIncludePath, platformDefaultSupportedValue, enableExtendedSourceExtensions
+            isVirtual,
+            allowCheck,
+            unitTest,
+            showInMainReadme,
+            packageNameBasedIncludePath,
+            platformDefaultSupportedValue,
+            enableExtendedSourceExtensions,
+            useContentNamespace,
         )
 
     @staticmethod

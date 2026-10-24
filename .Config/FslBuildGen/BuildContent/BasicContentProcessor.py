@@ -32,15 +32,18 @@
 # ****************************************************************************************************************************************************
 
 import os
+import re
 import shlex
 import subprocess
 
 from FslBuildGen import IOUtil, TextFileReader
-from FslBuildGen.BuildContent import ContentToolTempDirectory, MakeDependencyFile
+from FslBuildGen.BuildContent import ContentProfile, ContentToolTempDirectory, MakeDependencyFile
 from FslBuildGen.BuildContent.ContentProcessor import ContentProcessor
+from FslBuildGen.BuildContent.ContentProfile import ResolvedContentProfile
 from FslBuildGen.BuildContent.ContentToolDependencyFile import g_contentToolDependencyFile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.ToolFinder import ToolFinder
+from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
 from FslBuildGen.ToolConfig import ToolContentBuilder
 from FslBuildGen.Xml.XmlToolConfigFile import XmlConfigContentBuilderAddExtension
@@ -48,7 +51,11 @@ from FslBuildGen.Xml.XmlToolConfigFile import XmlConfigContentBuilderAddExtensio
 # $(OutputFileName) = Absolute path to the output file
 # $(InputFileName)  = Absolute path to the input file
 # $(PlatformName)   = The platform the content is built for
+# $(Profile)        = The name of the profile of the input file (ContentProfile)
+# $(Profile.<Name>) = The value of a property of the input file: '$(Profile.Encoding)' is 'sRGB', 'Linear' or 'Normal' for a texture
 # A variable can be an argument or a part of one ('-o=$(OutputFileName)')
+
+_g_profileVariable = re.compile(r"\$\(Profile(?:\.([^)]*))?\)")
 
 
 class BasicContentProcessor(ContentProcessor):
@@ -89,7 +96,7 @@ class BasicContentProcessor(ContentProcessor):
         """Stops if the tool of the builder is not there: told before a build starts, not at the first file that needs it"""
         self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
 
-    def __GetToolParameterList(self, toolArguments: list[str], outputFile: str, inputFile: str) -> list[str]:
+    def __GetToolParameterList(self, toolArguments: list[str], outputFile: str, inputFile: str, profile: ResolvedContentProfile | None) -> list[str]:
         res = []
         for argument in toolArguments:
             argument = argument.replace("$(OutputFileName)", outputFile).replace("$(InputFileName)", inputFile)
@@ -97,8 +104,26 @@ class BasicContentProcessor(ContentProcessor):
                 if self.__PlatformName is None:
                     raise Exception(f"The ContentBuilder '{self.Name}' uses $(PlatformName), so it can not be run without the platform it builds for")
                 argument = argument.replace("$(PlatformName)", self.__PlatformName)
+            argument = _g_profileVariable.sub(lambda match: self.__GetProfileValue(match, inputFile, profile), argument)
             res.append(argument)
         return res
+
+    def __GetProfileValue(self, match: re.Match[str], inputFile: str, profile: ResolvedContentProfile | None) -> str:
+        if profile is None:
+            raise UsageErrorException(
+                f"The ContentBuilder '{self.Name}' uses {match.group(0)}, so it can only build a file of a content directory: '{inputFile}' has no profile"
+            )
+        name = match.group(1)
+        if name is None:
+            return profile.ProfileName
+        value = profile.Properties.get(name)
+        if value is None:
+            properties = ", ".join(ContentProfile.GetPropertyValues(profile.ContentType)) or "none"
+            raise UsageErrorException(
+                f"The ContentBuilder '{self.Name}' uses {match.group(0)} for '{inputFile}', a {profile.ContentType.value.lower()} file, which has no "
+                f"property '{name}'. Its properties are: {properties}"
+            )
+        return value
 
     def Process(
         self,
@@ -109,14 +134,16 @@ class BasicContentProcessor(ContentProcessor):
         contentFileRecord: PathRecord,
         outputFileName: str | None = None,
         toolArguments: list[str] | None = None,
+        profile: ResolvedContentProfile | None = None,
     ) -> list[str] | None:
-        """outputFileName: the output a build rule names, None for the output the builder names
+        """outputFileName: the output of the build step (a rule can name it, a namespace moves it), None for the output the builder names
         toolArguments: the parameters a build rule gives the builder, None for its own
+        profile: what the input file is, for the '$(Profile...)' variables. None for a file that is not of a content directory
         """
         usedToolArguments = self.ToolArguments if toolArguments is None else toolArguments
         if configDisableWrite:
             # Nothing is written, so the tool is not run: its parameters and the tool itself are checked, which a run would have done
-            self.__GetToolParameterList(usedToolArguments, "", contentFileRecord.ResolvedPath)
+            self.__GetToolParameterList(usedToolArguments, "", contentFileRecord.ResolvedPath, profile)
             self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
             return None
 
@@ -129,7 +156,7 @@ class BasicContentProcessor(ContentProcessor):
         with ContentToolTempDirectory.Create() as tempPath:
             tmpOutputFileName = self.GetTempFileName(tempPath, contentFileRecord)
             buildCommand = [self.ToolCommand]
-            buildCommand += self.__GetToolParameterList(usedToolArguments, tmpOutputFileName, contentFileRecord.ResolvedPath)
+            buildCommand += self.__GetToolParameterList(usedToolArguments, tmpOutputFileName, contentFileRecord.ResolvedPath, profile)
 
             # Tools that can list the files the content file includes write them to a dependency file
             tmpDependencyFileName = self.GetTempFileName(tempPath, contentFileRecord, ".d.tmp")

@@ -30,23 +30,33 @@
 from typing import Any
 
 from FslBuildGen.BuildContent.ContentBuildRules import ContentBuildRules
+from FslBuildGen.BuildContent.ContentProfile import ResolvedContentProfile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
 
 
 class ContentBuildStep:
-    def __init__(self, processor: Any, outputRelativePath: str, toolArguments: list[str] | None, builderName: str | None) -> None:
+    def __init__(
+        self,
+        processor: Any,
+        outputRelativePath: str,
+        toolArguments: list[str] | None,
+        builderName: str | None,
+        profile: ResolvedContentProfile | None = None,
+    ) -> None:
         """processor: the content builder that is run (a ContentProcessor)
         outputRelativePath: the output, below the content directory
         toolArguments: the parameters a rule gives the builder, None for its own
         builderName: the name of the builder when a rule names it, None when it is the builder of the extension of the file
+        profile: what the file that is built is (ContentProfileList), for the '$(Profile...)' variables of the parameters
         """
         super().__init__()
         self.Processor = processor
         self.OutputRelativePath = outputRelativePath
         self.ToolArguments = toolArguments
         self.BuilderName = builderName
+        self.Profile = profile
 
 
 def FindBuildSteps(log: Log, contentProcessorManager: Any, contentFile: PathRecord, rules: ContentBuildRules | None) -> list[ContentBuildStep]:

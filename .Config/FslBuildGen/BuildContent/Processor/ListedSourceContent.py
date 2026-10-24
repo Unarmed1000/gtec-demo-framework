@@ -27,22 +27,27 @@
 # an app also holds the files of the libraries it uses, which the resolver has found and filtered. This is the same three collections for
 # the content builder, made from such lists without reading a directory again.
 
+from FslBuildGen.BuildContent.ContentProfile import ResolvedContentProfile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.Sync.Content import Content
 from FslBuildGen.Log import Log
 
 
 class ListedBuildStep:
-    def __init__(self, outputRelativePath: str, builderName: str | None, toolArguments: list[str] | None) -> None:
+    def __init__(
+        self, outputRelativePath: str, builderName: str | None, toolArguments: list[str] | None, profile: ResolvedContentProfile | None = None
+    ) -> None:
         """One output of a file that is built.
         outputRelativePath: the output, below the content directory
         builderName: the content builder a build rule names for it, None for the builder of the extension of the file
         toolArguments: the parameters the rule gives the builder, None for its own
+        profile: what the file is, as its owner says (ContentProfileList)
         """
         super().__init__()
         self.OutputRelativePath = outputRelativePath
         self.BuilderName = builderName
         self.ToolArguments = toolArguments
+        self.Profile = profile
 
 
 class ListedSourceContent:

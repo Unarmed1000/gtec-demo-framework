@@ -25,7 +25,9 @@
 # The resolver and the content builder both do this, with the same lists, so what a generator expects is what the content build makes.
 
 from FslBuildGen import IOUtil, ToolSharedValues
-from FslBuildGen.BuildContent.ContentPlatformList import ContentPlatformList, PlatformsElement, TryReadContentDirectoryList
+from FslBuildGen.BuildContent import ContentDirectoryHelperFile, ContentProfileList
+from FslBuildGen.BuildContent.ContentPlatformList import ContentPlatformList, PlatformsElement
+from FslBuildGen.BuildContent.ContentProfile import ResolvedContentProfile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.Processor.SourceContent import SourceContent
 from FslBuildGen.Exceptions import UsageErrorException
@@ -54,16 +56,19 @@ def RemoveBuildFilesNotForPlatform(
             sourceContent.AllContentSource.RemoveFileByResolvedSourcePath(record.ResolvedPath)
 
 
-def RemoveContentFilesNotForPlatform(log: Log, contentPath: str, files: list[PathRecord], platformName: str) -> list[PathRecord]:
-    """The files of a 'Content' directory that are content on the platform. The helper file of the directory is never content.
+def ResolveContentFiles(log: Log, contentPath: str, files: list[PathRecord], platformName: str) -> tuple[list[PathRecord], dict[str, ResolvedContentProfile]]:
+    """The files of a 'Content' directory that are content on the platform, and what each of them is by its resolved path. The helper file
+    of the directory is never content.
     files: what was found in the directory
     """
     helperFilename = IOUtil.Join(contentPath, ToolSharedValues.CONTENT_BUILD_FILE_NAME)
-    if not any(record.ResolvedPath == helperFilename for record in files):
-        return files
-    files = [record for record in files if record.ResolvedPath != helperFilename]
-    platformList = TryReadContentDirectoryList(log, contentPath)
-    if platformList is None:
-        return files
-    notForPlatform = platformList.GetFilesNotForPlatform([record.RelativePath for record in files], platformName)
-    return [record for record in files if record.RelativePath not in notForPlatform]
+    helper: ContentDirectoryHelperFile.ContentDirectoryHelper | None = None
+    if any(record.ResolvedPath == helperFilename for record in files):
+        files = [record for record in files if record.ResolvedPath != helperFilename]
+        helper = ContentDirectoryHelperFile.TryRead(log, contentPath)
+    # The profiles are checked against every file of the directory, so a helper file that is wrong is wrong on every platform
+    profiles = ContentProfileList.Resolve(helper.ProfileList if helper is not None else None, [record.RelativePath for record in files])
+    if helper is not None:
+        notForPlatform = helper.PlatformList.GetFilesNotForPlatform([record.RelativePath for record in files], platformName)
+        files = [record for record in files if record.RelativePath not in notForPlatform]
+    return (files, {record.ResolvedPath: profiles[record.RelativePath] for record in files})

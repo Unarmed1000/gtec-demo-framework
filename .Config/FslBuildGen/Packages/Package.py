@@ -34,6 +34,7 @@
 
 from FslBuildGen import IOUtil, Util
 from FslBuildGen.BuildContent.ContentBuildRules import ContentBuildRules
+from FslBuildGen.BuildContent.ContentProfile import ResolvedContentProfile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.DataTypes import AccessType, DependencyOutputType, ExternalDependencyType, PackageType, VariantType
@@ -131,6 +132,7 @@ class Package:
         self.TemplateType = unresolvedPackage.TemplateType
         self.AllowCheck = unresolvedPackage.Flags.AllowCheck
         self.PackageNameBasedIncludePath = unresolvedPackage.Flags.PackageNameBasedIncludePath
+        self.UseContentNamespace: bool = unresolvedPackage.Flags.UseContentNamespace
         self.EnableExtendedSourceExtensions: bool = unresolvedPackage.Flags.EnableExtendedSourceExtensions
         self.IsUnitTest: bool = unresolvedPackage.Flags.UnitTest
         self.ShowInMainReadme = unresolvedPackage.Flags.ShowInMainReadme
@@ -227,6 +229,8 @@ class Package:
         self.ResolvedContentFiles: list[PathRecord] = []
         # How the files of the 'Content.bld' of the package are built when it is not the builder of their extension
         self.ResolvedContentBuildRules: ContentBuildRules | None = None
+        # What each file of 'Content' and of the content build of the package is, by its resolved path (ContentProfileList)
+        self.ResolvedContentProfiles: dict[str, ResolvedContentProfile] = {}
         # The content of the app: its own and what it inherits from the libraries it uses. Filled for an executable
         self.ResolvedAppContent: list[PackageAppContentEntry] = []
 

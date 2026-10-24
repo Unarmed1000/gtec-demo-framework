@@ -35,6 +35,11 @@
 #   differently for two apps. Only the output is content of the app.
 # - Two files on one path are an error, also when one of them is the app's own. So are two paths that only differ in case, in the name or
 #   in a directory on the way: they can not both exist on a file system that ignores case. The case a path has is kept as it is.
+# - A library with 'UseContentNamespace' puts everything it has below its package name: '<PackageName>/<path>', for the files of 'Content',
+#   the files a command copies in and every output of 'Content.bld'. The library opts in, the app has no say, so libraries that ship the
+#   same paths can not collide. The name is the one the package declares, which every flavor instance of it shares.
+# - Each file says what it is: its content type and the profile its owner gives the file it comes from (ContentProfileList), so the
+#   importer of a platform and a content builder build it the way its owner means.
 
 from FslBuildGen.BuildContent import ContentBuilder, ContentBuildSteps
 from FslBuildGen.BuildContent.PathRecord import PathRecord
@@ -74,10 +79,15 @@ def Resolve(log: Log, toolConfig: ToolConfig, package: Package) -> list[PackageA
         builderName: str | None = None,
         builderArguments: list[str] | None = None,
     ) -> None:
+        if owner.UseContentNamespace:
+            appPath = f"{owner.NameInfo.SourceName}/{appPath}"
         key = (source.ResolvedPath, appPath)
         if key not in added:
             added.add(key)
-            result.append(PackageAppContentEntry(owner.Name, source.SourceRoot.ResolvedPath, source.ResolvedPath, appPath, kind, builderName, builderArguments))
+            profile = owner.ResolvedContentProfiles.get(source.ResolvedPath)
+            result.append(
+                PackageAppContentEntry(owner.Name, source.SourceRoot.ResolvedPath, source.ResolvedPath, appPath, kind, builderName, builderArguments, profile)
+            )
 
     for owner in GetContentOwners(package):
         for contentFile in owner.ResolvedContentFiles:
@@ -106,6 +116,8 @@ def _Describe(entry: PackageAppContentEntry) -> str:
 def Check(appName: str, entries: list[PackageAppContentEntry]) -> None:
     """Stops with every path of the content of the app that two files claim, and every pair of paths that only differ in case"""
     problems: list[str] = []
+    hasCollision = False
+    hasCaseProblem = False
     byPath: dict[str, PackageAppContentEntry] = {}
     # Each path and each directory on the way to it, without its case
     spellingById: dict[str, tuple[str, PackageAppContentEntry]] = {}
@@ -114,6 +126,7 @@ def Check(appName: str, entries: list[PackageAppContentEntry]) -> None:
         existing = byPath.get(entry.AppPath)
         if existing is not None:
             problems.append(f"- two files on one path: {_Describe(existing)} and {_Describe(entry)}")
+            hasCollision = True
             continue
         byPath[entry.AppPath] = entry
 
@@ -128,12 +141,19 @@ def Check(appName: str, entries: list[PackageAppContentEntry]) -> None:
                 if (known[0], spelling) not in reported:
                     reported.add((known[0], spelling))
                     problems.append(f"- '{known[0]}' and '{spelling}' only differ in case: {_Describe(known[1])} and {_Describe(entry)}")
+                    hasCaseProblem = True
                 break
 
     if len(problems) > 0:
-        raise UsageErrorException(
-            f"The content of '{appName}' can not be put into one directory:\n"
-            + "\n".join(problems)
-            + "\nA path in the content of an app belongs to one file, and two paths that only differ in case can not both exist on a file "
-            "system that ignores case. Rename or remove one of each pair in the package that owns it."
-        )
+        # What to do about the kinds of problem that were found
+        endings: list[str] = []
+        if hasCollision:
+            endings.append(
+                "A path in the content of an app belongs to one file: rename or remove one of each pair in the package that owns it. A library "
+                'can also put all of its content below its package name, with UseContentNamespace="true" on its element in its gen file.'
+            )
+        if hasCaseProblem:
+            endings.append(
+                "Two paths that only differ in case can not both exist on a file system that ignores case: rename one of each pair in the package that owns it."
+            )
+        raise UsageErrorException(f"The content of '{appName}' can not be put into one directory:\n" + "\n".join(problems) + "\n" + "\n".join(endings))

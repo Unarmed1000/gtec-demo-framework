@@ -69,6 +69,7 @@ class UnresolvedPackageFlags:
         packageNameBasedIncludePath: bool,
         platformDefaultSupportedValue: bool,
         enableExtendedSourceExtensions: bool,
+        useContentNamespace: bool,
     ) -> None:
         super().__init__()
         self.IsVirtual = isVirtual
@@ -78,6 +79,8 @@ class UnresolvedPackageFlags:
         self.PackageNameBasedIncludePath = packageNameBasedIncludePath
         self.PlatformDefaultSupportedValue = platformDefaultSupportedValue
         self.EnableExtendedSourceExtensions = enableExtendedSourceExtensions
+        # The content of the library is put below its package name in the apps that use it
+        self.UseContentNamespace = useContentNamespace
 
 
 class UnresolvedPackagePaths:

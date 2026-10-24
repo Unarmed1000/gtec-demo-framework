@@ -224,6 +224,7 @@ class XmlConvert:
             xmlValue.PackageNameBasedIncludePath,
             xmlValue.PlatformDefaultSupportedValue,
             xmlValue.EnableExtendedSourceExtensions,
+            xmlValue.UseContentNamespace,
         )
         packageLanguage = xmlValue.PackageLanguage
 

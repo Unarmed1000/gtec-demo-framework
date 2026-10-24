@@ -40,7 +40,7 @@ import shutil
 from collections.abc import Sequence
 
 from FslBuildGen import IOUtil, TextFileReader, ToolSharedValues
-from FslBuildGen.BuildContent import ContentBuilder
+from FslBuildGen.BuildContent import ContentBuilder, MonoGameContentProject
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.Processor.ListedSourceContent import ListedBuildStep, ListedSourceContent
@@ -235,7 +235,7 @@ def Deliver(
             if entry.SourcePath not in buildSteps:
                 buildSteps[entry.SourcePath] = []
                 buildFiles.append(_ToPathRecord(log, entry))
-            buildSteps[entry.SourcePath].append(ListedBuildStep(entry.AppPath, entry.BuilderName, entry.BuilderArguments))
+            buildSteps[entry.SourcePath].append(ListedBuildStep(entry.AppPath, entry.BuilderName, entry.BuilderArguments, entry.Profile))
     # What the content builder is to deliver is part of the delivery whether it has to do something for it or not
     manifest.Files.update(entry.AppPath for entry in builderEntries)
     if configDisableWrite:
@@ -281,16 +281,21 @@ def DeliverPackage(
     generatorDeliversAppContent: bool,
     outputPath: str | None = None,
     dependencyFile: str | None = None,
+    monoGameContentProject: bool = False,
 ) -> None:
     """Deliver the content of an app the way its generator has it.
     generatorDeliversAppContent: False for a generator whose app reads the 'Content' directory of its package: only what the app builds itself
                                  is put there, as before, and an app that gets content of another package is refused
     outputPath: the directory a build system asks for. It copies the files that are used as they are itself, so only what is built and what
                 a command copies in is delivered there
+    monoGameContentProject: also write the MonoGame content project of the app next to its content (MonoGameContentProject), for the
+                            template of an app that MonoGame builds the content of
     """
     if package.Type != PackageType.Executable or package.AbsolutePath is None or package.Path is None:
         log.DoPrint(f"'{package.Name}' is not an executable: the content of a library is delivered with the apps that use it")
         return
+    if monoGameContentProject:
+        CheckMonoGameContentProject(package, generatorName, generatorDeliversAppContent, outputPath)
     featureList = [entry.Name for entry in package.ResolvedAllUsedFeatures]
     if not generatorDeliversAppContent:
         CheckNothingIsInherited(package, generatorName)
@@ -329,3 +334,27 @@ def DeliverPackage(
         dependencyFile,
         package.ResolvedPlatformName,
     )
+
+    if monoGameContentProject:
+        WriteMonoGameContentProject(log, configDisableWrite, package)
+
+
+def CheckMonoGameContentProject(package: Package, generatorName: str, generatorDeliversAppContent: bool, outputPath: str | None) -> None:
+    """Stops when the content project can not be next to the content of the app"""
+    if not generatorDeliversAppContent:
+        raise UsageErrorException(
+            f"The MonoGame content project of '{package.Name}' lists the content in its resolved content directory, and the generator "
+            f"'{generatorName}' does not deliver it there"
+        )
+    if outputPath is not None:
+        raise UsageErrorException(
+            f"The MonoGame content project of '{package.Name}' is written next to its resolved content directory, not into a directory a "
+            "build system asks for: leave out the output directory"
+        )
+
+
+def WriteMonoGameContentProject(log: Log, configDisableWrite: bool, package: Package) -> None:
+    """Write the MonoGame content project of the app into its resolved content directory. Also when the content was delivered by the tool
+    that runs the build (FslBuild), which is why it is apart from the delivery
+    """
+    MonoGameContentProject.Write(log, configDisableWrite, GetResolvedContentPath(package), package.Name, package.ResolvedAppContent)

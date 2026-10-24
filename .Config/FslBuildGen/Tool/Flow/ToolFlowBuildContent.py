@@ -64,6 +64,7 @@ from FslBuildGen.VariableContextHelper import VariableContextHelper
 
 class DefaultValue:
     DependencyFile: str | None = None
+    MonoGameContentProject = False
     Output: str | None = None
     PackageConfigurationType = PluginSharedValues.TYPE_DEFAULT
     Project: str | None = None
@@ -74,6 +75,7 @@ class LocalToolConfig(ToolAppConfig):
     def __init__(self) -> None:
         super().__init__()
         self.DependencyFile = DefaultValue.DependencyFile
+        self.MonoGameContentProject = DefaultValue.MonoGameContentProject
         self.Output = DefaultValue.Output
         self.PackageConfigurationType = DefaultValue.PackageConfigurationType
         self.Project = DefaultValue.Project
@@ -97,6 +99,7 @@ class ToolFlowBuildContent(AToolAppFlow):
 
         # Configure the local part
         localToolConfig.DependencyFile = IOUtil.NormalizePath(args.DependencyFile) if args.DependencyFile is not None else None
+        localToolConfig.MonoGameContentProject = args.MonoGameContentProject
         localToolConfig.Output = IOUtil.NormalizePath(args.output) if args.output is not None else None
         localToolConfig.PackageConfigurationType = args.type
         localToolConfig.Project = args.project
@@ -158,12 +161,26 @@ class ToolFlowBuildContent(AToolAppFlow):
                 )
             RecipeBuilder.ValidateInstallationForPackages(self.Log, config.SDKPath, generatorContext, topLevelPackage.ResolvedBuildOrder)
 
+        if localToolConfig.MonoGameContentProject and localToolConfig.Recursive:
+            raise Exception("--MonoGameContentProject is only allowed for single package builds")
+
         if toolEnabled is not None and not ParseUtil.ParseBool(toolEnabled):
             disabledMessage = f"FslBuildContent has been disabled by environment variable {CONFIG_FSLBUILDCONTENT_ENABLED} set to {toolEnabled}"
             if localToolConfig.Output is not None:
                 # FslBuild only disables it for generators whose build files do not build the content, and those never ask for a output path
                 raise Exception(f"{disabledMessage}, but the build expects content in '{localToolConfig.Output}'")
             self.Log.DoPrint(disabledMessage)
+            if localToolConfig.MonoGameContentProject:
+                # FslBuild delivered the content before it ran the build, the project the build reads is still made here
+                if topLevelPackage is None:
+                    topLevelPackage = self.__ResolveAndGetTopLevelPackage(
+                        generatorContext, config, currentDirPath, toolConfig.GetMinimalConfig(generator.CMakeConfig), localToolConfig.Recursive
+                    )
+                package = self.__TryFindPackage(topLevelPackage, currentDirPath)
+                if package is None:
+                    raise Exception(f"Could not locate a package at '{currentDirPath}'")
+                ContentDelivery.CheckMonoGameContentProject(package, generatorContext.GeneratorName, generator.DeliversAppContent, None)
+                ContentDelivery.WriteMonoGameContentProject(self.Log, config.DisableWrite, package)
             return
 
         # The content of an app holds the content of the libraries it uses, so its packages are needed
@@ -186,6 +203,7 @@ class ToolFlowBuildContent(AToolAppFlow):
                 generator.DeliversAppContent,
                 localToolConfig.Output,
                 localToolConfig.DependencyFile,
+                localToolConfig.MonoGameContentProject,
             )
         else:
             if localToolConfig.DependencyFile is not None:
@@ -258,6 +276,11 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
             "--DependencyFile",
             default=DefaultValue.DependencyFile,
             help="Write a make style dependency file that lists the content outputs and the files they depend on beyond Content.bld (like shader includes), for the build system. Only allowed for single package builds",
+        )
+        parser.add_argument(
+            "--MonoGameContentProject",
+            action="store_true",
+            help="Also write the MonoGame content project of the app (Content.mgcb) into its resolved content directory, made from its content and the profiles of the files. For the project template of an app whose content MonoGame builds. Only allowed for single package builds",
         )
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:

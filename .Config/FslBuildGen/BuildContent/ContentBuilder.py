@@ -36,12 +36,13 @@ import time
 from typing import Any
 
 from FslBuildGen import ContentBuilderPlatforms, IOUtil, ToolSharedValues
-from FslBuildGen.BuildContent import ContentBuildSteps, ContentPlatformFilter
+from FslBuildGen.BuildContent import ContentBuildSteps, ContentPlatformFilter, ContentProfileList
 from FslBuildGen.BuildContent.BasicContentProcessor import BasicContentProcessor
 from FslBuildGen.BuildContent.ContentBuildResult import ContentBuildResult
 from FslBuildGen.BuildContent.ContentBuildRules import ContentBuildRules
 from FslBuildGen.BuildContent.ContentBuildSteps import ContentBuildStep
 from FslBuildGen.BuildContent.ContentDependencyCache import ContentDependencyCache, CreateOutputDependencies
+from FslBuildGen.BuildContent.ContentProfile import ResolvedContentProfile
 
 # from FslBuildGen.BuildContent.ContentProcessor import ContentProcessor
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
@@ -159,6 +160,8 @@ class Builder:
         self.__BuildInSourceRoot = listedContent is not None
         self.__ListedBuildSteps = listedContent.BuildSteps if listedContent is not None else None
         self.__BuildRules: ContentBuildRules | None = None
+        # What each file to build is, by its resolved path, when the command file is read here. A listed step has its own
+        self.__Profiles: dict[str, ResolvedContentProfile] = {}
         sourceContent: SourceContent | ListedSourceContent = (
             listedContent
             if listedContent is not None
@@ -221,6 +224,10 @@ class Builder:
 
         # We don't include the files at "Content" (contentOutputPath)
         sourceContent = SourceContent(log, contentOutputPath, contentBuildPath, commandFile, False, commandFilename)
+        # As the resolver does: checked against every file the command file is about, whatever platform it is for
+        records = sourceContent.ContentBuildSource.Files + sourceContent.ContentSource.Files
+        profiles = ContentProfileList.Resolve(commandFile.ProfileList, dict.fromkeys(record.RelativePath for record in records))
+        self.__Profiles = {record.ResolvedPath: profiles[record.RelativePath] for record in records}
         ContentPlatformFilter.RemoveBuildFilesNotForPlatform(sourceContent, commandFile.PlatformList, contentBuildPath, platformName)
         self.__BuildRules = commandFile.BuildRules
         return sourceContent
@@ -334,13 +341,11 @@ class Builder:
             if buildResource:
                 try:
                     workPath = contentFile.SourceRoot.ResolvedPath if self.__BuildInSourceRoot else contentBuildPath
-                    if step.BuilderName is None:
-                        dependencies = step.Processor.Process(log, configDisableWrite, workPath, contentOutputPath, contentFile)
-                    else:
-                        # A build rule: its builder, with the parameters and the output the rule gives
-                        dependencies = step.Processor.Process(
-                            log, configDisableWrite, workPath, contentOutputPath, contentFile, outputFileName, step.ToolArguments
-                        )
+                    # The output of the step, also for the builder of the extension: the app path of a listed step can differ from the
+                    # path the builder names (a library with a content namespace). A build rule gives its parameters too
+                    dependencies = step.Processor.Process(
+                        log, configDisableWrite, workPath, contentOutputPath, contentFile, outputFileName, step.ToolArguments, step.Profile
+                    )
                     if not configDisableWrite:
                         outputName = self.__GetSyncStateFileName(contentOutputPath, outputFileName)
                         dependencyCache.Set(outputName, CreateOutputDependencies(contentFile.ResolvedPath, dependencies, time.time_ns()))
@@ -365,7 +370,10 @@ class Builder:
         """What builds the file: the steps it was listed with, or what the build rules of the directory and the builders say"""
         listedSteps = self.__ListedBuildSteps.get(contentFile.ResolvedPath) if self.__ListedBuildSteps is not None else None
         if listedSteps is None:
-            return ContentBuildSteps.FindBuildSteps(log, contentProcessorManager, contentFile, self.__BuildRules)
+            steps = ContentBuildSteps.FindBuildSteps(log, contentProcessorManager, contentFile, self.__BuildRules)
+            for step in steps:
+                step.Profile = self.__Profiles.get(contentFile.ResolvedPath)
+            return steps
         steps: list[ContentBuildStep] = []
         for listedStep in listedSteps:
             processor = (
@@ -374,7 +382,7 @@ class Builder:
                 else contentProcessorManager.TryFindContentProcessorByName(listedStep.BuilderName)
             )
             if processor is not None:
-                steps.append(ContentBuildStep(processor, listedStep.OutputRelativePath, listedStep.ToolArguments, listedStep.BuilderName))
+                steps.append(ContentBuildStep(processor, listedStep.OutputRelativePath, listedStep.ToolArguments, listedStep.BuilderName, listedStep.Profile))
         return steps
 
     def __CheckTools(self, processors: list[Any]) -> None:

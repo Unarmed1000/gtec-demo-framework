@@ -40,6 +40,7 @@ from FslBuildGen.BuildContent import ContentBuildRules as ContentBuildRulesModul
 from FslBuildGen.BuildContent import ContentPlatformList as ContentPlatformListModule
 from FslBuildGen.BuildContent.ContentBuildRules import ContentBuildRules
 from FslBuildGen.BuildContent.ContentPlatformList import ContentPlatformList
+from FslBuildGen.BuildContent.ContentProfileList import ContentProfileList, ProfilesElement
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
 from FslBuildGen.BuildContent.PathVariables import PathVariables
 from FslBuildGen.BuildContent.Processor.Commands import Command, CommandContentBuildSync, CommandContentSync
@@ -59,6 +60,8 @@ class ContentBuildCommandFile:
         self.PlatformList: ContentPlatformList | None = None
         # How the files of the directory are built when it is not the builder of their extension (version 2), see ContentBuildRules
         self.BuildRules: ContentBuildRules | None = None
+        # What the files of the directory are when it is not the default of their content type (version 2), see ContentProfileList
+        self.ProfileList: ContentProfileList | None = None
 
         # The command file is UTF-8 like any json file. A byte order mark is accepted and a file in the locale encoding is read with a warning.
         # A package without the file has no commands. A file that is there and can not be read is an error: its commands would be left
@@ -103,7 +106,7 @@ class ContentBuildCommandFile:
                 elif key == "ContentBuild.Sync":
                     newCommand = self.__ParseContentBuildSync(log, jsonContent[key], sourceFilename, key, pathVariables)
                     commands.append(newCommand)
-                elif key in (ContentPlatformListModule.PlatformsElement, ContentBuildRulesModule.RulesElement):
+                elif key in (ContentPlatformListModule.PlatformsElement, ContentBuildRulesModule.RulesElement, ProfilesElement):
                     # An older tool does not know the element: the version tells it that it can not read the file
                     if jsonContent[self.__VersionElement] != ContentPlatformListModule.VersionWithPlatforms:
                         raise Exception(
@@ -112,6 +115,8 @@ class ContentBuildCommandFile:
                         )
                     if key == ContentBuildRulesModule.RulesElement:
                         self.BuildRules = ContentBuildRules.Parse(jsonContent[key], sourceFilename)
+                    elif key == ProfilesElement:
+                        self.ProfileList = ContentProfileList.Parse(jsonContent[key], sourceFilename)
                     else:
                         self.PlatformList = ContentPlatformList.Parse(jsonContent[key], sourceFilename)
                 else:
