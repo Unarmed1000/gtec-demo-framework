@@ -36,7 +36,12 @@
 #   content of the app, so it never gets here.
 # - The project never premultiplies alpha and never keys a colour (ContentProfile): a texture that must be premultiplied is baked so.
 # - The file is written only when its text changes, so MGCB keeps its own state of what is up to date.
+# - MGCB does not remove what it made for a file that is no longer in the project, and the C# build copies all of its output into the app.
+#   So when the project is written again, the output and the intermediate of every file that left it are removed, unless a file that is
+#   still in it makes the same output. The project that was there is what was built: no other record is needed.
 
+import glob
+import os
 from collections.abc import Sequence
 
 from FslBuildGen import IOUtil
@@ -53,6 +58,12 @@ _g_newLine = "\n"
 # The name of the content project of an app, in its resolved content directory. The name MonoGame gives it, so the project of the template
 # can name it, and its output is in 'Content' of the app as MonoGame has it
 FileName = "Content.mgcb"
+# Where MGCB puts what it makes, below the directory of the project (MonoGame.Content.Builder.Task): the output in
+# 'bin/<platform>/<project name>', the intermediate in 'obj/<platform>/<framework>/<project name>'
+_g_outputPattern = f"bin/*/{IOUtil.GetFileNameWithoutExtension(FileName)}"
+_g_intermediatePattern = f"obj/*/*/{IOUtil.GetFileNameWithoutExtension(FileName)}"
+_g_build = "/build:"
+_g_copy = "/copy:"
 
 
 def _Bool(value: bool) -> str:
@@ -126,6 +137,45 @@ def Write(log: Log, configDisableWrite: bool, contentPath: str, appName: str, en
         log.LogPrint(f"Would write the MonoGame content project '{filePath}'")
         return filePath
     IOUtil.SafeMakeDirs(contentPath)
-    if IOUtil.WriteFileUTF8IfChanged(filePath, BuildText(entries)):
+    text = BuildText(entries)
+    lastText = IOUtil.ReadFileUTF8(filePath) if IOUtil.IsFile(filePath) else None
+    if IOUtil.WriteFileUTF8IfChanged(filePath, text):
         log.LogPrint(f"Wrote the MonoGame content project '{filePath}'")
+        if lastText is not None:
+            RemoveOutputsOfFilesThatLeft(log, contentPath, lastText, text)
     return filePath
+
+
+def GetOutputs(text: str) -> dict[str, str | None]:
+    """What MGCB makes for the files of a project: the output below its output directory -> the intermediate below its intermediate directory
+    (None for a file that is copied)
+    """
+    outputs: dict[str, str | None] = {}
+    for line in text.splitlines():
+        if line.startswith(_g_build):
+            stem = os.path.splitext(line[len(_g_build) :])[0]
+            outputs[f"{stem}.xnb"] = f"{stem}.mgcontent"
+        elif line.startswith(_g_copy):
+            outputs[line[len(_g_copy) :]] = None
+    return outputs
+
+
+def RemoveOutputsOfFilesThatLeft(log: Log, contentPath: str, lastText: str, text: str) -> int:
+    """Remove what MGCB made for the files of the last project that are not in this one. Returns the number of files that were removed"""
+    outputs = GetOutputs(text)
+    left = {output: intermediate for output, intermediate in GetOutputs(lastText).items() if output not in outputs}
+    removed = 0
+    for pattern, isOutput in [(_g_outputPattern, True), (_g_intermediatePattern, False)]:
+        for directory in glob.glob(IOUtil.Join(glob.escape(contentPath), pattern)):
+            for output, intermediate in left.items():
+                relativePath = output if isOutput else intermediate
+                if relativePath is None:
+                    continue
+                filename = IOUtil.Join(IOUtil.NormalizePath(directory), relativePath)
+                if IOUtil.IsFile(filename):
+                    log.LogPrintVerbose(2, f"Removing '{filename}', it is no longer in the MonoGame content project")
+                    os.remove(filename)
+                    removed += 1
+    if removed > 0:
+        log.LogPrint(f"Removed {removed} files MGCB made for content that is no longer in '{FileName}'")
+    return removed
