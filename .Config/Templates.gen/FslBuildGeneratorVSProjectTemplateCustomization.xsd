@@ -17,10 +17,27 @@
     </xs:choice>
   </xs:group>
 
+  <xs:simpleType name="_T_AppContentProject">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MonoGame"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="_T_AppContent">
+    <xs:annotation>
+      <xs:documentation>
+        How the platform of the template imports the content of an app. MonoGame: generation writes the MonoGame content project
+        (Content.mgcb) of an app that has content into its resolved content directory.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Project" type="_T_AppContentProject" use="required"/>
+  </xs:complexType>
+
 
   <xs:group name="_G_CustomizationList">
     <xs:sequence>
       <xs:group ref="_G_BuildOutput" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="AppContent" type="_T_AppContent" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:group>
 

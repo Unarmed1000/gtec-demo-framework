@@ -57,6 +57,23 @@ class XmlNewVSProjectTemplateCustomizationBuildOutput(XmlBase):
         self.Location = location
 
 
+class XmlNewVSProjectTemplateCustomizationAppContent(XmlBase):
+    """How the platform of the template imports the content of an app. 'Project="MonoGame"': through the MonoGame content project of the app
+    (MonoGameContentProject), which generation writes next to the content of the app
+    """
+
+    __AttribProject = "Project"
+    ProjectMonoGame = "MonoGame"
+
+    def __init__(self, log: Log, xmlElement: ET.Element) -> None:
+        super().__init__(log, xmlElement)
+        self._CheckAttributes({self.__AttribProject})
+        project = self._ReadAttrib(xmlElement, self.__AttribProject)
+        if project != self.ProjectMonoGame:
+            raise XmlException(f"AppContent Project='{project}' is unknown, the only content project is '{self.ProjectMonoGame}'")
+        self.Project = project
+
+
 class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
     """The 'Customization.xml' of a Visual Studio project template. An attribute or an element in it that is not read stops the load
     when the file is read: one error that lists every such name of the file (XmlNameCheck.XmlUnknownNamesException).
@@ -64,6 +81,7 @@ class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
 
     __AttribVersion = "Version"
     __ElementBuildOutput = "BuildOutput"
+    __ElementAppContent = "AppContent"
 
     def __init__(self, log: Log, filename: str) -> None:
         if not os.path.isfile(filename):
@@ -76,19 +94,23 @@ class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
                 raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGeneratorVSProjectTemplateCustomization'")
 
             super().__init__(log, elem)
-            XmlNameCheck.CheckRoot(elem, {self.__AttribVersion}, {self.__ElementBuildOutput})
+            XmlNameCheck.CheckRoot(elem, {self.__AttribVersion}, {self.__ElementBuildOutput, self.__ElementAppContent})
             strVersion = self._ReadAttrib(elem, self.__AttribVersion)
             if strVersion != "1":
                 raise Exception("Unsupported version")
 
             xmlConfiguration = self.__LoadTemplateConfiguration(log, elem)
+            xmlAppContent = [XmlNewVSProjectTemplateCustomizationAppContent(log, entry) for entry in elem.findall(self.__ElementAppContent)]
 
         # After the names: a 'BuildOutput' element with a typing error is reported as the unknown name it is
         if len(xmlConfiguration) != 1:
             raise XmlException("The file did not contain exactly one BuildOutput element")
+        if len(xmlAppContent) > 1:
+            raise XmlException("The file contains more than one AppContent element")
 
         self.Version = 1
         self.BuildOutput = xmlConfiguration[0]
+        self.AppContent = xmlAppContent[0] if len(xmlAppContent) > 0 else None
         self.Path = IOUtil.GetDirectoryName(filename)
 
     def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> list[XmlNewVSProjectTemplateCustomizationBuildOutput]:

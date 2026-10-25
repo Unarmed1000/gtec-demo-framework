@@ -568,6 +568,9 @@ class GeneratorVC(GeneratorBase):
                 TemplateIO.WriteGeneratedFileIfChanged(dstFileRunProject, runProjectFile)
             if buildNuGetPackageConfigFile is not None:
                 TemplateIO.WriteGeneratedFileIfChanged(dstFileNuGetConfig, buildNuGetPackageConfigFile)
+        if template.MonoGameContentProject and GeneratorVC.__HasAppContent(package):
+            # The project of the app hands it to MonoGame, so it is generated with the project
+            ContentDelivery.WriteMonoGameContentProject(config, config.DisableWrite, package)
 
         # A solution in the other format is left over from before the SolutionFormat changed
         staleFormat = VisualStudioSolutionFormat.Sln if self.__SolutionFormat == VisualStudioSolutionFormat.Slnx else VisualStudioSolutionFormat.Slnx

@@ -44,7 +44,7 @@ from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Template.TemplateFileRecordManager import TemplateFileRecordManager
 
 # from FslBuildGen.Template.TemplateFileProcessor import TemplateFileProcessor
-from FslBuildGen.Xml.XmlNewVSProjectTemplateCustomizationFile import XmlNewVSProjectTemplateCustomizationFile
+from FslBuildGen.Xml.XmlNewVSProjectTemplateCustomizationFile import XmlNewVSProjectTemplateCustomizationAppContent, XmlNewVSProjectTemplateCustomizationFile
 from FslBuildGen.Xml.XmlNewVSProjectTemplateFile import XmlNewVSProjectTemplateFile
 
 
@@ -93,6 +93,10 @@ class CodeTemplateVC:
         strTemplateNuGetPackageConfigPath = IOUtil.Join(strTemplatePath, "Template_packages_config")
 
         self.BuildOutputLocation = customization.BuildOutput.Location
+        # Generation writes the MonoGame content project of an app that has content (GeneratorVC)
+        self.MonoGameContentProject = (
+            customization.AppContent is not None and customization.AppContent.Project == XmlNewVSProjectTemplateCustomizationAppContent.ProjectMonoGame
+        )
         self.FilterExtension = "vcxproj.filters"
         self.ProjectExtension = template.Template.ProjectExtension
 

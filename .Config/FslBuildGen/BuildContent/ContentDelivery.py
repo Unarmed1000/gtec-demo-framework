@@ -281,21 +281,16 @@ def DeliverPackage(
     generatorDeliversAppContent: bool,
     outputPath: str | None = None,
     dependencyFile: str | None = None,
-    monoGameContentProject: bool = False,
 ) -> None:
     """Deliver the content of an app the way its generator has it.
     generatorDeliversAppContent: False for a generator whose app reads the 'Content' directory of its package: only what the app builds itself
                                  is put there, as before, and an app that gets content of another package is refused
     outputPath: the directory a build system asks for. It copies the files that are used as they are itself, so only what is built and what
                 a command copies in is delivered there
-    monoGameContentProject: also write the MonoGame content project of the app next to its content (MonoGameContentProject), for the
-                            template of an app that MonoGame builds the content of
     """
     if package.Type != PackageType.Executable or package.AbsolutePath is None or package.Path is None:
         log.DoPrint(f"'{package.Name}' is not an executable: the content of a library is delivered with the apps that use it")
         return
-    if monoGameContentProject:
-        CheckMonoGameContentProject(package, generatorName, generatorDeliversAppContent, outputPath)
     featureList = [entry.Name for entry in package.ResolvedAllUsedFeatures]
     if not generatorDeliversAppContent:
         CheckNothingIsInherited(package, generatorName)
@@ -335,26 +330,9 @@ def DeliverPackage(
         package.ResolvedPlatformName,
     )
 
-    if monoGameContentProject:
-        WriteMonoGameContentProject(log, configDisableWrite, package)
-
-
-def CheckMonoGameContentProject(package: Package, generatorName: str, generatorDeliversAppContent: bool, outputPath: str | None) -> None:
-    """Stops when the content project can not be next to the content of the app"""
-    if not generatorDeliversAppContent:
-        raise UsageErrorException(
-            f"The MonoGame content project of '{package.Name}' lists the content in its resolved content directory, and the generator "
-            f"'{generatorName}' does not deliver it there"
-        )
-    if outputPath is not None:
-        raise UsageErrorException(
-            f"The MonoGame content project of '{package.Name}' is written next to its resolved content directory, not into a directory a "
-            "build system asks for: leave out the output directory"
-        )
-
 
 def WriteMonoGameContentProject(log: Log, configDisableWrite: bool, package: Package) -> None:
-    """Write the MonoGame content project of the app into its resolved content directory. Also when the content was delivered by the tool
-    that runs the build (FslBuild), which is why it is apart from the delivery
+    """Write the MonoGame content project of the app into its resolved content directory. Generation writes it with the project of the app
+    (GeneratorVC), so every tool that generates does
     """
     MonoGameContentProject.Write(log, configDisableWrite, GetResolvedContentPath(package), package.Name, package.ResolvedAppContent)
