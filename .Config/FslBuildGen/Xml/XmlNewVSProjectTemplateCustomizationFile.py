@@ -59,7 +59,8 @@ class XmlNewVSProjectTemplateCustomizationBuildOutput(XmlBase):
 
 class XmlNewVSProjectTemplateCustomizationAppContent(XmlBase):
     """How the platform of the template imports the content of an app. 'Project="MonoGame"': through the MonoGame content project of the app
-    (MonoGameContentProject), which generation writes next to the content of the app
+    (MonoGameContentProject), which generation writes next to the content of the app, with the tool that builds it in the dotnet tool manifest of
+    the app (MonoGameContentBuilderTool)
     """
 
     __AttribProject = "Project"

@@ -27,21 +27,23 @@
 # do not share a syntax for it, so each one has a function here that returns the text for that consumer or raises a VersionRenderException that tells
 # why the consumer can not be given the version. A version is never approximated and never left out.
 #
-#   typed        NuGet package reference   CMake find_package   assembly reference   packages.config entry
-#   1.2          1.2                       1.2                  1.2                  1.2
-#   [1.2]        [1.2]                     1.2 EXACT            1.2                  error
-#   4.*          4.*                       4...<5               error                error
-#   4.1.*        4.1.*                     4.1...<4.2           error                error
-#   [1,2)        [1,2)                     1...<2               error                error
-#   [1,2]        [1,2]                     1...2                error                error
-#   [1.0,)       [1.0,)                    1.0                  error                error
-#   (1.0,)       (1.0,)                    error                error                error
-#   (1.0,2.0)    (1.0,2.0)                 error                error                error
-#   (,2.0]       (,2.0]                    0...2.0              error                error
-#   (,2.0)       (,2.0)                    0...<2.0             error                error
-#   1.0.0-beta   1.0.0-beta                error                error                1.0.0-beta
+#   typed        NuGet package reference   CMake find_package   assembly reference   packages.config entry   dotnet tool manifest
+#   1.2          1.2                       1.2                  1.2                  1.2                     1.2
+#   [1.2]        [1.2]                     1.2 EXACT            1.2                  error                   1.2
+#   4.*          4.*                       4...<5               error                error                   error
+#   4.1.*        4.1.*                     4.1...<4.2           error                error                   error
+#   [1,2)        [1,2)                     1...<2               error                error                   error
+#   [1,2]        [1,2]                     1...2                error                error                   error
+#   [1.0,)       [1.0,)                    1.0                  error                error                   error
+#   (1.0,)       (1.0,)                    error                error                error                   error
+#   (1.0,2.0)    (1.0,2.0)                 error                error                error                   error
+#   (,2.0]       (,2.0]                    0...2.0              error                error                   error
+#   (,2.0)       (,2.0)                    0...<2.0             error                error                   error
+#   1.0.0-beta   1.0.0-beta                error                error                1.0.0-beta              1.0.0-beta
 #
 # The text of a version is always the text that was typed ("1.8" stays "1.8"), it is never built from the parsed bounds.
+# A dotnet tool manifest holds the one version that is restored. A plain version is the one NuGet takes for a package reference, the lowest
+# that satisfies it, so a tool given the version of a package reference is the version of that package.
 # A CMake range ("...") needs CMake 3.19, so it is an error when the project asks for an older CMake.
 
 import re
@@ -58,6 +60,7 @@ _g_firstCMakeWithVersionRange = CMakeVersion(3, 19, 0)
 _g_consumerCMakeFindPackage = "CMake find_package"
 _g_consumerAssembly = "an assembly reference"
 _g_consumerPackagesConfig = "a packages.config entry"
+_g_consumerDotnetTool = "a dotnet tool manifest"
 
 _g_formDescription = {
     SemanticVersionPatternForm.Plain: "a plain version",
@@ -154,6 +157,14 @@ def ToAssemblyVersion(pattern: SemanticVersionPattern) -> str:
     versionText = pattern.LowerBoundText
     if pattern.Form not in (SemanticVersionPatternForm.Plain, SemanticVersionPatternForm.Exact) or versionText is None or not _IsNumeric(versionText):
         raise _Error(pattern, _g_consumerAssembly, "an assembly reference needs one version of numbers only (major[.minor[.build[.revision]]])")
+    return versionText
+
+
+def ToDotnetToolVersion(pattern: SemanticVersionPattern) -> str:
+    """The version of a tool in a dotnet tool manifest: one version, a prerelease is fine. The tool is exactly that version, so '[1.2]' is '1.2'."""
+    versionText = pattern.LowerBoundText
+    if pattern.Form not in (SemanticVersionPatternForm.Plain, SemanticVersionPatternForm.Exact) or versionText is None:
+        raise _Error(pattern, _g_consumerDotnetTool, "a dotnet tool manifest needs one version, a plain or an exact one")
     return versionText
 
 

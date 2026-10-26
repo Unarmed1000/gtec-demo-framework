@@ -39,7 +39,7 @@ from FslBuildGen import IOUtil, SemanticVersionPatternRender, TemplateIO, Util
 
 # from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Build.DataTypes import CommandType
-from FslBuildGen.BuildContent import ContentDelivery
+from FslBuildGen.BuildContent import ContentDelivery, MonoGameContentBuilderTool
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.Config import Config
 
@@ -555,6 +555,15 @@ class GeneratorVC(GeneratorBase):
         buildBasePath = IOUtil.Join(package.AbsolutePath, package.ResolvedBuildPath)
         dstFileBuildProject = IOUtil.Join(buildBasePath, LocalMagicFilenames.BuildProject)
         dstFileRunProject = IOUtil.Join(buildBasePath, LocalMagicFilenames.RunProject)
+        # The content of an app is built by MonoGame when its template has the content project and it references the package that builds it.
+        # One without the other is an error, found before a project is written that could not build the content
+        monoGameToolVersion: str | None = None
+        if GeneratorVC.__HasAppContent(package):
+            packageReferences = self.__GetExternalDependenciesByType(package, ExternalDependencyType.PackageReference)
+            if template.MonoGameContentProject:
+                monoGameToolVersion = MonoGameContentBuilderTool.GetToolVersion(package.Name, packageReferences)
+            else:
+                MonoGameContentBuilderTool.CheckNotReferenced(package.Name, GeneratorVC.__DescribeTemplateType(package), packageReferences)
         if not config.DisableWrite:
             IOUtil.SafeMakeDirs(buildBasePath)
             TemplateIO.WriteGeneratedFileIfChanged(dstFileSLN, buildSLN)
@@ -568,9 +577,10 @@ class GeneratorVC(GeneratorBase):
                 TemplateIO.WriteGeneratedFileIfChanged(dstFileRunProject, runProjectFile)
             if buildNuGetPackageConfigFile is not None:
                 TemplateIO.WriteGeneratedFileIfChanged(dstFileNuGetConfig, buildNuGetPackageConfigFile)
-        if template.MonoGameContentProject and GeneratorVC.__HasAppContent(package):
-            # The project of the app hands it to MonoGame, so it is generated with the project
+        if monoGameToolVersion is not None:
+            # The project of the app hands it to MonoGame, so it is generated with the project, and so is the tool that builds it
             ContentDelivery.WriteMonoGameContentProject(config, config.DisableWrite, package)
+            MonoGameContentBuilderTool.Write(config, config.DisableWrite, package.AbsolutePath, monoGameToolVersion)
 
         # A solution in the other format is left over from before the SolutionFormat changed
         staleFormat = VisualStudioSolutionFormat.Sln if self.__SolutionFormat == VisualStudioSolutionFormat.Slnx else VisualStudioSolutionFormat.Slnx
