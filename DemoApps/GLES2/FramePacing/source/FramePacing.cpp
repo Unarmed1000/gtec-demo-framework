@@ -82,8 +82,8 @@ namespace Fsl
   void FramePacing::Draw(const FrameInfo& /*frameInfo*/)
   {
     // The time the GPU finished a frame is a time of the GL, so its clock is related to the clock of the framework now and then. It
-    // is done here, before the first command of the frame: reading the time of the GL sends what was issued so far to the GPU, and
-    // here there is nothing to send.
+    // is done here, before the first command of the frame: the timestamp query it waits for sends what was issued so far to the GPU,
+    // and here there is nothing to send.
     if (++m_framesSinceCalibration >= LocalConfig::FramesPerCalibration)
     {
       m_framesSinceCalibration = 0;

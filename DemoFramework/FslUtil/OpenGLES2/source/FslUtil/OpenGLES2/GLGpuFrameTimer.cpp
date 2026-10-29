@@ -39,10 +39,10 @@ namespace Fsl::GLES2
       constexpr GLenum TimestampExt = 0x8E28;
       constexpr GLenum GpuDisjointExt = 0x8FBB;
       constexpr int64_t NanosecondsPerTick = 100;
-      //! A read of the two clocks that took longer than the one in use replaces it once that one is this old: the clocks drift apart
+      //! A calibration that took longer than the one in use replaces it once that one is this old: the clocks drift apart
       constexpr TimeSpan MaxCalibrationAge(TimeSpan::FromSeconds(2));
-      //! The reads of one calibration, the one that took the shortest is used
-      constexpr uint32_t CalibrationReads = 3;
+      //! How long a calibration waits for its timestamp query
+      constexpr TimeSpan MaxCalibrationWait(TimeSpan::FromMilliseconds(2));
     }
 
     //! Look up a function of the extension (nullptr if the driver does not have it)
@@ -80,9 +80,8 @@ namespace Fsl::GLES2
       GetFunction(m_timestampFunctions.GetQueryiv, "glGetQueryivEXT");
       GetFunction(m_timestampFunctions.QueryCounter, "glQueryCounterEXT");
       GetFunction(m_timestampFunctions.GetQueryObjectui64v, "glGetQueryObjectui64vEXT");
-      GetFunction(m_timestampFunctions.GetInteger64v, "glGetInteger64vEXT");
       const bool hasFunctions = m_timestampFunctions.GetQueryiv != nullptr && m_timestampFunctions.QueryCounter != nullptr &&
-                                m_timestampFunctions.GetQueryObjectui64v != nullptr && m_timestampFunctions.GetInteger64v != nullptr;
+                                m_timestampFunctions.GetQueryObjectui64v != nullptr;
       GLint timestampBits = 0;
       if (hasFunctions)
       {
@@ -92,6 +91,7 @@ namespace Fsl::GLES2
       if (m_isEndTimeSupported)
       {
         m_functions.GenQueries(static_cast<GLsizei>(m_endQueries.size()), m_endQueries.data());
+        m_functions.GenQueries(1, &m_calibrationQuery);
       }
       else
       {
@@ -117,6 +117,7 @@ namespace Fsl::GLES2
     if (m_isEndTimeSupported)
     {
       m_functions.DeleteQueries(static_cast<GLsizei>(m_endQueries.size()), m_endQueries.data());
+      m_functions.DeleteQueries(1, &m_calibrationQuery);
     }
   }
 
@@ -211,34 +212,36 @@ namespace Fsl::GLES2
     {
       return;
     }
-    // The time of the GL is read between two reads of the clock of the framework and taken to be in the middle of them, so it can
-    // be off by half the time the read took. The read that took the shortest of a few is the one that is used.
-    TickCount bestBeforeTime;
-    TimeSpan bestReadTime;
-    int64_t bestGlNanoseconds = 0;
-    for (uint32_t i = 0; i < LocalConfig::CalibrationReads; ++i)
+    // The end times are timestamp queries, so the clocks are related with one too: the time of the GL (GL_TIMESTAMP_EXT) is
+    // another clock on some drivers. The query is waited for between two reads of the clock of the framework, its time is taken to
+    // be in the middle of them, so it can be off by half the time the wait took. There is no flush: asking if the result is there
+    // forces the query to complete in a finite time (GL_EXT_disjoint_timer_query), so the driver sends it to the GPU.
+    const TickCount beforeTime = m_timer.GetTimestamp();
+    m_timestampFunctions.QueryCounter(m_calibrationQuery, LocalConfig::TimestampExt);
+    GLuint available = GL_FALSE;
+    m_functions.GetQueryObjectuiv(m_calibrationQuery, LocalConfig::QueryResultAvailableExt, &available);
+    while (available == GL_FALSE)
     {
-      const TickCount beforeTime = m_timer.GetTimestamp();
-      int64_t glNanoseconds = 0;
-      m_timestampFunctions.GetInteger64v(LocalConfig::TimestampExt, &glNanoseconds);
-      const TimeSpan readTime = m_timer.GetTimestamp() - beforeTime;
-      if (glNanoseconds > 0 && (bestGlNanoseconds == 0 || readTime < bestReadTime))
+      // The GPU is too busy: the next call tries again (a timestamp query can be issued again before its result arrived)
+      if ((m_timer.GetTimestamp() - beforeTime) > LocalConfig::MaxCalibrationWait)
       {
-        bestBeforeTime = beforeTime;
-        bestReadTime = readTime;
-        bestGlNanoseconds = glNanoseconds;
+        return;
       }
+      m_functions.GetQueryObjectuiv(m_calibrationQuery, LocalConfig::QueryResultAvailableExt, &available);
     }
-    if (bestGlNanoseconds == 0)
+    const TickCount afterTime = m_timer.GetTimestamp();
+    const TimeSpan readTime = afterTime - beforeTime;
+    uint64_t glNanoseconds = 0;
+    m_timestampFunctions.GetQueryObjectui64v(m_calibrationQuery, LocalConfig::QueryResultExt, &glNanoseconds);
+    if (glNanoseconds == 0)
     {
       return;
     }
-    // A read that took longer than the one in use only replaces it once that one got old
-    const TickCount afterTime = bestBeforeTime + bestReadTime;
-    if (!m_isCalibrated || bestReadTime <= m_calibrationReadTime || (afterTime - m_calibrationTime) >= LocalConfig::MaxCalibrationAge)
+    // A calibration whose wait took longer than the one in use only replaces it once that one got old
+    if (!m_isCalibrated || readTime <= m_calibrationReadTime || (afterTime - m_calibrationTime) >= LocalConfig::MaxCalibrationAge)
     {
-      m_hostMinusGlTicks = (bestBeforeTime.Ticks() + (bestReadTime.Ticks() / 2)) - (bestGlNanoseconds / LocalConfig::NanosecondsPerTick);
-      m_calibrationReadTime = bestReadTime;
+      m_hostMinusGlTicks = (beforeTime.Ticks() + (readTime.Ticks() / 2)) - (static_cast<int64_t>(glNanoseconds) / LocalConfig::NanosecondsPerTick);
+      m_calibrationReadTime = readTime;
       m_calibrationTime = afterTime;
       m_isCalibrated = true;
       ++m_calibrationId;

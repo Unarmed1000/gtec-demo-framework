@@ -41,8 +41,8 @@ namespace Fsl::GLES3
   //!        queries of the ring are still in use). A result the driver flags as disjoint (GL_GPU_DISJOINT_EXT) is thrown away. Without the
   //!        extension the timer is not supported and the GPU time stays zero. It needs the GL context it is created in.
   //! @note  A driver can have the extension and no timestamps (it says so with zero bits for the counter): the time the GPU finished
-  //!        a frame is then not measured (IsEndTimeSupported). The timestamp is on the clock of the GL, which is related to the clock
-  //!        of the framework by reading both (Calibrate).
+  //!        a frame is then not measured (IsEndTimeSupported). The timestamp is on the clock of the timestamp queries, which is related
+  //!        to the clock of the framework with a timestamp query of its own (Calibrate).
   class GLGpuFrameTimer final
   {
     static constexpr uint32_t QueryCount = 4;
@@ -72,9 +72,11 @@ namespace Fsl::GLES3
     std::array<GLuint, QueryCount> m_queries{};
     //! The timestamp query of each frame, issued after its last command
     std::array<GLuint, QueryCount> m_endQueries{};
+    //! The timestamp query Calibrate waits for
+    GLuint m_calibrationQuery{0};
     bool m_isEndTimeSupported{false};
-    //! The time of the framework minus the time of the GL in ticks (valid if m_isCalibrated), how long the read took that it is from
-    //! and when that was
+    //! The time of the framework minus the time of the timestamp queries in ticks (valid if m_isCalibrated), how long the wait for
+    //! the query took that it is from and when that was
     int64_t m_hostMinusGlTicks{0};
     TimeSpan m_calibrationReadTime;
     TickCount m_calibrationTime;
@@ -122,11 +124,13 @@ namespace Fsl::GLES3
     //! @brief Call it after the last GL command of the frame.
     void EndFrame();
 
-    //! @brief Relate the clock of the GL to the clock of the framework by reading both, so a timestamp of the GL can be given as a
-    //!        HighResolutionTimer timestamp. Call it now and then, the clocks drift apart. Reading the time of the GL sends the
-    //!        commands that were issued so far to the GL server and returns after that, so the place for the call is the start of
-    //!        a frame, before its first command: there is nothing to send, the read is short and it changes nothing about when the
-    //!        GPU is given the frame. It does nothing without timestamps.
+    //! @brief Relate the clock of the timestamp queries to the clock of the framework, so the time the GPU finished a frame can be
+    //!        given as a HighResolutionTimer timestamp. It issues a timestamp query and waits up to 2 ms for the result (asking
+    //!        for it makes the driver send the query to the GPU), which is taken to be in the middle of the time of the framework before and after
+    //!        the wait. Some drivers have another clock for the time of the GL (GL_TIMESTAMP_EXT), so it is not used. If the GPU is too busy to give
+    //!        the result in time nothing changes and the next call tries again. Call it now and then, the clocks drift apart. The commands that were
+    //!        issued so far are sent to the GPU with the query, so the place for the call is the start of a frame, before its first command: there is
+    //!        nothing to send, the wait is short and it changes nothing about when the GPU is given the frame. It does nothing without timestamps.
     void Calibrate();
 
     //! @return a number that grows by one every time Calibrate related the two clocks anew
@@ -135,8 +139,8 @@ namespace Fsl::GLES3
       return m_calibrationId;
     }
 
-    //! @return how long the read of the time of the GL took that the clocks are related by: the time of the GL can be off by up
-    //!         to half of it (zero if the clocks were not related yet)
+    //! @return how long the wait for the timestamp query took that the clocks are related by: the time of the query can be off by
+    //!         up to half of it (zero if the clocks were not related yet)
     [[nodiscard]] TimeSpan GetCalibrationReadTime() const noexcept
     {
       return m_calibrationReadTime;
