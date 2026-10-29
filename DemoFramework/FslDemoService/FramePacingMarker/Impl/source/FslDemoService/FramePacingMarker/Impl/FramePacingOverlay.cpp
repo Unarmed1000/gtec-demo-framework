@@ -245,9 +245,12 @@ namespace Fsl
     // A start marker says whether there is a trace of the app with the frame record of the run (it is logged below). The flag is the
     // statement of the start marker about the run, the other markers do not carry it.
     const bool frameRecordLogged = FramePacingFrameRecordUtil::IsFrameRecordLogged(record);
+    // A start or end marker carries the paced and present failed flags of the frame that shows it, like a frame marker
     const FM::MarkerFlags flags = (record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::NoFlags) |
                                   (record.StaticBefore ? FM::MarkerFlags::StaticBefore : FM::MarkerFlags::NoFlags) |
-                                  (frameRecordLogged ? FM::MarkerFlags::FrameRecordLogged : FM::MarkerFlags::NoFlags);
+                                  (frameRecordLogged ? FM::MarkerFlags::FrameRecordLogged : FM::MarkerFlags::NoFlags) |
+                                  (record.Paced ? FM::MarkerFlags::Paced : FM::MarkerFlags::NoFlags) |
+                                  (record.PresentFailedBefore ? FM::MarkerFlags::PresentFailedBefore : FM::MarkerFlags::NoFlags);
     const FM::Payload payload{ToMarkerKind(record.Kind),
                               record.RunId,
                               record.FrameIndex,
@@ -348,6 +351,8 @@ namespace Fsl
     }
     markerInfo.Static = record.Static;
     markerInfo.StaticBefore = record.StaticBefore;
+    markerInfo.Paced = record.Paced;
+    markerInfo.PresentFailedBefore = record.PresentFailedBefore;
     if (record.CpuStartNanoseconds > 0)
     {
       markerInfo.CpuStartTime = NanosecondTickCount(record.CpuStartNanoseconds);

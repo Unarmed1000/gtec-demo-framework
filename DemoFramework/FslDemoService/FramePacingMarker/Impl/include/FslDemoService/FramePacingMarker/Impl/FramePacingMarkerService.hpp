@@ -92,6 +92,8 @@ namespace Fsl
     TickCount m_swapCallTime;
     TickCount m_swapReturnTime;
     bool m_hasSwapTimes{false};
+    //! The index of the last frame whose swap did not queue it (empty if there was none): the marker of the frame after it says so
+    std::optional<uint64_t> m_failedPresentFrameIndex;
 
     //! Every value the last drawn marker carried (empty until the overlay drew a marker)
     std::optional<FramePacingMarkerInfo> m_lastMarker;
@@ -204,7 +206,7 @@ namespace Fsl
 
     // From IFramePacingMarkerServiceControl
     void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) final;
-    void OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept final;
+    void OnSwapBuffers(const TickCount callTime, const TickCount returnTime, const bool presented) noexcept final;
     std::unique_ptr<IFramePacingOverlay> CreateOverlay(const ServiceProvider& serviceProvider) final;
 
     // From IFramePacingFrameSource

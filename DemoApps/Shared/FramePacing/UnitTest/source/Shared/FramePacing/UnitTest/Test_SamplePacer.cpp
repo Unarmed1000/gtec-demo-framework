@@ -110,6 +110,8 @@ TEST(TestSamplePacer, TimerPeriodOnly_NextFrameIsDueARefreshLater)
   EXPECT_EQ(1u, schedule.FrameId);
   EXPECT_EQ(1u, schedule.SwapInterval);
   EXPECT_EQ(At(PeriodTicks), schedule.NextFrameStartTime);
+  // The pacer placed the frame, so its marker says it was paced
+  EXPECT_TRUE(schedule.Paced);
 
   // A frame of one refresh is presented at once
   const SamplePacerPresentPlan presentPlan = pacer.EndFrame(At(PeriodTicks / 5));

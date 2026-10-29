@@ -759,6 +759,7 @@ namespace Fsl
       UpdateStatsVisibility();
       UpdateSyncMarker();
       UpdatePacerStats();
+      CountMarkerFlags();
       UpdateMarkerStats();
     }
     {
@@ -859,6 +860,8 @@ namespace Fsl
         frameSchedule.IntendedDisplayTime = m_schedule.IntendedDisplayTime;
         frameSchedule.TargetFrameTime = m_schedule.TargetFrameTime;
         frameSchedule.PreferredFrameTime = m_schedule.PreferredFrameTime;
+        // Paced as the pacer says. Without the pacer only the present holds the loop, which is not paced.
+        frameSchedule.Paced = m_schedule.Paced;
         // The marker has no refresh period under variable refresh
         if (!m_variableRefreshSeen)
         {
@@ -2683,6 +2686,8 @@ namespace Fsl
     rStats.CpuBusyTime = addStatsRow(*markerGrid, markerRow, "CPU busy");
     rStats.PreferredFrameTime = addStatsRow(*markerGrid, markerRow, "Preferred frame time");
     rStats.Static = addStatsRow(*markerGrid, markerRow, "Static");
+    rStats.Paced = addStatsRow(*markerGrid, markerRow, "Paced");
+    rStats.PresentFailed = addStatsRow(*markerGrid, markerRow, "Present failed");
     rStats.RunStartTime = addStatsRow(*markerGrid, markerRow, "Run start time");
     rStats.RunSequenceId = addStatsRow(*markerGrid, markerRow, "Sequence id");
     rStats.FrameRecord = addStatsRow(*markerGrid, markerRow, "Frame record");
@@ -2940,6 +2945,22 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::CountMarkerFlags()
+  {
+    // The present failed flag is on one marker only, so it is counted for every new marker, also while the panel is hidden
+    FramePacingMarkerInfo info;
+    if (!m_framePacing || !m_framePacing->TryGetLastMarker(info) || info.FrameIndex == m_lastCountedMarkerFrameIndex)
+    {
+      return;
+    }
+    m_lastCountedMarkerFrameIndex = info.FrameIndex;
+    if (info.PresentFailedBefore)
+    {
+      ++m_presentFailedMarkers;
+    }
+  }
+
+
   void FramePacingShared::UpdateMarkerStats()
   {
     if (!m_ui.SwitchMarkerStats->IsChecked())
@@ -2953,10 +2974,10 @@ namespace Fsl
     if (!m_framePacing || !m_framePacing->TryGetLastMarker(info))
     {
       rStats.Kind->SetContent("none drawn yet");
-      for (UI::Label* pLabel :
-           {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(), rStats.TargetFrameTime.get(),
-            rStats.RefreshPeriod.get(), rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.PreferredFrameTime.get(), rStats.Static.get(),
-            rStats.RunStartTime.get(), rStats.RunSequenceId.get(), rStats.FrameRecord.get(), rStats.SyncMarker.get()})
+      for (UI::Label* pLabel : {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(),
+                                rStats.TargetFrameTime.get(), rStats.RefreshPeriod.get(), rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(),
+                                rStats.PreferredFrameTime.get(), rStats.Static.get(), rStats.Paced.get(), rStats.PresentFailed.get(),
+                                rStats.RunStartTime.get(), rStats.RunSequenceId.get(), rStats.FrameRecord.get(), rStats.SyncMarker.get()})
       {
         pLabel->SetContent(UnknownValue);
       }
@@ -3063,6 +3084,9 @@ namespace Fsl
     // Static after: the app said nothing animates while the frame is on screen. Static before: the service found that the frame has the
     // animation time of the frame before it (the app is paused).
     rStats.Static->SetContent(info.Static ? (info.StaticBefore ? "after, before" : "after") : (info.StaticBefore ? "before" : "no"));
+    // Paced: the pacer held the frame's start. Present failed: how many markers said the frame before them never reached the display.
+    rStats.Paced->SetContent(info.Paced ? "yes" : "no");
+    SetFormattedContent(*rStats.PresentFailed, "{}", m_presentFailedMarkers);
     // The run start time and the sequence id are only carried by start markers
     if (info.RunStartTime.has_value())
     {

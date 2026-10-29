@@ -54,6 +54,10 @@ namespace Fsl
     bool Static{false};
     //! True if nothing animated while the frame before this one was on screen (the service found it has the same animation time).
     bool StaticBefore{false};
+    //! True if a frame pacer or limiter of the app held the start of the frame (the app said so).
+    bool Paced{false};
+    //! True if the present of the frame before this one (frame index - 1) failed, so it never reached the display (the service saw it).
+    bool PresentFailedBefore{false};
     uint32_t RunId{0};
     //! Start markers only: the wall clock start time of the run.
     std::chrono::system_clock::time_point RunStartTime;

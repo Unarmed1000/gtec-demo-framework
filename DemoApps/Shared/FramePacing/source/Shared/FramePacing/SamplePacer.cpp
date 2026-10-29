@@ -600,6 +600,7 @@ namespace Fsl
     schedule.PreferredFrameTime = ToFrameworkNanoseconds(src.PreferredFrameTime);
     schedule.RefreshPeriod = ToFrameworkNanoseconds(src.RefreshPeriod);
     schedule.Change = ToSamplePacerChange(src.Change);
+    schedule.Paced = src.Paced;
     return schedule;
   }
 

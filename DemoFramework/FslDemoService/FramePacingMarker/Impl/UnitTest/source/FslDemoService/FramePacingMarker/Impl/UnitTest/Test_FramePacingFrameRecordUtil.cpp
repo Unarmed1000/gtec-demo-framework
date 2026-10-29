@@ -68,6 +68,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AnimationTimeOnly)
   EXPECT_EQ(0, record.PreferredFrameNanoseconds);
   EXPECT_EQ(0, record.RefreshPeriodNanoseconds);
   EXPECT_FALSE(record.Static);
+  EXPECT_FALSE(record.Paced);
   // The values that are not part of the schedule are untouched
   EXPECT_EQ(42u, record.FrameIndex);
   EXPECT_EQ(7u, record.RunId);
@@ -86,6 +87,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AllValues)
   schedule.PreferredFrameTime = NanosecondTimeSpan(16666667);
   schedule.RefreshPeriod = NanosecondTimeSpan(16666667);
   schedule.Static = true;
+  schedule.Paced = true;
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
@@ -97,6 +99,7 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AllValues)
   EXPECT_EQ(16666667, record.PreferredFrameNanoseconds);
   EXPECT_EQ(16666667, record.RefreshPeriodNanoseconds);
   EXPECT_TRUE(record.Static);
+  EXPECT_TRUE(record.Paced);
 }
 
 
@@ -233,6 +236,26 @@ TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_AnotherRun)
   marker.RunId = 6;
 
   EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsPresentFailedBefore_NoFailedPresent)
+{
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsPresentFailedBefore(42u, std::nullopt));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsPresentFailedBefore_TheFrameRightBeforeFailed)
+{
+  EXPECT_TRUE(FramePacingFrameRecordUtil::IsPresentFailedBefore(42u, 41u));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsPresentFailedBefore_OnlyTheNextFrameSaysIt)
+{
+  // The failed frame's own marker is never seen, and the frames after the next one were presented after it
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsPresentFailedBefore(41u, 41u));
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsPresentFailedBefore(43u, 41u));
 }
 
 

@@ -56,6 +56,9 @@ namespace Fsl
     //! after flag). A app that does not know needs to do nothing: the service flags a frame that has the animation time of the frame
     //! before it by itself (static before).
     bool Static{false};
+    //! True if a frame pacer or a frame limiter of the app held the start of this frame to a plan (the marker's paced flag). A present
+    //! that blocks until the display takes the frame (vsync alone) is not that.
+    bool Paced{false};
   };
 }
 

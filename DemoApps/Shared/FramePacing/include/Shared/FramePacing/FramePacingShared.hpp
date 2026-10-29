@@ -124,6 +124,9 @@ namespace Fsl
       std::shared_ptr<UI::Label> CpuBusyTime;
       std::shared_ptr<UI::Label> PreferredFrameTime;
       std::shared_ptr<UI::Label> Static;
+      std::shared_ptr<UI::Label> Paced;
+      //! How many markers said that the present of the frame before them failed (the flag is on one frame only)
+      std::shared_ptr<UI::Label> PresentFailed;
       std::shared_ptr<UI::Label> RunStartTime;
       std::shared_ptr<UI::Label> RunSequenceId;
       std::shared_ptr<UI::Label> FrameRecord;
@@ -291,6 +294,10 @@ namespace Fsl
     //! Reused for every per-frame text so updating the marker stats does not allocate
     fmt::memory_buffer m_formatBuffer;
     MarkerStepRecord m_markerStep;
+    //! The markers that said the present of the frame before them failed, counted whether the panel is shown or not
+    uint32_t m_presentFailedMarkers{0};
+    //! The frame index of the last marker that was counted
+    std::optional<uint64_t> m_lastCountedMarkerFrameIndex;
 
     HighResolutionTimer m_timer;
     SamplePresentMethod m_presentMethod;
@@ -957,6 +964,7 @@ namespace Fsl
     void UpdateStatsVisibility();
     //! Let the service draw the sync marker while its switch is on
     void UpdateSyncMarker();
+    void CountMarkerFlags();
     void UpdateMarkerStats();
 
     //! Format into the reused buffer and set it as the label content (the label only copies it if the text changed)

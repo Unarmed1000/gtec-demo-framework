@@ -52,6 +52,7 @@ namespace Fsl::FramePacingFrameRecordUtil
     rRecord.PreferredFrameNanoseconds = ToKnownNanoseconds(schedule.PreferredFrameTime);
     rRecord.RefreshPeriodNanoseconds = ToKnownNanoseconds(schedule.RefreshPeriod);
     rRecord.Static = schedule.Static;
+    rRecord.Paced = schedule.Paced;
   }
 
   //! True if nothing animated while the frame before the record's frame was on screen: the last marker that was drawn is the one of the
@@ -61,6 +62,14 @@ namespace Fsl::FramePacingFrameRecordUtil
   {
     return lastMarker.RunId == record.RunId && (lastMarker.FrameIndex + 1u) == record.FrameIndex &&
            lastMarker.AnimationTime.TotalNanoseconds() == record.AnimationNanoseconds;
+  }
+
+  //! True if the present of the frame right before frameIndex failed, so that frame never reached the display. Of several failures in a
+  //! row only the last one is said: the frames before it read as dropped.
+  //! @param failedPresentFrameIndex the index of the last frame whose present failed (empty if none did)
+  constexpr bool IsPresentFailedBefore(const uint64_t frameIndex, const std::optional<uint64_t> failedPresentFrameIndex) noexcept
+  {
+    return failedPresentFrameIndex.has_value() && (*failedPresentFrameIndex + 1u) == frameIndex;
   }
 
   //! True if the marker of the record's frame says that the app logs the frame record of the run to its trace. Only a start marker says

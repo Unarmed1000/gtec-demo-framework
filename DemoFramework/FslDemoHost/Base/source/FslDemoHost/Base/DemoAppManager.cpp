@@ -574,7 +574,7 @@ namespace Fsl
     if (m_framePacingMarkerServiceControl)
     {
       // An app that paces its frames itself asks the service when its frame was swapped
-      m_framePacingMarkerServiceControl->OnSwapBuffers(callTime, returnTime);
+      m_framePacingMarkerServiceControl->OnSwapBuffers(callTime, returnTime, result == SwapBuffersResult::Completed);
     }
     if (m_framePacingDetails && m_framePacingLogHasFrame)
     {
@@ -588,12 +588,13 @@ namespace Fsl
   }
 
 
-  void DemoAppManager::OnAppSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
+  void DemoAppManager::OnAppSwapBuffers(const TickCount callTime, const TickCount returnTime, const AppDrawResult result) noexcept
   {
     if (m_framePacingMarkerServiceControl)
     {
-      // An app that paces its frames itself asks the service when its frame was swapped
-      m_framePacingMarkerServiceControl->OnSwapBuffers(callTime, returnTime);
+      // An app that paces its frames itself asks the service when its frame was swapped. Only a completed swap queued the frame: the
+      // app asks for a retry when its present was out of date or its surface lost.
+      m_framePacingMarkerServiceControl->OnSwapBuffers(callTime, returnTime, result == AppDrawResult::Completed);
     }
     if (m_trace && m_framePacingLogHasFrame)
     {

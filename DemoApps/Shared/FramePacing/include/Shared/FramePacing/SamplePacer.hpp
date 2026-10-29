@@ -137,6 +137,8 @@ namespace Fsl
     //! The refresh period the pacer is on, whether the app paces or not
     NanosecondTimeSpan RefreshPeriod;
     SamplePacerChange Change{SamplePacerChange::Unchanged};
+    //! True if the pacer placed the frame (the marker's paced flag)
+    bool Paced{false};
   };
 
   //! The frames the swap interval rule of the pacer decides on

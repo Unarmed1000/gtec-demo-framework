@@ -421,11 +421,16 @@ namespace Fsl
   }
 
 
-  void FramePacingMarkerService::OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
+  void FramePacingMarkerService::OnSwapBuffers(const TickCount callTime, const TickCount returnTime, const bool presented) noexcept
   {
     m_swapCallTime = callTime;
     m_swapReturnTime = returnTime;
     m_hasSwapTimes = true;
+    if (!presented && m_hasFrame)
+    {
+      // The frame never reaches the display, so its own marker is never seen: the marker of the next frame says it
+      m_failedPresentFrameIndex = m_frameIndex;
+    }
   }
 
 
@@ -560,10 +565,12 @@ namespace Fsl
     rRecord.PreferredFrameNanoseconds = 0;
     rRecord.RefreshPeriodNanoseconds = 0;
     rRecord.Static = false;
+    rRecord.Paced = false;
     if (m_frameSchedule.has_value())
     {
       FramePacingFrameRecordUtil::ApplySchedule(rRecord, *m_frameSchedule);
     }
+    rRecord.PresentFailedBefore = FramePacingFrameRecordUtil::IsPresentFailedBefore(rRecord.FrameIndex, m_failedPresentFrameIndex);
     rRecord.RunId = m_runId;
     // A frame with the animation time of the frame before it: nothing animated while that frame was on screen (the app is paused or
     // only animates on demand). The analysis then does not judge that step. The service only knows this in hindsight.

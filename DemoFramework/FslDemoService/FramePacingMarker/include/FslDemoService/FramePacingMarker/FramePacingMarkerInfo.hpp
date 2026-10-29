@@ -62,6 +62,11 @@ namespace Fsl
     //! True if the marker flagged the frame as static before: nothing animated while the frame before it was on screen. The service sets
     //! it by itself for a frame that has the animation time of the frame before it (a paused app, or one that only animates on demand)
     bool StaticBefore{false};
+    //! True if the marker flagged the frame as paced: a frame pacer or limiter of the app held its start (the app said so)
+    bool Paced{false};
+    //! True if the marker flagged that the present of the frame before it failed, so that frame never reached the display (the service
+    //! saw the swap fail)
+    bool PresentFailedBefore{false};
     //! Start markers only: the wall clock start time of the run
     std::optional<std::chrono::system_clock::time_point> RunStartTime;
     //! Start markers only: the sequence id of the run

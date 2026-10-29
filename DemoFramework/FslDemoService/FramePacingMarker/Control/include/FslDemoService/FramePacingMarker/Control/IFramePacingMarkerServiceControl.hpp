@@ -43,10 +43,13 @@ namespace Fsl
     virtual void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) = 0;
 
     //! @brief Called by the host after it swapped the buffers of a frame, so an app that paces its frames can ask when
-    //!        (IFramePacingMarkerService::TryGetLastSwapTimes).
+    //!        (IFramePacingMarkerService::TryGetLastSwapTimes) and the marker of the next frame can say if the frame never reached the
+    //!        display.
     //! @param callTime when the swap was called (a HighResolutionTimer timestamp)
     //! @param returnTime when the swap returned
-    virtual void OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept = 0;
+    //! @param presented false if the swap did not queue the frame (eglSwapBuffers failed, the present was out of date or the surface
+    //!        lost); a present that is suboptimal presented the frame
+    virtual void OnSwapBuffers(const TickCount callTime, const TickCount returnTime, const bool presented) noexcept = 0;
 
     //! @brief Create the overlay that draws the marker. The host owns it and draws it as the very last thing of every frame.
     //! @return null if the overlay can not be created (for example if the graphics service is unavailable).

@@ -209,8 +209,8 @@ namespace Fsl
 
     //! @brief The host swapped the frame itself: when the call was made, when it returned and what it returned.
     void OnHostSwapBuffers(const TickCount callTime, const TickCount returnTime, const SwapBuffersResult result) noexcept;
-    //! @brief The host asked the app to present the frame: when the call was made and when it returned.
-    void OnAppSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept;
+    //! @brief The host asked the app to present the frame: when the call was made, when it returned and what it returned.
+    void OnAppSwapBuffers(const TickCount callTime, const TickCount returnTime, const AppDrawResult result) noexcept;
     void OnDemandDrawSkipped();
     void ProcessDone();
 

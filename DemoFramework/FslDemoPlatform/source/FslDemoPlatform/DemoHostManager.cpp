@@ -259,7 +259,7 @@ namespace Fsl
         }
         // the swap is app controlled so delegate it to the app
         result = m_demoAppManager->TryAppSwapBuffers();
-        m_demoAppManager->OnAppSwapBuffers(swapCallTime, m_timer.GetTimestamp());
+        m_demoAppManager->OnAppSwapBuffers(swapCallTime, m_timer.GetTimestamp(), result);
       }
       ++retryCount;
     }
