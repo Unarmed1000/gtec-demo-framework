@@ -141,10 +141,13 @@ namespace Fsl::GLES2
     //!        given as a HighResolutionTimer timestamp. It issues a timestamp query and waits up to 2 ms for the result (asking
     //!        for it makes the driver send the query to the GPU), which is taken to be in the middle of the time of the framework before and after
     //!        the wait. Some drivers have another clock for the time of the GL (GL_TIMESTAMP_EXT), so it is not used. If the GPU is too busy to give
-    //!        the result in time nothing changes and the next call tries again. Call it now and then, the clocks drift apart. The commands that were
-    //!        issued so far are sent to the GPU with the query, so the place for the call is the start of a frame, before its first command: there is
-    //!        nothing to send, the wait is short and it changes nothing about when the GPU is given the frame. It does nothing without timestamps.
-    void Calibrate();
+    //!        the result in time nothing changes, so a caller tries again the next frame. Call it now and then, the clocks drift apart. The commands
+    //!        that were issued so far are sent to the GPU with the query, so the place for the call is the start of a frame, before its first
+    //!        command: there is nothing to send, the wait is short and it changes nothing about when the GPU is given the frame. It does nothing
+    //!        without timestamps.
+    //! @return true if the GPU gave the result in time (the clocks are only related anew if the wait was short enough, GetCalibrationId),
+    //!         false if it did not or there are no timestamps
+    bool Calibrate();
 
     //! @return a number that grows by one every time Calibrate related the two clocks anew
     [[nodiscard]] uint64_t GetCalibrationId() const noexcept

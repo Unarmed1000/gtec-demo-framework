@@ -206,11 +206,11 @@ namespace Fsl::GLES2
   }
 
 
-  void GLGpuFrameTimer::Calibrate()
+  bool GLGpuFrameTimer::Calibrate()
   {
     if (!m_isEndTimeSupported)
     {
-      return;
+      return false;
     }
     // The end times are timestamp queries, so the clocks are related with one too: the time of the GL (GL_TIMESTAMP_EXT) is
     // another clock on some drivers. The query is waited for between two reads of the clock of the framework, its time is taken to
@@ -222,10 +222,10 @@ namespace Fsl::GLES2
     m_functions.GetQueryObjectuiv(m_calibrationQuery, LocalConfig::QueryResultAvailableExt, &available);
     while (available == GL_FALSE)
     {
-      // The GPU is too busy: the next call tries again (a timestamp query can be issued again before its result arrived)
+      // The GPU is too busy: the caller tries again (a timestamp query can be issued again before its result arrived)
       if ((m_timer.GetTimestamp() - beforeTime) > LocalConfig::MaxCalibrationWait)
       {
-        return;
+        return false;
       }
       m_functions.GetQueryObjectuiv(m_calibrationQuery, LocalConfig::QueryResultAvailableExt, &available);
     }
@@ -235,7 +235,7 @@ namespace Fsl::GLES2
     m_timestampFunctions.GetQueryObjectui64v(m_calibrationQuery, LocalConfig::QueryResultExt, &glNanoseconds);
     if (glNanoseconds == 0)
     {
-      return;
+      return false;
     }
     // A calibration whose wait took longer than the one in use only replaces it once that one got old
     if (!m_isCalibrated || readTime <= m_calibrationReadTime || (afterTime - m_calibrationTime) >= LocalConfig::MaxCalibrationAge)
@@ -246,5 +246,6 @@ namespace Fsl::GLES2
       m_isCalibrated = true;
       ++m_calibrationId;
     }
+    return true;
   }
 }

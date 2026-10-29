@@ -83,12 +83,14 @@ namespace Fsl
   {
     // The time the GPU finished a frame is a time of the GL, so its clock is related to the clock of the framework now and then. It
     // is done here, before the first command of the frame: the timestamp query it waits for sends what was issued so far to the GPU,
-    // and here there is nothing to send.
+    // and here there is nothing to send. If the GPU was too busy to give the time it is tried again the next frame.
     if (++m_framesSinceCalibration >= LocalConfig::FramesPerCalibration)
     {
-      m_framesSinceCalibration = 0;
       const uint64_t calibrationId = m_gpuTimer.GetCalibrationId();
-      m_gpuTimer.Calibrate();
+      if (m_gpuTimer.Calibrate())
+      {
+        m_framesSinceCalibration = 0;
+      }
       if (m_gpuTimer.GetCalibrationId() != calibrationId)
       {
         m_shared.AddGpuClockCalibration(m_gpuTimer.GetCalibrationReadTime());
