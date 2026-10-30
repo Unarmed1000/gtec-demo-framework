@@ -39,6 +39,8 @@ namespace Fsl
     //! The display shows the newer of two frames that are both due and never the older: the "s" after the tier's number. It describes
     //! the system and changes no tier.
     bool SkipsOverdue{false};
+    //! What holds the loop at this tier is a frame callback of the window system, not a wait for a present: the "c" after the tier's number
+    bool HoldsByFrameCallback{false};
 
     constexpr bool operator==(const SamplePacerRating&) const noexcept = default;
   };

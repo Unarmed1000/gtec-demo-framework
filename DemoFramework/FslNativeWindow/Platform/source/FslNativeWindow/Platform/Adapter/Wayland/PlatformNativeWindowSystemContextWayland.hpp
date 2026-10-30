@@ -45,6 +45,7 @@
 #include <utility>
 #include <vector>
 #include "IVI/PlatformNativeWindowWaylandHandlesIVI.hpp"
+#include "WaylandFrameCallback.hpp"
 #include "WaylandPresentationTime.hpp"
 #include "WaylandRAII.hpp"
 #include "WaylandUtil.hpp"
@@ -277,6 +278,8 @@ namespace Fsl
     std::vector<GlobalInfo> FrameTimingGlobals;
     //! When the compositor showed the frames of the window (presentation-time), if the compositor has the protocol
     WaylandPresentationTime PresentationTime;
+    //! When the compositor called for a new frame after a present of the window
+    WaylandFrameCallback FrameCallback;
 
     explicit PlatformNativeWindowSystemContextWayland(std::weak_ptr<INativeWindowEventQueue> eventQueue)
       : EventQueue(std::move(eventQueue))

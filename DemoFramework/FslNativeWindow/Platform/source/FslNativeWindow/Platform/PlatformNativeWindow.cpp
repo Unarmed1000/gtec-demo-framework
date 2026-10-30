@@ -104,6 +104,28 @@ namespace Fsl
   }
 
 
+  void PlatformNativeWindow::RequestFrameCallback(const uint64_t presentId)
+  {
+    if (!m_adapter)
+    {
+      FSLLOG3_WARNING("RequestFrameCallback: Object shutdown");
+      return;
+    }
+    m_adapter->RequestFrameCallback(presentId);
+  }
+
+
+  bool PlatformNativeWindow::TryWaitForFrameCallback(const uint64_t presentId, const TimeSpan timeout)
+  {
+    if (!m_adapter)
+    {
+      FSLLOG3_WARNING("TryWaitForFrameCallback: Object shutdown");
+      return false;
+    }
+    return m_adapter->TryWaitForFrameCallback(presentId, timeout);
+  }
+
+
   NativeWindowTimingSupport PlatformNativeWindow::GetTimingSupport() const
   {
     if (!m_adapter)

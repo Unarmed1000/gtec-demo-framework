@@ -84,6 +84,18 @@ namespace Fsl
     }
 
     // Done this way because of a "inherit via dominance warning on visual studio'
+    void RequestFrameCallback(const uint64_t presentId) final
+    {
+      PlatformNativeWindow::RequestFrameCallback(presentId);
+    }
+
+    // Done this way because of a "inherit via dominance warning on visual studio'
+    [[nodiscard]] bool TryWaitForFrameCallback(const uint64_t presentId, const TimeSpan timeout) final
+    {
+      return PlatformNativeWindow::TryWaitForFrameCallback(presentId, timeout);
+    }
+
+    // Done this way because of a "inherit via dominance warning on visual studio'
     [[nodiscard]] NativeWindowTimingSupport GetTimingSupport() const final
     {
       return PlatformNativeWindow::GetTimingSupport();

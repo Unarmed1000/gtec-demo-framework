@@ -367,6 +367,7 @@ namespace Fsl
       m_traceZones.DrawBoxAnimation = rTrace.RegisterZone("Draw box animation");
       m_traceZones.EndFrame = rTrace.RegisterZone("End frame");
       m_traceZones.WaitForPresent = rTrace.RegisterZone("Wait for present");
+      m_traceZones.WaitForFrameCallback = rTrace.RegisterZone("Wait for frame callback");
       m_traceZones.BackgroundDraw = rTrace.RegisterZone("Background draw");
       m_traceZones.GpuTimer = rTrace.RegisterZone("GPU timer");
       m_traceZones.Measurements = rTrace.RegisterZone("Measurements");
@@ -914,6 +915,7 @@ namespace Fsl
     // The vertical blanks of a display that refreshes at a variable rate follow the frames, so there they can not hold one
     has.VBlankTimes = m_vsyncTime.TotalNanoseconds() > 0 && m_vsyncPeriod.TotalNanoseconds() > 0 && !m_variableRefreshSeen;
     has.WaitForPresent = m_presentWaitingPresents > 0u;
+    has.FrameCallback = m_frameCallbackSupported;
     has.DisplayTimes = m_presentTimingSupported;
     has.WaitForGpuWork = m_gpuWaitSupported;
     has.GpuWorkTimes = m_gpuWorkTimesReported;
@@ -1154,7 +1156,8 @@ namespace Fsl
     }
     PlanFrameStart();
     const uint64_t pacerFrameId = m_frameStartPlan.WaitForPresentFrameId;
-    if (m_presentWaitRequested || pacerFrameId == 0u)
+    // With a frame callback the wait for the present is the sample's own (WaitForFrameCallback)
+    if (m_presentWaitRequested || pacerFrameId == 0u || m_pacer->IsHeldByFrameCallback())
     {
       return request;
     }
@@ -1186,7 +1189,7 @@ namespace Fsl
     report.FrameId = pacerFrameId;
     report.BeginTime = beginTime;
     report.EndTime = endTime;
-    report.Shown = shown;
+    report.Taken = shown;
     m_pacer->AddPresentWait(report);
     // The frame is planned again: the wait can have taken long, and the time to wait until can have moved with what the wait told
     // the pacer. The present that was waited for is not asked for again.
@@ -1323,6 +1326,35 @@ namespace Fsl
       m_frameStartWaitTime = now;
     }
     m_frameStartPlan = m_pacer->PlanFrame(now);
+    WaitForFrameCallback();
+  }
+
+
+  void FramePacingShared::WaitForFrameCallback()
+  {
+    const uint64_t pacerFrameId = m_frameStartPlan.WaitForPresentFrameId;
+    if (pacerFrameId == 0u || !m_pacer->IsHeldByFrameCallback())
+    {
+      return;
+    }
+    const auto window = m_window.lock();
+    const PacerFrameCallback& frameCallback = m_pacerFrameCallbacks[pacerFrameId % m_pacerFrameCallbacks.size()];
+    if (!window || frameCallback.PacerFrameId != pacerFrameId)
+    {
+      return;
+    }
+    // The wait for a present of this pacer: it says which and for how long, and what a wait that ran out means is its rule
+    SamplePacerPresentWaitReport report;
+    report.FrameId = pacerFrameId;
+    report.BeginTime = m_timer.GetTimestamp();
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.WaitForFrameCallback);
+      report.Taken = window->TryWaitForFrameCallback(frameCallback.FrameId, m_frameStartPlan.WaitForPresentTimeout);
+    }
+    // When the wait returned is when the call arrived, which is the time the pacer goes by
+    report.EndTime = m_timer.GetTimestamp();
+    m_pacer->AddPresentWait(report);
+    m_frameStartPlan = m_pacer->PlanFrame(m_timer.GetTimestamp());
   }
 
 
@@ -1482,6 +1514,18 @@ namespace Fsl
     {
       // The work of the CPU ends here, and the frame pacer says how the frame is to be presented
       m_presentPlan = m_pacer->EndFrame(now);
+    }
+    {    // The window system is asked to call for a new frame after the present of this frame, which comes after this
+      const auto window = m_window.lock();
+      if (window)
+      {
+        window->RequestFrameCallback(m_frameId);
+      }
+      if (m_pacer)
+      {
+        // A pacer that waits for it names the frame by the id it gave the frame
+        m_pacerFrameCallbacks[m_presentPlan.FrameId % m_pacerFrameCallbacks.size()] = {m_presentPlan.FrameId, m_frameId};
+      }
     }
     if (m_details)
     {
@@ -1653,6 +1697,14 @@ namespace Fsl
       m_vsyncReadTime = m_timer.GetTimestamp();
       m_vsyncTime = vsyncInfo.IsValid() ? vsyncInfo.VSyncTime : NanosecondTickCount();
       m_vsyncPeriod = vsyncInfo.IsValid() ? vsyncInfo.RefreshPeriod : NanosecondTimeSpan();
+      // Looks without waiting, which takes in the calls of the window system for a new frame where nothing waits for them, so they do not
+      // pile up and it can log when they stop and come back
+      if (window)
+      {
+        m_frameCallbackSupported =
+          NativeWindowCapabilityFlagsUtil::IsFlagged(window->GetCapabilityFlags(), NativeWindowCapabilityFlags::FrameCallback);
+        static_cast<void>(window->TryWaitForFrameCallback(m_frameId, TimeSpan()));
+      }
 
       // Variable refresh: once it was seen it stays seen for this refresh rate
       if (m_detectedRefreshRateHz != m_variableRefreshSeenRateHz)
@@ -1725,6 +1777,7 @@ namespace Fsl
       // A new pacer counts its frames from one again, so what is remembered about the frames of the one before must not reach it
       m_pacerPresentFrames = {};
       m_pacerFramePresents = {};
+      m_pacerFrameCallbacks = {};
       m_pacerFrames = {};
       m_reportedPresentFrameId = 0;
       m_frameStartPlanned = false;
@@ -1974,6 +2027,9 @@ namespace Fsl
     rColumns.StartupPauses = rLog.RegisterValue("pacerStartupPauses", TraceUnit::Count,
                                                 "pacerKind 1 and 3: the pauses the pacer made after a start (half a second after its "
                                                 "first frame, and again after a new swapchain), counted since the pacer was made");
+    rColumns.LastPresentBlocked =
+      rLog.RegisterValue("pacerLastPresentBlocked", TraceUnit::DurationTicks,
+                         "How long the present of the last frame that was reported blocked the loop, as the pacer has it");
     rColumns.VBlankReading = rLog.RegisterValue("pacerVBlankReading", TraceUnit::Flag,
                                                 "pacerKind 3 and 4: 1 once the pacer was given a vertical blank of the display it is on. Before "
                                                 "that it paces on its clock");
@@ -2112,6 +2168,7 @@ namespace Fsl
         rLog.SetCount(columns.SystemHeldFrames, m_pacer->GetSystemHeldFrames());
         rLog.SetCount(columns.FrameSlotHeldFrames, m_pacer->GetFrameSlotHeldFrames());
       }
+      rLog.SetValue(columns.LastPresentBlocked, m_pacer->GetLastPresentBlocked());
       if (IsVBlankKind(m_pacerConfig.Kind))
       {
         rLog.SetCount(columns.DisplayHeldRefreshes, m_pacer->GetDisplayHeldRefreshes());
@@ -2289,7 +2346,12 @@ namespace Fsl
     const std::string best = SamplePacer::GetRatingText(state.Best);
     const std::string_view bestName = SamplePacer::GetTierLogName(state.Best.Tier);
     // "0" and "pacerOff": the pacer is off, so the run is in no tier
-    const std::string_view tier = state.InUse.has_value() ? SamplePacer::GetTierNumber(*state.InUse) : std::string_view("0");
+    SamplePacerRating inUse;
+    inUse.Tier = state.InUse.value_or(SamplePacerTier::TimerPeriodOnly);
+    // The mark is for a tier the wait holds: the pacer still has the callback while its waits are stopped and the run is a tier lower
+    inUse.HoldsByFrameCallback =
+      m_pacer && m_pacer->IsHeldByFrameCallback() && SamplePacerTierChoiceUtil::IsPresentWaitKind(SamplePacerTierChoiceUtil::ToKind(inUse.Tier));
+    const std::string tier = state.InUse.has_value() ? SamplePacer::GetRatingText(inUse) : std::string("0");
     const std::string_view tierName = state.InUse.has_value() ? SamplePacer::GetTierLogName(*state.InUse) : std::string_view("pacerOff");
     const std::string_view pacedAs = state.PacedAs.has_value() ? SamplePacer::GetTierNumber(*state.PacedAs) : std::string_view("0");
     const int32_t displaySideHolds = state.Best.DisplaySideHolds ? 1 : 0;

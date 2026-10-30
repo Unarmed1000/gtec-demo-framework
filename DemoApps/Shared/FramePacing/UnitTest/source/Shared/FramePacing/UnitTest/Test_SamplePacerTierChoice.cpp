@@ -245,6 +245,18 @@ TEST(TestSamplePacerTierChoice, ToUsedCapabilities_TheTimesOnThePresentWhereThey
 }
 
 
+TEST(TestSamplePacerTierChoice, ToUsedCapabilities_TheFrameCallbackWhereTheKindWaitsForAPresent)
+{
+  SamplePacerCapabilities has;
+  has.FrameCallback = true;
+
+  EXPECT_TRUE(UsedOf(has, SamplePacerKind::TimerWaitForPresent).FrameCallback);
+  EXPECT_TRUE(UsedOf(has, SamplePacerKind::VBlankWaitForPresent).FrameCallback);
+  EXPECT_FALSE(UsedOf(has, SamplePacerKind::TimerPeriodOnly).FrameCallback);
+  EXPECT_FALSE(UsedOf(has, SamplePacerKind::VBlankPeriodOnly).FrameCallback);
+}
+
+
 TEST(TestSamplePacerTierChoice, ToUsedCapabilities_TheDisplayTimesWhereTheRunGivesThem)
 {
   const SamplePacerCapabilities has = Has(Set{false, false, false, false, true});

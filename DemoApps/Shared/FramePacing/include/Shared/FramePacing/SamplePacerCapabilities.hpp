@@ -46,6 +46,9 @@ namespace Fsl
     bool VBlankTimes{false};
     //! The app can wait until a present it names was shown
     bool WaitForPresent{false};
+    //! The app can wait until the window system called for a new frame after a present it names: its side took that frame, which may
+    //! be before it is shown. The pacer library says when that holds the loop (SamplePacerRating::HoldsByFrameCallback).
+    bool FrameCallback{false};
     //! The app can wait until the GPU is done with a frame it names
     bool WaitForGpuWork{false};
     //! The app can say when the GPU began and ended its work on a frame, on its clock, frames later

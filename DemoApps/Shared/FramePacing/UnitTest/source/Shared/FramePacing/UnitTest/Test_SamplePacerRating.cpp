@@ -64,6 +64,40 @@ TEST(TestSamplePacerRating, Rate_Baseline_IsTheLastTier)
 }
 
 
+TEST(TestSamplePacerRating, Rate_FrameCallback_HoldsTheLoopAtTheTierOfAWaitForAPresent)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  SamplePacerCapabilities capabilities;
+  capabilities.FrameCallback = true;
+
+  const SamplePacerRating rating = SamplePacer::Rate(capabilities);
+
+  EXPECT_EQ(SamplePacerTier::TimerWaitForPresent, rating.Tier);
+  EXPECT_TRUE(rating.HoldsByFrameCallback);
+  EXPECT_EQ("3.3c", SamplePacer::GetRatingText(rating));
+}
+
+
+TEST(TestSamplePacerRating, Rate_FrameCallback_IsNotUsedNextToAWaitForAPresent)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  SamplePacerCapabilities capabilities;
+  capabilities.FrameCallback = true;
+  capabilities.WaitForPresent = true;
+
+  const SamplePacerRating rating = SamplePacer::Rate(capabilities);
+
+  EXPECT_EQ(SamplePacerTier::TimerWaitForPresent, rating.Tier);
+  EXPECT_FALSE(rating.HoldsByFrameCallback);
+}
+
+
 TEST(TestSamplePacerRating, Rate_PresentAfterDuration_TheDisplaySideHoldsAndTheTierIsTheSame)
 {
   if (!SamplePacer::IsSupported())

@@ -52,6 +52,8 @@ namespace Fsl
     [[nodiscard]] NativeWindowDisplayInfo TryGetDisplayInfo() const override;
     [[nodiscard]] NativeWindowVSyncInfo TryGetVSyncInfo() const override;
     [[nodiscard]] NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const override;
+    void RequestFrameCallback(const uint64_t presentId) override;
+    [[nodiscard]] bool TryWaitForFrameCallback(const uint64_t presentId, const TimeSpan timeout) override;
     [[nodiscard]] NativeWindowTimingSupport GetTimingSupport() const override;
     bool TryGetDpi(Vector2& rDPI) const override;
     bool TryGetDensityDpi(uint32_t& rDensityDpi) const override;

@@ -76,6 +76,8 @@ namespace Fsl
     NativeWindowDisplayInfo TryGetDisplayInfo() const final;
     NativeWindowVSyncInfo TryGetVSyncInfo() const final;
     NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const final;
+    void RequestFrameCallback(const uint64_t presentId) final;
+    bool TryWaitForFrameCallback(const uint64_t presentId, const TimeSpan timeout) final;
     NativeWindowTimingSupport GetTimingSupport() const override
     {
       return {};
@@ -137,6 +139,17 @@ namespace Fsl
     virtual NativeWindowVariableRefreshInfo TryGetNativeVariableRefreshInfo() const
     {
       return {};
+    }
+
+    //! @brief Only called if the NativeWindowCapabilityFlags::FrameCallback capability is set.
+    virtual void RequestNativeFrameCallback(const uint64_t /*presentId*/)
+    {
+    }
+
+    //! @brief Only called if the NativeWindowCapabilityFlags::FrameCallback capability is set.
+    virtual bool TryWaitForNativeFrameCallback(const uint64_t /*presentId*/, const TimeSpan /*timeout*/)
+    {
+      return false;
     }
 
 

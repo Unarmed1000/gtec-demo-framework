@@ -359,6 +359,12 @@ namespace Fsl
     //!        had worked out, counted since the pacer was made. Zero for the other kinds.
     [[nodiscard]] uint64_t GetShownLaterByWaits() const noexcept;
 
+    //! @brief True if a frame callback of the window system holds the loop, so a wait for a present is to be made with that
+    [[nodiscard]] bool IsHeldByFrameCallback() const noexcept;
+
+    //! @brief How long the present of the last frame that was reported blocked the loop
+    [[nodiscard]] TimeSpan GetLastPresentBlocked() const noexcept;
+
     //! @brief SamplePacerKind::VBlankWaitForPresent: where in the refresh before its vertical blank a frame is to be ready now, as a
     //!        time after the vertical blank before it. It starts at SamplePacerConfig::ReadyPlacePercent of the refresh and the
     //!        pacer moves it earlier when frames that were ready there are shown a vertical blank late. The other kinds say where it

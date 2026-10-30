@@ -56,8 +56,9 @@ namespace Fsl
     //! When the wait began and when it ended (HighResolutionTimer timestamps)
     TickCount BeginTime;
     TickCount EndTime;
-    //! True if the wait ended because the present was shown, false if it ended without that (its time ran out, or the system gave it up)
-    bool Shown{true};
+    //! True if the wait ended because the display's side took the present, false if it ended without that (its time ran out, or the
+    //! system gave it up)
+    bool Taken{true};
   };
 
   //! How the pacer wants a frame whose CPU work is done to be presented.

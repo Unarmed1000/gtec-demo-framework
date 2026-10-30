@@ -206,6 +206,8 @@ namespace Fsl::SamplePacerTierChoiceUtil
     SamplePacerCapabilities uses;
     uses.VBlankTimes = has.VBlankTimes && IsVBlankKind(kind);
     uses.WaitForPresent = has.WaitForPresent && IsPresentWaitKind(kind);
+    // The kinds that wait for a present can do it with a frame callback. The library says when it is used for that.
+    uses.FrameCallback = has.FrameCallback && IsPresentWaitKind(kind);
     uses.PresentAtTime = has.PresentAtTime && presentAtTime;
     uses.PresentAfterDuration = has.PresentAfterDuration && presentAfterDuration && !uses.PresentAtTime;
     // A swap interval is how such a app presents, and the display times where the run gives them to the pacer

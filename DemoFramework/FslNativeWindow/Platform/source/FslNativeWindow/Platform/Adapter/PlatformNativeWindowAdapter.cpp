@@ -198,6 +198,25 @@ namespace Fsl
   }
 
 
+  void PlatformNativeWindowAdapter::RequestFrameCallback(const uint64_t presentId)
+  {
+    if (NativeWindowCapabilityFlagsUtil::IsFlagged(m_capabilityFlags, NativeWindowCapabilityFlags::FrameCallback))
+    {
+      RequestNativeFrameCallback(presentId);
+    }
+  }
+
+
+  bool PlatformNativeWindowAdapter::TryWaitForFrameCallback(const uint64_t presentId, const TimeSpan timeout)
+  {
+    if (!NativeWindowCapabilityFlagsUtil::IsFlagged(m_capabilityFlags, NativeWindowCapabilityFlags::FrameCallback))
+    {
+      return false;
+    }
+    return TryWaitForNativeFrameCallback(presentId, timeout);
+  }
+
+
   bool PlatformNativeWindowAdapter::TryGetExtent(PxExtent2D& rExtent) const
   {
     PxPoint2 size;

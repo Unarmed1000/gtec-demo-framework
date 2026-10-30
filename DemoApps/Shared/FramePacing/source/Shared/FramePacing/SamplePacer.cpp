@@ -250,6 +250,10 @@ namespace Fsl
       {
         bits = bits | PC::PacerCapability::WaitForPresent;
       }
+      if (capabilities.FrameCallback)
+      {
+        bits = bits | PC::PacerCapability::FrameCallback;
+      }
       if (capabilities.DisplayTimes)
       {
         bits = bits | PC::PacerCapability::DisplayTimes;
@@ -276,6 +280,7 @@ namespace Fsl
       SamplePacerCapabilities active = config.Capabilities;
       active.VBlankTimes = config.Capabilities.VBlankTimes && SamplePacerTierChoiceUtil::IsVBlankKind(config.Kind);
       active.WaitForPresent = config.Capabilities.WaitForPresent && SamplePacerTierChoiceUtil::IsPresentWaitKind(config.Kind);
+      active.FrameCallback = config.Capabilities.FrameCallback && SamplePacerTierChoiceUtil::IsPresentWaitKind(config.Kind);
       active.PresentAtTime = config.Capabilities.PresentAtTime && config.PresentAtTime;
       // What the display does with a frame that is overdue is a fact of the system, on every tier
       active.PresentSkipsOverdue = config.Capabilities.PresentSkipsOverdue;
@@ -388,7 +393,7 @@ namespace Fsl
   {
     // The rating is the library's: the best tier the set reaches, and if the display side can hold a frame
     const PC::PacerRating rating = PC::PacerTierUtil::Rate(ToLibrary(capabilities));
-    return {ToSampleTier(rating.Tier), rating.DisplaySideHolds, rating.ReportsDisplayTimes, rating.SkipsOverdue};
+    return {ToSampleTier(rating.Tier), rating.DisplaySideHolds, rating.ReportsDisplayTimes, rating.SkipsOverdue, rating.HoldsByFrameCallback};
   }
 
 
@@ -403,6 +408,10 @@ namespace Fsl
     if (rating.SkipsOverdue)
     {
       text += PC::PacerTierText::SkipsOverdueMark;
+    }
+    if (rating.HoldsByFrameCallback)
+    {
+      text += PC::PacerTierText::FrameCallbackMark;
     }
     return text;
   }
@@ -564,7 +573,7 @@ namespace Fsl
     dst.FrameId = report.FrameId;
     dst.BeginTime = ToLibrary(report.BeginTime);
     dst.EndTime = ToLibrary(report.EndTime);
-    dst.Shown = report.Shown;
+    dst.Taken = report.Taken;
     m_impl->Pacer.AddPresentWait(dst);
   }
 
@@ -711,6 +720,18 @@ namespace Fsl
   uint64_t SamplePacer::GetShownLaterByWaits() const noexcept
   {
     return m_impl->Pacer.ShownLaterByWaits();
+  }
+
+
+  bool SamplePacer::IsHeldByFrameCallback() const noexcept
+  {
+    return m_impl->Pacer.ActiveRating().HoldsByFrameCallback;
+  }
+
+
+  TimeSpan SamplePacer::GetLastPresentBlocked() const noexcept
+  {
+    return ToFramework(m_impl->Pacer.LastPresentBlocked());
   }
 
 
@@ -1052,6 +1073,18 @@ namespace Fsl
   uint64_t SamplePacer::GetShownLaterByWaits() const noexcept
   {
     return 0;
+  }
+
+
+  bool SamplePacer::IsHeldByFrameCallback() const noexcept
+  {
+    return false;
+  }
+
+
+  TimeSpan SamplePacer::GetLastPresentBlocked() const noexcept
+  {
+    return {};
   }
 
 

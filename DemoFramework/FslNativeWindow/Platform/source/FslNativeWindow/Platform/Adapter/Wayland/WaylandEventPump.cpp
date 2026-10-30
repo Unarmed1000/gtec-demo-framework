@@ -82,6 +82,42 @@ namespace Fsl::WaylandEventPump
   }
 
 
+  bool TryReadEvents(wl_display* const pDisplay, wl_event_queue* const pQueue, const int32_t timeoutMilliseconds) noexcept
+  {
+    if (pDisplay == nullptr || pQueue == nullptr)
+    {
+      return false;
+    }
+
+    // Fails while the queue holds events. A thread of the graphics API can have put them there, as it reads the same socket.
+    if (wl_display_prepare_read_queue(pDisplay, pQueue) != 0)
+    {
+      return true;
+    }
+
+    // Until the read below no thread can read the socket, so nothing can be taken from under the poll. Another reader polls the same
+    // socket, so it wakes up with this one.
+    if (wl_display_flush(pDisplay) < 0 && errno != EAGAIN)
+    {
+      wl_display_cancel_read(pDisplay);
+      return false;
+    }
+
+    pollfd pollInfo{};
+    pollInfo.fd = wl_display_get_fd(pDisplay);
+    pollInfo.events = POLLIN;
+    const int pollResult = poll(&pollInfo, 1, timeoutMilliseconds);
+    const int pollError = errno;
+    if (pollResult > 0 && (pollInfo.revents & POLLIN) != 0)
+    {
+      return wl_display_read_events(pDisplay) >= 0;
+    }
+    wl_display_cancel_read(pDisplay);
+    // The time ran out, or a signal came and the caller works out what is left of its time
+    return pollResult == 0 || (pollResult < 0 && pollError == EINTR);
+  }
+
+
   std::string DescribeError(wl_display* const pDisplay)
   {
     if (pDisplay == nullptr)

@@ -31,6 +31,7 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <FslBase/Time/TimeSpan.hpp>
 #include <FslNativeWindow/Base/NativeWindowCapabilityFlags.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowMetrics.hpp>
@@ -67,6 +68,13 @@ namespace Fsl
 
     //! @brief Get what is known about variable refresh on the display the window is on, right now.
     [[nodiscard]] virtual NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const = 0;
+
+    //! @brief Ask the window system to call for a new frame after the present that is about to be made
+    virtual void RequestFrameCallback(const uint64_t presentId) = 0;
+
+    //! @brief Wait until the window system called for a new frame after the given present or a later one.
+    //! @return true if it did, false if the time ran out
+    [[nodiscard]] virtual bool TryWaitForFrameCallback(const uint64_t presentId, const TimeSpan timeout) = 0;
 
     //! @brief Get what the window system has that tells when a frame is shown and what of it is used, for logs.
     [[nodiscard]] virtual NativeWindowTimingSupport GetTimingSupport() const = 0;

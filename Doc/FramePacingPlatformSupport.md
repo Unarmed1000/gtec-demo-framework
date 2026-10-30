@@ -51,7 +51,8 @@ The four sub tiers mean the same and rank the same in every major tier (in major
 - **Tier 3.1**: vertical blank times and a wait for a present. The pacer knows where the refreshes of the display are, and before a
   frame the loop waits until the display took an earlier present.
 - **Tier 3.2**: vertical blank times.
-- **Tier 3.3**: a timer and a wait for a present.
+- **Tier 3.3**: a timer and a wait for a present, or a frame callback of the window system where there is no such wait (the mark `c`:
+  `3.3c`).
 - **Tier 3.4**: a timer and the refresh period only, which is a guess and what every system reaches.
 
 A present that takes the time the frame before stays on screen at least (Vulkan with `VK_EXT_present_timing` and a relative target
@@ -141,7 +142,7 @@ driver, which is what turns them into the Vulkan levels above.
 
 | Level | Protocol | What it gives | What the framework does | Status |
 |---|---|---|---|---|
-| 0 | Core protocol: `wl_surface.frame`, `wl_output.mode` | A callback once per repaint, with a time in milliseconds of undefined base: a hint that can come late, bunched or not at all. The refresh rate of the mode in mHz. | The refresh rate is read. The frame callback is not used. | the refresh rate: built; the callback: not built |
+| 0 | Core protocol: `wl_surface.frame`, `wl_output.mode` | A callback once per repaint, with a time in milliseconds of undefined base: a hint that can come late, bunched or not at all. The refresh rate of the mode in mHz. | The refresh rate is read. A callback can be asked for just before a present and waited for (`INativeWindow::RequestFrameCallback`, `TryWaitForFrameCallback`), on a event queue of its own. It holds the frame loop in tier `3.3c` of the FramePacing samples, see [below](#the-frame-callback-on-the-core-protocol). | the refresh rate: built; the callback: run against a test compositor only |
 | 1 | presentation-time (`wp_presentation`, `wp_presentation_feedback`), stable | For every commit: when it was presented (`presented`) and on which clock (`clock_id`), the time to the next refresh, a refresh counter and flags that say how good the time is, or `discarded` for a frame that was never shown. | The display time of a frame of the window is asked for once per frame, one request at a time, and is the vsync time of `INativeWindow::TryGetVSyncInfo` together with the refresh period the compositor reports. The flags are logged (`displayVSyncFlags`). Not used: a display time for every frame, which display reports to the pacer would need. | built |
 | 2 | fifo-v1 (`wp_fifo_manager_v1`, `wp_fifo_v1`), staging | The compositor holds a commit until the one before it was shown (`set_barrier`, `wait_barrier`): FIFO done by the compositor. | Nothing, it is for the Vulkan window system layer. | not built |
 | 3 | commit-timing-v1 (`wp_commit_timing_manager_v1`, `wp_commit_timer_v1`), staging | A target time on a commit (`set_timestamp`): a timed present at the Wayland level. | Nothing, it is for the Vulkan window system layer. | not built |
@@ -150,6 +151,16 @@ Needed, but not about time: linux-dmabuf, which the Vulkan window system layer u
 
 Which protocols an older or an embedded compositor has can only be read from the device. Weston is reported to have had
 presentation-time since version 1.10, which was not checked here. Nothing is known here about other compositors.
+
+## The frame callback on the core protocol
+
+Measured against a test compositor with the core protocol alone (no presentation-time, no fifo-v1) that repaints at 60 Hz, with Mesa 26.0.8
+and its software rasterizer, so this says if it works and not what a real display does:
+
+- The wait holds the loop: in `3.3c` the time the loop spent waiting moved out of the present into the wait for the callback.
+- A FIFO present blocks while the compositor holds back the callbacks: a `vkQueuePresentKHR` and a swap took as long as the hold (about 3 s)
+  and returned when it ended. The loop is stopped inside the present then, so a rule of a pacer can not run. It starts again by itself.
+  `VK_PRESENT_MODE_MAILBOX_KHR` keeps presenting.
 
 ## Explicit sync on Wayland
 
@@ -269,10 +280,13 @@ was held twice as long as asked ([FramePacingCapture.md](FramePacingCapture.md))
 `INativeWindow::TryGetVSyncInfo` returns "not known" on every platform but Windows, a Wayland compositor with presentation-time and
 a X server with the Present extension. That is a valid answer, and what a platform without a usable signal keeps returning.
 
-Each of these window systems has one documented way to follow the display, and that is the one that is built. Not built, because
-they would only duplicate it or are not meant for apps: the frame callback of Wayland (`wl_surface.frame`, a hint with a millisecond
-time of undefined base, for a compositor without presentation-time) and the vertical blank counter of the kernel (DRM), which a app
-under a display server is not meant to open.
+Each of these window systems has one documented way to follow the display, and that is the one that is built. Not built, because it
+is not meant for apps: the vertical blank counter of the kernel (DRM), which a app under a display server is not meant to open.
+
+The frame callback of Wayland (`wl_surface.frame`) is no vsync source, as it says that the compositor called for a new frame and not
+when a vertical blank was, and its time is in milliseconds with a undefined base. It is the only signal from the display on a compositor
+with the core protocol alone, so it has calls of its own: `INativeWindow::RequestFrameCallback` and `TryWaitForFrameCallback`, which waits
+until it came for a present. The window says if it has them (`NativeWindowCapabilityFlags::FrameCallback`).
 
 ## Variable refresh: what a platform tells an app
 
@@ -450,7 +464,6 @@ flowchart TD
     subgraph sources ["Where a vsync time comes from"]
         win["Windows<br/>the vertical blank wait of DXGI"]:::measured
         wlpresentation["Wayland presentation-time<br/>wp_presentation"]:::built
-        wlframe["Wayland frame callback<br/>wl_surface.frame"]:::notbuilt
         x11present["X11<br/>the Present extension"]:::built
         android["Android<br/>the vsync callback of the choreographer"]:::built
         other["Apple CADisplayLink"]:::notbuilt
@@ -478,7 +491,6 @@ flowchart TD
 
     win --> q2
     wlpresentation --> q2
-    wlframe -.-> q2
     x11present --> q2
     android --> q2
     other -.-> q2

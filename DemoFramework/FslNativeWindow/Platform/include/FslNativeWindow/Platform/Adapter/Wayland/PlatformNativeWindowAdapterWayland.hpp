@@ -81,6 +81,8 @@ namespace Fsl
     bool TryGetNativeDpi(Vector2& rDPI) const override;
     NativeWindowDisplayInfo TryGetNativeDisplayInfo() const override;
     NativeWindowVSyncInfo TryGetNativeVSyncInfo() const override;
+    void RequestNativeFrameCallback(const uint64_t presentId) override;
+    bool TryWaitForNativeFrameCallback(const uint64_t presentId, const TimeSpan timeout) override;
     // Wayland hopefully sends a event when the dpi is changed, and we then need to notify the framework with
     // eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowConfigChanged());
     // virtual bool TryGetNativeDpi(Vector2& rDPI) const override;

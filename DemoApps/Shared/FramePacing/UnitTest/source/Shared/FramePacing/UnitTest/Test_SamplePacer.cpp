@@ -365,7 +365,7 @@ TEST(TestSamplePacer, TimerWaitForPresent_AfterTheWaitThePresentIsNotAskedForAga
   report.FrameId = frameId;
   report.BeginTime = At(PeriodTicks / 4);
   report.EndTime = At((PeriodTicks / 4) + (PeriodTicks / 100));
-  report.Shown = true;
+  report.Taken = true;
   pacer.AddPresentWait(report);
 
   // The frame is planned again: only the time is left
@@ -539,11 +539,11 @@ TEST(TestSamplePacer, TimerWaitForPresent_AWaitThatEndedWithoutThePresentIsCount
   report.FrameId = frameId;
   report.BeginTime = At(PeriodTicks / 4);
   report.EndTime = At((PeriodTicks / 4) + PresentWaitTimeoutTicks);
-  report.Shown = false;
+  report.Taken = false;
   pacer.AddPresentWait(report);
   EXPECT_EQ(1u, pacer.GetPresentWaitTimeouts());
 
-  report.Shown = true;
+  report.Taken = true;
   pacer.AddPresentWait(report);
   EXPECT_EQ(1u, pacer.GetPresentWaitTimeouts());
 }

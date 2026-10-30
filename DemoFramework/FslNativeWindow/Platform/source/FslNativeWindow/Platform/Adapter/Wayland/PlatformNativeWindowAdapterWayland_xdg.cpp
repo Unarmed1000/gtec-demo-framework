@@ -1175,6 +1175,8 @@ namespace Fsl
       constexpr std::array<const char*, 6> FrameTimingGlobals = {
         "wp_presentation",    "wp_fifo_manager_v1", "wp_commit_timing_manager_v1", "wp_tearing_control_manager_v1", "wp_linux_drm_syncobj_manager_v1",
         "zwp_linux_dmabuf_v1"};
+      //! The request of the core protocol that WaylandFrameCallback uses
+      constexpr auto FrameCallbackName = "wl_surface.frame";
     }
 
     bool IsFrameTimingGlobal(const char* const pszInterface) noexcept
@@ -1397,6 +1399,7 @@ namespace Fsl
         if (!m_keep)
         {
           m_rContext.PresentationTime.SetSurface(nullptr);
+          m_rContext.FrameCallback.SetSurface(nullptr, nullptr);
           m_rContext.Window = nullptr;
         }
       }
@@ -1487,6 +1490,7 @@ namespace Fsl
   PlatformNativeWindowSystemAdapterWayland::~PlatformNativeWindowSystemAdapterWayland()
   {
     m_windowSystemContext->PresentationTime.Reset();
+    m_windowSystemContext->FrameCallback.Reset();
     m_windowSystemContext->Outputs.clear();
 
     m_windowSystemContext->Handles.CursorSurface.reset();
@@ -1553,7 +1557,7 @@ namespace Fsl
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
     : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
                                   NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo |
-                                    NativeWindowCapabilityFlags::GetVSyncInfo)
+                                    NativeWindowCapabilityFlags::GetVSyncInfo | NativeWindowCapabilityFlags::FrameCallback)
     , m_windowSystemContext(platformWindowParams.WindowSystemWaylandContext)
   {
     const NativeWindowConfig nativeWindowConfig = nativeWindowSetup.GetConfig();
@@ -1629,6 +1633,8 @@ namespace Fsl
 
     // The display times of the frames of this surface are asked for from now on
     windowSystemContext->PresentationTime.SetSurface(m_platformSurface);
+    // and the frame callbacks of its presents
+    windowSystemContext->FrameCallback.SetSurface(windowSystemContext->Handles.Display.get(), m_platformSurface);
 
     void* nativeWindowHolder = nullptr;
     if (platformWindowParams.CreateWaylandWindow)
@@ -1693,6 +1699,7 @@ namespace Fsl
       if (windowSystemContext)
       {
         windowSystemContext->PresentationTime.SetSurface(nullptr);
+        windowSystemContext->FrameCallback.SetSurface(nullptr, nullptr);
         // The window system must not keep a window that is gone
         if (windowSystemContext->Window == m_windowContext.get())
         {
@@ -1783,8 +1790,29 @@ namespace Fsl
         support.VSyncSource = "wp_presentation";
         support.Used.emplace_back("wp_presentation");
       }
+      // Part of the core protocol, so every compositor has it. It says when the compositor calls for a new frame, not when a vertical
+      // blank was, so it is no vsync source.
+      support.Available.emplace_back(LocalConfig::FrameCallbackName);
+      support.Used.emplace_back(LocalConfig::FrameCallbackName);
     }
     return support;
+  }
+
+
+  void PlatformNativeWindowAdapterWayland::RequestNativeFrameCallback(const uint64_t presentId)
+  {
+    const auto windowSystemContext = m_windowSystemContext.lock();
+    if (windowSystemContext)
+    {
+      windowSystemContext->FrameCallback.Request(presentId);
+    }
+  }
+
+
+  bool PlatformNativeWindowAdapterWayland::TryWaitForNativeFrameCallback(const uint64_t presentId, const TimeSpan timeout)
+  {
+    const auto windowSystemContext = m_windowSystemContext.lock();
+    return windowSystemContext && windowSystemContext->FrameCallback.TryWait(presentId, timeout);
   }
 
 

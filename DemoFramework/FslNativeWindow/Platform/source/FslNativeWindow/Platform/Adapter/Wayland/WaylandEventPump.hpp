@@ -23,9 +23,11 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+#include <cstdint>
 #include <string>
 
 struct wl_display;
+struct wl_event_queue;
 
 namespace Fsl::WaylandEventPump
 {
@@ -36,6 +38,13 @@ namespace Fsl::WaylandEventPump
   //! @return false if the connection to the compositor is lost (the socket was closed, or a protocol error was reported). Nothing can
   //!         be sent or received after that.
   [[nodiscard]] bool TryProcessEvents(wl_display* const pDisplay) noexcept;
+
+  //! @brief Wait for what the compositor sends, read it from the socket and leave it on the queues it belongs to. Nothing is dispatched.
+  //!        Use it for a queue of the caller, which dispatches that queue and calls this again until it has what it waits for.
+  //! @param pQueue the queue of the caller. If it holds events already this returns at once, so they get dispatched first.
+  //! @param timeoutMilliseconds the longest to wait, zero only looks
+  //! @return false if the connection to the compositor is lost
+  [[nodiscard]] bool TryReadEvents(wl_display* const pDisplay, wl_event_queue* const pQueue, const int32_t timeoutMilliseconds) noexcept;
 
   //! @brief Why the connection to the compositor was lost, for a log (empty if the display has no error)
   [[nodiscard]] std::string DescribeError(wl_display* const pDisplay);

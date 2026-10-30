@@ -31,6 +31,7 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <FslBase/Time/TimeSpan.hpp>
 #include <FslNativeWindow/Base/NativeWindowCapabilityFlags.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowMetrics.hpp>
@@ -72,6 +73,20 @@ namespace Fsl
     //!        NativeWindowVariableRefreshInfo.
     //! @return the info, HasInfo() is false if the platform says nothing (NativeWindowCapabilityFlags::GetVariableRefreshInfo).
     [[nodiscard]] virtual NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const = 0;
+
+    //! @brief Ask the window system to call for a new frame after the present that is about to be made, so that can be waited for
+    //!        (TryWaitForFrameCallback). Call it once per present, just before the present, on the thread that presents.
+    //! @param presentId a id the app gives the present, a later present has a higher id.
+    //! @note  It does nothing on a platform without it (NativeWindowCapabilityFlags::FrameCallback).
+    virtual void RequestFrameCallback(const uint64_t presentId) = 0;
+
+    //! @brief Wait until the window system called for a new frame after the given present or a later one: its side took that frame,
+    //!        which may be before it is shown.
+    //! @param presentId the id given to RequestFrameCallback
+    //! @param timeout the longest to wait, zero only looks.
+    //! @return true if it did. False if the time ran out, which is what happens while a window is not shown, and on a platform without
+    //!         it (NativeWindowCapabilityFlags::FrameCallback).
+    [[nodiscard]] virtual bool TryWaitForFrameCallback(const uint64_t presentId, const TimeSpan timeout) = 0;
 
     //! @brief Get what the window system has that tells when a frame is shown and what of it is used, for logs.
     //! @note  It allocates, so it is for the start of a app and not for every frame.

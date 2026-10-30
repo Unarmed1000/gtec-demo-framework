@@ -416,6 +416,8 @@ namespace Fsl
     //! The presents that may wait to be shown while a frame is made, as the app said (SetPresentWaitSupport). Zero: the app can not
     //! wait for a present.
     uint32_t m_presentWaitingPresents{0};
+    //! The window can wait for its frame callback (NativeWindowCapabilityFlags::FrameCallback)
+    bool m_frameCallbackSupported{false};
     //! The frames the app lets be in the works at the same time, as it said (SetMaxFramesInFlight)
     uint32_t m_maxFramesInFlight{1};
     //! The presents the pacer lets wait while a frame is made, as the command line said (--Pacer.WaitingPresents).
@@ -536,6 +538,7 @@ namespace Fsl
       TraceValue VBlankReading;
       TraceValue VBlankJumps;
       TraceValue ShownLaterByWaits;
+      TraceValue LastPresentBlocked;
       TraceValue ReadyPlace;
       TraceValue ReadyPlaceTries;
       TraceValue ReadyPlaceTriesTakenBack;
@@ -564,6 +567,16 @@ namespace Fsl
     };
 
     std::array<PacerFramePresent, 16> m_pacerFramePresents{};
+
+    //! The frame of the sample the frame callback of a frame of the pacer was asked for with. A new pacer counts its frames from one
+    //! again, while the frames of the sample only go up, so what the window system remembers is good for every pacer.
+    struct PacerFrameCallback
+    {
+      uint64_t PacerFrameId{0};
+      uint64_t FrameId{0};
+    };
+
+    std::array<PacerFrameCallback, 16> m_pacerFrameCallbacks{};
 
     //! The id the frame pacer gave a frame of the sample: a GPU time arrives frames later, with the number of the sample's frame
     struct PacerFrame
@@ -601,6 +614,7 @@ namespace Fsl
       TraceZone DrawBoxAnimation;
       TraceZone EndFrame;
       TraceZone WaitForPresent;
+      TraceZone WaitForFrameCallback;
       TraceZone BackgroundDraw;
       TraceZone GpuTimer;
       TraceZone Measurements;
@@ -899,6 +913,9 @@ namespace Fsl
     //! Ask the frame pacer what the start of the frame that is about to start waits for, unless that was done already. The present
     //! of the frame before is reported first where the sample is the one that knows of it.
     void PlanFrameStart();
+    //! Where a frame callback holds the loop: the wait for the present the frame pacer named (a app with its own wait for a present
+    //! makes that one, GetPresentWaitRequest)
+    void WaitForFrameCallback();
     //! Tell the frame pacer about a present of a frame it paced
     void ReportPresent(const uint64_t pacerFrameId, const TickCount callTime, const TickCount returnTime, const bool accepted);
     //! Sleep (a long wait) or yield (a short wait) until the given HighResolutionTimer timestamp
