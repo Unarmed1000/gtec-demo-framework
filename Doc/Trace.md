@@ -118,6 +118,8 @@ After their draw | `End frame`, `Wait for present` with `Hold before present` in
 
 - A wait is only a zone when there was something to wait for, so `Wait for frame start` and `Hold before present` are not in
   every frame.
+- `Wait for frame start` and `Hold before present` sleep, and `Spin to time` inside them is the last part of the wait that is spun
+  so it ends on its time. A wait without it woke after its time.
 - The UI library does not know the trace. The steps of its render system are zones because the render system times them itself,
   and they are added with those times when the draw is done. The walk of the window tree before them is the time of `UI render`
   that none of its steps cover.

@@ -24,6 +24,7 @@
 
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslBase/System/HighResolutionTimer.hpp>
+#include <FslBase/System/Threading/HighResolutionSleeper.hpp>
 #include <FslBase/Time/NanosecondTickCount.hpp>
 #include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslBase/Time/TickCount.hpp>
@@ -300,6 +301,7 @@ namespace Fsl
     std::optional<uint64_t> m_lastCountedMarkerFrameIndex;
 
     HighResolutionTimer m_timer;
+    HighResolutionSleeper m_sleeper;
     SamplePresentMethod m_presentMethod;
     //! The window the refresh rate of the display is read from
     std::weak_ptr<INativeWindow> m_window;
@@ -609,6 +611,7 @@ namespace Fsl
       TraceZone WaitForFrameStart;
       TraceZone CpuLoad;
       TraceZone HoldBeforePresent;
+      TraceZone SpinToTime;
       TraceZone SampleDraw;
       TraceZone DrawAnimation;
       TraceZone DrawBoxAnimation;
@@ -918,9 +921,9 @@ namespace Fsl
     void WaitForFrameCallback();
     //! Tell the frame pacer about a present of a frame it paced
     void ReportPresent(const uint64_t pacerFrameId, const TickCount callTime, const TickCount returnTime, const bool accepted);
-    //! Sleep (a long wait) or yield (a short wait) until the given HighResolutionTimer timestamp
+    //! Sleep until just before the given HighResolutionTimer timestamp and yield the rest of the way
     //! @param zone the zone of the trace the wait is, which is only there if there is something to wait for
-    void WaitUntil(const TickCount time, const TraceZone zone) const;
+    void WaitUntil(const TickCount time, const TraceZone zone);
     //! What the app can do on this system right now, as far as the tiers depend on it
     [[nodiscard]] SamplePacerCapabilities GetPacerCapabilities() const noexcept;
     //! @brief True if the pacer is to use the present that takes a time: the switch is on and the app has such a present

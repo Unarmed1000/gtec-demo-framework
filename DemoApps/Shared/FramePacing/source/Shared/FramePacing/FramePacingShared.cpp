@@ -98,9 +98,6 @@ namespace Fsl
       constexpr double SwaySeconds = 29.0;
       //! The raymarched background: the time the shape and the colors of the lattice change in
       constexpr double MorphSeconds = 61.0;
-      //! WaitUntil only sleeps when the wait is longer than this (a sleeping thread can wake this late), a shorter wait yields
-      constexpr TimeSpan CoarseSleepThreshold(20 * TimeSpan::TicksPerMillisecond);
-      constexpr TimeSpan CoarseSleepMargin(16 * TimeSpan::TicksPerMillisecond);
     }
 
     const char* ToString(const FramePacingRunState state) noexcept
@@ -329,6 +326,9 @@ namespace Fsl
     m_workChartData->SetChannelMetaData(WorkChartGpuChannel, WorkChartGpuColor);
     m_workChartData->SetChannelMetaData(WorkChartFrameChannel, WorkChartFrameColor);
 
+    FSLLOG3_VERBOSE("FramePacing: a wait sleeps with {} and spins the last {:.3f} ms", HighResolutionSleeper::GetMethodName(),
+                    HighResolutionSleeper::GetWakeMargin().TotalMilliseconds());
+
     const auto options = config.GetOptions<OptionParser>();
     // Read before the log is set up, which writes it as a fact
     m_pacerKind = options->GetPacerKind();
@@ -362,6 +362,7 @@ namespace Fsl
       m_traceZones.WaitForFrameStart = rTrace.RegisterZone("Wait for frame start");
       m_traceZones.CpuLoad = rTrace.RegisterZone("CPU load");
       m_traceZones.HoldBeforePresent = rTrace.RegisterZone("Hold before present");
+      m_traceZones.SpinToTime = rTrace.RegisterZone("Spin to time");
       m_traceZones.SampleDraw = rTrace.RegisterZone("Sample draw");
       m_traceZones.DrawAnimation = rTrace.RegisterZone("Draw animation");
       m_traceZones.DrawBoxAnimation = rTrace.RegisterZone("Draw box animation");
@@ -1588,25 +1589,20 @@ namespace Fsl
   }
 
 
-  void FramePacingShared::WaitUntil(const TickCount time, const TraceZone zone) const
+  void FramePacingShared::WaitUntil(const TickCount time, const TraceZone zone)
   {
     // A wait for a time that has passed is not a zone
     const ScopedTraceZone traceZone(m_trace.get(), (time - m_timer.GetTimestamp()).Ticks() > 0 ? zone : TraceZone());
-    for (;;)
+    const TickCount wakeTime = time - HighResolutionSleeper::GetWakeMargin();
+    while ((wakeTime - m_timer.GetTimestamp()).Ticks() > 0)
     {
-      const TimeSpan remaining = time - m_timer.GetTimestamp();
-      if (remaining.Ticks() <= 0)
-      {
-        return;
-      }
-      if (remaining > LocalConfig::CoarseSleepThreshold)
-      {
-        std::this_thread::sleep_for(std::chrono::microseconds((remaining - LocalConfig::CoarseSleepMargin).Ticks() / TimeSpan::TicksPerMicrosecond));
-      }
-      else
-      {
-        std::this_thread::yield();
-      }
+      m_sleeper.SleepUntil(wakeTime);
+    }
+    // The sleep aims short of the time and the rest is spun, so the wait ends on the time. A sleep that woke after it spins nothing.
+    const ScopedTraceZone spinZone(m_trace.get(), (time - m_timer.GetTimestamp()).Ticks() > 0 ? m_traceZones.SpinToTime : TraceZone());
+    while ((time - m_timer.GetTimestamp()).Ticks() > 0)
+    {
+      std::this_thread::yield();
     }
   }
 
