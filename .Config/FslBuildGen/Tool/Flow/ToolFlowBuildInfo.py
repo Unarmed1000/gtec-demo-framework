@@ -263,6 +263,7 @@ class ToolFlowBuildInfo(AToolAppFlow):
         extLibCount = 0
         headerLibCount = 0
         toolRecipe = 0
+        contentCount = 0
         for dep in topLevelPackage.ResolvedAllDependencies:
             if dep.Package.Type == PackageType.Executable:
                 exeCount += 1
@@ -274,6 +275,8 @@ class ToolFlowBuildInfo(AToolAppFlow):
                 headerLibCount += 1
             elif dep.Package.Type == PackageType.ToolRecipe:
                 toolRecipe += 1
+            elif dep.Package.Type == PackageType.Content:
+                contentCount += 1
 
         self.Log.DoPrint(f"Total packages: {len(topLevelPackage.ResolvedAllDependencies)}")
         self.Log.DoPrint(f"- Exe:        {exeCount}")
@@ -281,6 +284,7 @@ class ToolFlowBuildInfo(AToolAppFlow):
         self.Log.DoPrint(f"- ExtLib:     {extLibCount}")
         self.Log.DoPrint(f"- HeaderLib:  {headerLibCount}")
         self.Log.DoPrint(f"- ToolRecipe: {toolRecipe}")
+        self.Log.DoPrint(f"- Content:    {contentCount}")
 
     @staticmethod
     def __HasGraphQuery(localToolConfig: LocalToolConfig) -> bool:

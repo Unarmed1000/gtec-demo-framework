@@ -418,7 +418,8 @@ class PackageResolver:
         # The instances of a package with flavors share their directory
         checkedPaths: set[str] = set()
         for package in packages:
-            if not package.IsVirtual:
+            # A content package has no project, but it has content
+            if not package.IsVirtual or package.Type == PackageType.Content:
                 if package.AbsolutePath is not None and package.AbsolutePath not in checkedPaths:
                     checkedPaths.add(package.AbsolutePath)
                     ContentDirectoryNames.CheckSpelling(package.Name, package.AbsolutePath, toolConfig.ContentDirectory)

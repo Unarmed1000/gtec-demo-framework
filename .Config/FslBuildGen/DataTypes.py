@@ -44,6 +44,7 @@ class PackageType(Enum):
     ExternalLibrary = 4  # a unmanaged static library
     HeaderLibrary = 5  # a header only library
     ToolRecipe = 6  # a external tool recipe
+    Content = 7  # content only: no code and no project, its content is content of the apps that use it
     # ExeLibCombo =  6               # a executeable and static library combo (not supported yet)
 
     @staticmethod
@@ -60,6 +61,8 @@ class PackageType(Enum):
             return "HeaderLibrary"
         elif value == PackageType.ToolRecipe:
             return "ToolRecipe"
+        elif value == PackageType.Content:
+            return "Content"
         raise UnknownTypeException(f"Unknown PackageType: {value}")
 
     @staticmethod
@@ -76,6 +79,8 @@ class PackageType(Enum):
             return PackageType.HeaderLibrary
         elif value == "ToolRecipe":
             return PackageType.ToolRecipe
+        elif value == "Content":
+            return PackageType.Content
         raise Exception(f"Unknown PackageType: {value}")
 
     @staticmethod
@@ -87,7 +92,14 @@ class PackageType(Enum):
             PackageType.ToString(PackageType.ExternalLibrary),
             PackageType.ToString(PackageType.HeaderLibrary),
             PackageType.ToString(PackageType.ToolRecipe),
+            PackageType.ToString(PackageType.Content),
         ]
+
+    @staticmethod
+    def HasNoBuildTarget(value: PackageType) -> bool:
+        """A package that is never a target of a build: nothing links it or adds it to a build. A tool recipe is installed, a content
+        package only has content, which reaches the apps that use it."""
+        return value == PackageType.ToolRecipe or value == PackageType.Content
 
 
 class PackageInstanceType(Enum):

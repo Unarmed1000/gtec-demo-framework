@@ -216,7 +216,7 @@ class UnresolvedFactory:
 
         for basePackage in packageProjectContext.BasePackages:
             if (
-                packageType != PackageType.ToolRecipe
+                not PackageType.HasNoBuildTarget(packageType)
                 and packageName.Value != basePackage.Name
                 and not UnresolvedFactory.__ContainsDependency(directDependencies, basePackage.Name)
             ):

@@ -346,7 +346,7 @@ def BuildTargetLinkLibrariesForDirectDependencies(
     deps = ""
     findDeps = ""
     for entry1 in package.ResolvedDirectDependencies:
-        if entry1.Package.Type != PackageType.ToolRecipe:
+        if not PackageType.HasNoBuildTarget(entry1.Package.Type):
             deps += f"\n  {GetAccessTypeString(package, entry1.Access, True)} {GetFullyQualifiedPackageName(entry1.Package)}"
             #           deps += "\n  {0} {1}".format(GetAccessTypeString(package, entry1.Access), GetAliasPackageName(entry1.Package))
             findDeps += f"\n{_FindPackageDirectDependencyPackage(entry1.Package, templatePackageDependencyFindPackage)}"
@@ -674,7 +674,7 @@ def GetAllPackageNames(package: Package, projectContextFilter: PackageProjectCon
         GetFullyQualifiedPackageName(package)
         for package in package.ResolvedBuildOrder
         if (projectContextFilter is None or package.ProjectContext == projectContextFilter)
-        and package.Type != PackageType.ToolRecipe
+        and not PackageType.HasNoBuildTarget(package.Type)
         and package.Type != PackageType.TopLevel
     ]
     names.sort()

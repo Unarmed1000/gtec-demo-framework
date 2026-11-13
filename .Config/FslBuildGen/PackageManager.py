@@ -245,6 +245,12 @@ class PackageManager:
         depPackage = originalPackageDict[depPackageNameInstanceName]
         if package.Type != PackageType.TopLevel and not depPackage.AllowDependencyOnThis:
             raise InvalidDependencyException(package.Name, depPackageNameInstanceName.Value)
+        if package.Type == PackageType.Content and depPackage.Type != PackageType.Content:
+            # A content package has no code, so the only thing it can use of another package is its content
+            raise UsageErrorException(
+                f"The Content package '{package.Name}' depends on '{depPackage.Name}', which is a {PackageType.ToString(depPackage.Type)}: a Content "
+                "package can only depend on Content packages"
+            )
         return depPackage
 
     @staticmethod

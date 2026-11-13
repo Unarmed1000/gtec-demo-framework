@@ -55,10 +55,10 @@ from FslBuildGen.ToolConfig import ToolConfig
 
 
 def GetContentOwners(package: Package) -> list[Package]:
-    """The packages whose content is content of the app: the app, and the libraries of its build order that have content directories"""
+    """The packages whose content is content of the app: the app, and the libraries and content packages of its build order"""
     owners = [package]
     for entry in package.ResolvedBuildOrder:
-        if entry is not package and entry.Type == PackageType.Library and not entry.IsVirtual:
+        if entry is not package and ((entry.Type == PackageType.Library and not entry.IsVirtual) or entry.Type == PackageType.Content):
             owners.append(entry)
     return owners
 

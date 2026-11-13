@@ -713,6 +713,42 @@
   </xs:complexType>
 
 
+  <xs:group name="_G_ContentCommandListAnyNumber">
+    <xs:choice>
+      <xs:group ref="_G_DependencyElement"/>
+      <xs:group ref="_G_PlatformElement"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="_G_ContentCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of a content package, in any order. 'Default.Platform.Supported' can be there once at most</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:group ref="_G_ContentCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:sequence minOccurs="0">
+        <xs:group ref="_G_DefaultElements"/>
+        <xs:group ref="_G_ContentCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:group>
+
+  <xs:complexType name="_T_Content">
+    <xs:annotation>
+      <xs:documentation>A package that is only content: no code and no project. It has a 'Content' or 'Content.bld' directory (or both) and no 'source' or 'include' directory. Its content is content of every app that uses it, like the content of a library, with the profiles its own content files give it. It can only depend on other content packages</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_ContentCommandList"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Company" type="xs:string" use="optional"/>
+    <xs:attribute name="CreationYear" type="xs:integer" use="optional"/>
+    <xs:attribute name="UseContentNamespace" type="_TP_Bool" use="optional">
+      <xs:annotation>
+        <xs:documentation>When true, the content of the package is put below a directory named after the package in the content of the apps that use it, so packages can not collide. Default false: a file keeps the path it has below 'Content'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+
   <!--                                       -->
   <!-- New experimental recipe support begin -->
   <!--                                       -->
@@ -1324,6 +1360,7 @@
       <xs:element name="ExternalLibrary" type="_T_ExternalLibrary"/>
       <xs:element name="HeaderLibrary" type="_T_HeaderLibrary"/>
       <xs:element name="ToolRecipe" type="_T_ToolRecipe"/>
+      <xs:element name="Content" type="_T_Content"/>
     </xs:choice>
   </xs:group>
 

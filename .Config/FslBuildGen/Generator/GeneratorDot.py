@@ -292,6 +292,8 @@ class GeneratorDot(GeneratorBase):
                     dotFile.append(f'  "{packageName}" [fillcolor=gray42 color={col}]')
                 elif package.Type == PackageType.ToolRecipe:
                     dotFile.append(f'  "{packageName}" [style=filled fillcolor=deepskyblue color={col}]')
+                elif package.Type == PackageType.Content:
+                    dotFile.append(f'  "{packageName}" [style=filled fillcolor=khaki color={col}]')
                 # elif package.Type == PackageType.Library:
 
         for package in packages:

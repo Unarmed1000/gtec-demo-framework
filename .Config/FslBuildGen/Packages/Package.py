@@ -388,7 +388,12 @@ class Package:
             return True
         elif packageType == PackageType.Executable:
             return self._AllowExeDependency
-        elif packageType == PackageType.ExternalLibrary or packageType == PackageType.HeaderLibrary or packageType == PackageType.ToolRecipe:
+        elif (
+            packageType == PackageType.ExternalLibrary
+            or packageType == PackageType.HeaderLibrary
+            or packageType == PackageType.ToolRecipe
+            or packageType == PackageType.Content
+        ):
             return True
         elif packageType == PackageType.TopLevel:
             return False

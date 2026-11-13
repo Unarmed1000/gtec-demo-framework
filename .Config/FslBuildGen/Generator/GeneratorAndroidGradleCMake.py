@@ -422,7 +422,7 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
         content = ""
         snippet = template.PackageDependencyAddSubdirectories
         for depPackage in package.ResolvedBuildOrder:
-            if depPackage.Type != PackageType.ToolRecipe:
+            if not PackageType.HasNoBuildTarget(depPackage.Type):
                 # sdkPackagePath = CMakeGeneratorUtil.GetSDKBasedPathUsingCMakeVariable(config, depPackage.AbsolutePath)
                 sdkPackagePath = self.__GetPackageCMakeDir(androidProjectCMakeDir, depPackage)
                 # We take advantage of the fact that the full package name is unique

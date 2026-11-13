@@ -641,7 +641,7 @@ class GeneratorCMake(GeneratorBase):
         dependencies.sort(key=lambda s: s.AbsolutePath.lower() if s.AbsolutePath is not None else s.Name)
         projectAbsolutePathEx = projectAbsolutePath + "/"
         for entry in dependencies:
-            if entry != package and entry.Type != PackageType.ToolRecipe:
+            if entry != package and not PackageType.HasNoBuildTarget(entry.Type):
                 if entry.AbsolutePath is None:
                     raise Exception("Invalid package")
                 if entry.AbsolutePath.startswith(projectAbsolutePathEx):

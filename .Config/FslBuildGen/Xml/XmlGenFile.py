@@ -156,6 +156,7 @@ class XmlGenFile(XmlCommonFslBuild):
         "ExternalLibrary": PackageType.ExternalLibrary,
         "HeaderLibrary": PackageType.HeaderLibrary,
         "ToolRecipe": PackageType.ToolRecipe,
+        "Content": PackageType.Content,
     }
 
     # The child elements of a package element: the ones the base classes read and the ones that are read here
@@ -187,7 +188,9 @@ class XmlGenFile(XmlCommonFslBuild):
     #   'Generate' (the file is written) and 'SourceGeneration' (the package depends on the generator). In an
     #   ExternalLibrary: 'FindPackage' (it is in the CMake file of the package). In a ToolRecipe: 'ExternalDependency' and
     #   'ImportTemplate' (what they add reaches the packages that depend on it).
-    # - Only a Library supplies content to the apps that use it, so only a Library can put its content in a namespace.
+    # - Only a Library and a Content package supply content to the apps that use it, so only they can put their content in a namespace.
+    # - A Content package has no code and no project: it has a name, the content directories, the packages whose content it brings along
+    #   and the platforms it is for.
     __ElementsNotInAnExternalLibrary = frozenset({"BuildCustomization.Debug.Optimization", "CopyFile", "GenerateGrpcProtoFile", "Ignore"})
     __ElementsNotInAToolRecipe = __ElementsNotInAnExternalLibrary | {"FindPackage"}
     __AttribsOfALibraryOnly = frozenset({__AttribUseContentNamespace})
@@ -196,6 +199,8 @@ class XmlGenFile(XmlCommonFslBuild):
         | __AttribsOfALibraryOnly
     )
     __AttribsNotInAToolRecipe = __AttribsNotInAnExternalLibrary | {__AttribAllowCheck, __AttribTemplateType}
+    __AttribsInAContentPackage = frozenset({__AttribName, __AttribCompany, __AttribCreationYear, __AttribUseContentNamespace})
+    __ElementsInAContentPackage = frozenset({"Dependency", "Platform", DefaultValueName.DEFAULT_PLATFORM_Supported})
     # The type of a package -> (what a package of the type is called, the attributes it can not have, the elements it can not hold)
     __NamesNotInType: dict[PackageType, tuple[str, frozenset[str], frozenset[str]]] = {
         PackageType.Executable: ("an Executable", __AttribsOfALibraryOnly, frozenset({__ElementRecipe})),
@@ -203,6 +208,11 @@ class XmlGenFile(XmlCommonFslBuild):
         PackageType.HeaderLibrary: ("a HeaderLibrary", __AttribsOfALibraryOnly, frozenset({__ElementRecipe})),
         PackageType.ExternalLibrary: ("an ExternalLibrary", __AttribsNotInAnExternalLibrary, __ElementsNotInAnExternalLibrary),
         PackageType.ToolRecipe: ("a ToolRecipe", __AttribsNotInAToolRecipe, __ElementsNotInAToolRecipe),
+        PackageType.Content: (
+            "a Content package",
+            frozenset(__ValidAttribs) - __AttribsInAContentPackage,
+            frozenset(__ValidElements) - __ElementsInAContentPackage,
+        ),
     }
     # The type of a package -> (the attributes it can have, the elements it can hold, its place for the names it can not have)
     __NamesOfType = _CreateNamesOfType(__ValidAttribs, __ValidElements, __NamesNotInType)
@@ -390,7 +400,7 @@ class XmlGenFile(XmlCommonFslBuild):
             if currentElem is not None:
                 return (currentElem, packageType)
 
-        raise XmlUnsupportedPackageType("Could not locate a Executable, Library, ExternalLibrary or HeaderLibrary element")
+        raise XmlUnsupportedPackageType("Could not locate a Executable, Library, ExternalLibrary, HeaderLibrary, ToolRecipe or Content element")
 
     # def SYS_SetName(self, name: str) -> None:
     #     self.Name = name
@@ -406,6 +416,7 @@ class XmlGenFile(XmlCommonFslBuild):
             or theType == PackageType.ExternalLibrary
             or theType == PackageType.HeaderLibrary
             or theType == PackageType.ToolRecipe
+            or theType == PackageType.Content
         )
 
     def _AddPlatform(self, platforms: dict[str, XmlGenFilePlatform], xmlPlatform: XmlGenFilePlatform, resED: list[XmlGenFileExternalDependency]) -> None:
@@ -779,6 +790,25 @@ class XmlGenFile(XmlCommonFslBuild):
         if not includeDirExist and allowNoInclude:
             self.IncludePath = None
 
+    def __ResolveContentPackagePaths(self, packagePath: PackagePath, contentDirectory: ContentDirectoryConfig) -> None:
+        """A Content package is its content directories: it has at least one of them, and nothing that is about code"""
+        rootRelativeDirPath = packagePath.RootRelativeDirPath
+        self.ContentPath = PackagePath(IOUtil.Join(rootRelativeDirPath, contentDirectory.Name), packagePath.PackageRootLocation)
+        self.ContentSourcePath = PackagePath(IOUtil.Join(rootRelativeDirPath, contentDirectory.BuildName), packagePath.PackageRootLocation)
+        packageDir = packagePath.AbsoluteDirPath
+        codeDirs = [name for name in (self.BaseSourcePath, self.BaseIncludePath.Name) if os.path.exists(IOUtil.Join(packageDir, name))]
+        if len(codeDirs) > 0:
+            names = " and ".join(f"'{name}'" for name in codeDirs)
+            raise UsageErrorException(
+                f"The Content package '{self.Name}' has {names} in '{packageDir}': a Content package has no code. Make it a Library to give it code, "
+                "or move the code into a package of its own"
+            )
+        if not IOUtil.IsDirectory(self.ContentPath.AbsoluteDirPath) and not IOUtil.IsDirectory(self.ContentSourcePath.AbsoluteDirPath):
+            raise UsageErrorException(
+                f"The Content package '{self.Name}' has no '{contentDirectory.Name}' or '{contentDirectory.BuildName}' directory in '{packageDir}': "
+                "a Content package is the content in them"
+            )
+
     def __ResolvePaths(
         self,
         configDisableIncludeDirCheck: bool,
@@ -805,6 +835,8 @@ class XmlGenFile(XmlCommonFslBuild):
 
             if not os.path.isdir(self.SourcePath.AbsoluteDirPath) and not configDisableSourceDirCheck:
                 raise PackageMissingRequiredSourceDirectoryException(self.SourcePath.AbsoluteDirPath)
+        elif self.Type == PackageType.Content:
+            self.__ResolveContentPackagePaths(packagePath, contentDirectory)
         elif self.Type == PackageType.HeaderLibrary:
             if self.PackageLanguage == PackageLanguage.CPP:
                 self.__ResolvePathIncludeDir(configDisableIncludeDirCheck, allowNoInclude, includePriority)
