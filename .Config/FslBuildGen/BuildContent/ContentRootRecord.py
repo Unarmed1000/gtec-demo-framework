@@ -32,6 +32,7 @@
 # ****************************************************************************************************************************************************
 
 
+from FslBuildGen import IOUtil
 from FslBuildGen.BuildContent.PathVariables import PathVariables
 from FslBuildGen.Log import Log
 
@@ -39,7 +40,8 @@ from FslBuildGen.Log import Log
 class ContentRootRecord:
     def __init__(self, log: Log, sourcePath: str, pathVariables: PathVariables | None = None) -> None:
         super().__init__()
-        expandedSourcePath = self.__ExpandSourcePath(sourcePath, pathVariables) if pathVariables is not None else sourcePath
+        # A source path of a content file resolves '..', so the paths of its files are those below it, like the paths of the files found there
+        expandedSourcePath = IOUtil.NormalizePath(self.__ExpandSourcePath(sourcePath, pathVariables)) if pathVariables is not None else sourcePath
 
         self.Id = expandedSourcePath.lower()
         self.SourcePath = sourcePath
