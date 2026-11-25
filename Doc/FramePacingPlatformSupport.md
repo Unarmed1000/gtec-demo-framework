@@ -131,6 +131,9 @@ Within level 4 a device and a surface can have a relative target time (`presentA
 (`presentAtAbsoluteTime`) or both, and a surface reports only some of the stages. The NVIDIA driver that was measured has the relative
 form only and reports queue operations end and first pixel out.
 
+The animation error chart of the FramePacing samples is made from these display times: without `VK_EXT_present_timing`, and in the
+OpenGL ES versions, it is off and its switch disabled.
+
 Not on this list: the present modes (`MAILBOX`, `IMMEDIATE`, `FIFO_RELAXED`, `FIFO_LATEST_READY` of
 `VK_KHR_present_mode_fifo_latest_ready`). They change which image is shown when the app is early or late, not how long a frame is
 held. `--VkPresentMode` selects one.

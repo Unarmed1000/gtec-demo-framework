@@ -64,7 +64,7 @@ TEST(TestSampleAnimationError, AFrameWaitsForItsDisplayTime)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(1000), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(1000), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
 
   EXPECT_FALSE(animationError.TryPop(record));
 }
@@ -74,7 +74,7 @@ TEST(TestSampleAnimationError, TheFirstFrameIsNotJudged)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(1000), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(1000), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(500000));
 
   ASSERT_TRUE(animationError.TryPop(record));
@@ -90,8 +90,8 @@ TEST(TestSampleAnimationError, FramesShownAsFarApartAsTheyWereAnimated_NoError)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(1000), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(1000 + Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(1000), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(1000 + Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(500000));
   animationError.AddDisplayTime(2, TickCount(500000 + Refresh));
 
@@ -110,9 +110,9 @@ TEST(TestSampleAnimationError, AFrameShownARefreshLate_NegativeError)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1000, TimeSpan(100000000), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(1001, TimeSpan(100000000 + Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(1002, TimeSpan(100000000 + (2 * Refresh)), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1000, TimeSpan(100000000), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1001, TimeSpan(100000000 + Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1002, TimeSpan(100000000 + (2 * Refresh)), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1000, TickCount(0));
   animationError.AddDisplayTime(1001, TickCount(2 * Refresh));
   animationError.AddDisplayTime(1002, TickCount(3 * Refresh));
@@ -130,8 +130,8 @@ TEST(TestSampleAnimationError, AFrameShownSoonerThanItWasAnimatedFor_PositiveErr
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(2 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(2 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(1000));
   animationError.AddDisplayTime(2, TickCount(1000 + Refresh));
 
@@ -144,10 +144,10 @@ TEST(TestSampleAnimationError, AFrameThatWasNotShown_TheStepIntoItAndTheStepOutO
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(3, TimeSpan(2 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(4, TimeSpan(3 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan(2 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(4, TimeSpan(3 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(1000));
   animationError.AddNotShown(2);
   // Frame 3 was shown a refresh late, which is not judged as the frame before it has no display time
@@ -179,8 +179,8 @@ TEST(TestSampleAnimationError, ADisplayTimeAfterNotShown_TheFrameWasShown)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(1000));
   animationError.AddNotShown(2);
   animationError.AddDisplayTime(2, TickCount(1000 + Refresh));
@@ -197,9 +197,9 @@ TEST(TestSampleAnimationError, TheFramesComeInTheOrderTheyWerePresentedIn)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(3, TimeSpan(2 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan(2 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(1000));
   // The display time of the third frame comes before the one of the second
   animationError.AddDisplayTime(3, TickCount(1000 + (2 * Refresh)));
@@ -223,22 +223,23 @@ TEST(TestSampleAnimationError, AFrameNothingComesForIsGivenUpOn)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(1000));
   ASSERT_TRUE(animationError.TryPop(record));
   // Nothing comes for frame 2
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   for (uint64_t i = 0; i < (SampleAnimationError::MaxWaitFrames - 1u); ++i)
   {
     const uint64_t presentId = 3u + i;
-    animationError.AddFrame(presentId, TimeSpan(static_cast<int64_t>(presentId - 1u) * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+    animationError.AddFrame(presentId, TimeSpan(static_cast<int64_t>(presentId - 1u) * Refresh), TimeSpan(Refresh), false, std::nullopt,
+                            TimeSpan(Refresh));
     animationError.AddDisplayTime(presentId, TickCount(1000 + (static_cast<int64_t>(presentId - 1u) * Refresh)));
   }
   // The newest frame is MaxWaitFrames - 1 after frame 2: it is still waited for
   EXPECT_FALSE(animationError.TryPop(record));
 
   const uint64_t lastId = 2u + SampleAnimationError::MaxWaitFrames;
-  animationError.AddFrame(lastId, TimeSpan(static_cast<int64_t>(lastId - 1u) * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(lastId, TimeSpan(static_cast<int64_t>(lastId - 1u) * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
 
   // Frame 2 is given up on. Frame 3 comes after a frame that is not known, so the first error is the one of frame 4
   ASSERT_TRUE(animationError.TryPop(record));
@@ -260,7 +261,8 @@ TEST(TestSampleAnimationError, AFullHolder_TheOldestFrameMakesRoomAndTheNextIsNo
   SampleAnimationErrorRecord record;
   for (uint64_t presentId = 1; presentId <= (SampleAnimationError::Capacity + 2u); ++presentId)
   {
-    animationError.AddFrame(presentId, TimeSpan(static_cast<int64_t>(presentId) * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+    animationError.AddFrame(presentId, TimeSpan(static_cast<int64_t>(presentId) * Refresh), TimeSpan(Refresh), false, std::nullopt,
+                            TimeSpan(Refresh));
   }
   // Frame 1 and 2 are gone, a display time for them is ignored
   animationError.AddDisplayTime(1, TickCount(1000));
@@ -281,14 +283,14 @@ TEST(TestSampleAnimationError, Clear_ForgetsTheFrameThatWasShownLast)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(1000));
   animationError.AddDisplayTime(2, TickCount(1000 + Refresh));
   ASSERT_TRUE(TryPopJudged(animationError, record));
 
   animationError.Clear();
-  animationError.AddFrame(3, TimeSpan(100 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan(100 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(3, TickCount(1000 + (5 * Refresh)));
 
   ASSERT_TRUE(animationError.TryPop(record));
@@ -302,10 +304,10 @@ TEST(TestSampleAnimationError, Stats_TheAverageWithoutSignAndTheWorstWithItsSign
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
   // Shown at 0, 2, 3 and 3.5 refreshes: the errors are -1, 0 and +0.5 refreshes
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(3, TimeSpan(2 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(4, TimeSpan(3 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan(2 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(4, TimeSpan(3 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(2 * Refresh));
   animationError.AddDisplayTime(3, TickCount(3 * Refresh));
@@ -331,10 +333,10 @@ TEST(TestSampleAnimationError, Cause_AFrameShownARefreshLateAndTheFrameAfterItAr
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
   // The animation goes on by the real time, as without a pacer: shown at 0, 2, 3 and 4 refreshes
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(3, TimeSpan(3 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(4, TimeSpan(4 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan(3 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(4, TimeSpan(4 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(2 * Refresh));
   animationError.AddDisplayTime(3, TickCount(3 * Refresh));
@@ -365,9 +367,9 @@ TEST(TestSampleAnimationError, Cause_AErrorWhileTheDisplayIsEvenIsDeltaTimeJitte
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
   // Shown a refresh apart, and the animation moved by a refresh and a quarter once
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(3, TimeSpan((2 * Refresh) + (Refresh / 4)), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan((2 * Refresh) + (Refresh / 4)), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(Refresh));
   animationError.AddDisplayTime(3, TickCount(2 * Refresh));
@@ -390,8 +392,8 @@ TEST(TestSampleAnimationError, Cause_AFrameThatIsToBeOnScreenForTwoRefreshesAndI
   SampleAnimationErrorRecord record;
   // 30 frames a second on the 60 Hz display, and the animation is off by 2 ms once
   const TimeSpan target(2 * Refresh);
-  animationError.AddFrame(1, TimeSpan(0), target, std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan((2 * Refresh) + 20000), target, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), target, false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan((2 * Refresh) + 20000), target, false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(2 * Refresh));
 
@@ -407,8 +409,8 @@ TEST(TestSampleAnimationError, Cause_WithoutARefreshPeriodAErrorIsPacing)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(0));
-  animationError.AddFrame(2, TimeSpan(Refresh + (Refresh / 4)), TimeSpan(Refresh), std::nullopt, TimeSpan(0));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(0));
+  animationError.AddFrame(2, TimeSpan(Refresh + (Refresh / 4)), TimeSpan(Refresh), false, std::nullopt, TimeSpan(0));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(Refresh));
 
@@ -428,8 +430,8 @@ TEST(TestSampleAnimationError, Late_NotWhenTheFrameBeforeStayedForItsIntendedPer
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
   const TimeSpan target(2 * Refresh);
-  animationError.AddFrame(1, TimeSpan(0), target, std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), target, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), target, false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), target, false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(2 * Refresh));
 
@@ -446,8 +448,8 @@ TEST(TestSampleAnimationError, Late_NeverForAStaticStep)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(2 * Refresh));
 
@@ -463,9 +465,9 @@ TEST(TestSampleAnimationError, DeltaTimeJitter_NotWhenOffByTheIntendedPeriodOrMo
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
   // Shown a refresh apart, and the animation moved by two refreshes once
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(3, TimeSpan(3 * Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan(3 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(Refresh));
   animationError.AddDisplayTime(3, TickCount(2 * Refresh));
@@ -485,8 +487,8 @@ TEST(TestSampleAnimationError, Cause_WithIntendedDisplayTimesTheStepFurthestOffI
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), TickCount(0), TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(2 * Refresh), TimeSpan(Refresh), TickCount(2 * Refresh), TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, TickCount(0), TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(2 * Refresh), TimeSpan(Refresh), false, TickCount(2 * Refresh), TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(Refresh));
 
@@ -502,8 +504,8 @@ TEST(TestSampleAnimationError, Cause_WithIntendedDisplayTimesAAnimationOffThemIs
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), TickCount(0), TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh + (Refresh / 4)), TimeSpan(Refresh), TickCount(Refresh), TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, TickCount(0), TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh + (Refresh / 4)), TimeSpan(Refresh), false, TickCount(Refresh), TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(Refresh));
 
@@ -511,6 +513,79 @@ TEST(TestSampleAnimationError, Cause_WithIntendedDisplayTimesAAnimationOffThemIs
   EXPECT_EQ(TimeSpan(Refresh / 4), record.Error);
   EXPECT_EQ(SampleAnimationErrorCause::DeltaTimeJitter, record.Cause);
   EXPECT_TRUE(record.IsDeltaTimeJitter);
+}
+
+
+// The sum cancels a stop against a jump: a frame shown a refresh late that moved a refresh more has no error by it. Where the pacer
+// gave the target, the two parts against it count, as the tools count them.
+TEST(TestSampleAnimationError, Parts_AStopThenAJumpCountsWhereThePacerGaveTheTarget)
+{
+  SampleAnimationError animationError;
+  SampleAnimationErrorRecord record;
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), true, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(2 * Refresh), TimeSpan(Refresh), true, std::nullopt, TimeSpan(Refresh));
+  animationError.AddDisplayTime(1, TickCount(0));
+  animationError.AddDisplayTime(2, TickCount(2 * Refresh));
+
+  ASSERT_TRUE(TryPopJudged(animationError, record));
+  EXPECT_EQ(TimeSpan(0), record.Error);
+  EXPECT_NE(SampleAnimationErrorCause::NoError, record.Cause);
+  EXPECT_EQ(1u, animationError.GetRunStutter().ErrorFrames);
+}
+
+
+// Without a target the pacer gave (the pacer is off, the marker carries none) the tools judge the sum only
+TEST(TestSampleAnimationError, Parts_WithoutATargetThePacerGaveOnlyTheSumCounts)
+{
+  SampleAnimationError animationError;
+  SampleAnimationErrorRecord record;
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(2 * Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddDisplayTime(1, TickCount(0));
+  animationError.AddDisplayTime(2, TickCount(2 * Refresh));
+
+  ASSERT_TRUE(TryPopJudged(animationError, record));
+  EXPECT_EQ(TimeSpan(0), record.Error);
+  EXPECT_EQ(SampleAnimationErrorCause::NoError, record.Cause);
+  EXPECT_EQ(0u, animationError.GetRunStutter().ErrorFrames);
+}
+
+
+// A part counts when it is past the threshold by more than the rounding of the tools
+TEST(TestSampleAnimationError, Parts_APartWithinTheRoundingIsNoError)
+{
+  const int64_t limit = SampleAnimationError::ErrorThreshold.Ticks() + SampleAnimationError::PartRounding.Ticks();
+  for (const int64_t offTicks : {limit, limit + 1})
+  {
+    SampleAnimationError animationError;
+    SampleAnimationErrorRecord record;
+    // Shown and animated the same time later than the target: the sum is zero and both parts are offTicks off
+    animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), true, std::nullopt, TimeSpan(Refresh));
+    animationError.AddFrame(2, TimeSpan(Refresh + offTicks), TimeSpan(Refresh), true, std::nullopt, TimeSpan(Refresh));
+    animationError.AddDisplayTime(1, TickCount(0));
+    animationError.AddDisplayTime(2, TickCount(Refresh + offTicks));
+
+    ASSERT_TRUE(TryPopJudged(animationError, record));
+    EXPECT_EQ(TimeSpan(0), record.Error);
+    EXPECT_EQ(offTicks > limit ? 1u : 0u, animationError.GetRunStutter().ErrorFrames);
+  }
+}
+
+
+// A present the system has no display time for may have been shown (the tools' frame without a report): nothing is judged across it
+TEST(TestSampleAnimationError, AFrameWithoutADisplayTimeBreaksTheChain)
+{
+  SampleAnimationError animationError;
+  SampleAnimationErrorRecord record;
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), true, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), true, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(3, TimeSpan(2 * Refresh), TimeSpan(Refresh), true, std::nullopt, TimeSpan(Refresh));
+  animationError.AddDisplayTime(1, TickCount(0));
+  animationError.AddNotShown(2);
+  animationError.AddDisplayTime(3, TickCount(2 * Refresh));
+
+  EXPECT_FALSE(TryPopJudged(animationError, record));
+  EXPECT_EQ(0u, animationError.GetRunStutter().ErrorFrames);
 }
 
 
@@ -538,7 +613,8 @@ TEST(TestSampleAnimationError, RecentStutter_OnlyTheErrorsOfTheLastSecondBeforeT
   for (uint64_t presentId = 1; presentId <= 130; ++presentId)
   {
     const bool isAhead = presentId == 10 || presentId == 100;
-    animationError.AddFrame(presentId, TimeSpan(animationTicks + (isAhead ? (Refresh / 4) : 0)), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+    animationError.AddFrame(presentId, TimeSpan(animationTicks + (isAhead ? (Refresh / 4) : 0)), TimeSpan(Refresh), false, std::nullopt,
+                            TimeSpan(Refresh));
     animationError.AddDisplayTime(presentId, TickCount(static_cast<int64_t>(presentId) * Refresh));
     animationTicks += Refresh;
     // Taken as they come, as the sample does (only Capacity frames are held)
@@ -557,8 +633,8 @@ TEST(TestSampleAnimationError, Clear_ForgetsTheStutter)
 {
   SampleAnimationError animationError;
   SampleAnimationErrorRecord record;
-  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
-  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(1, TimeSpan(0), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
+  animationError.AddFrame(2, TimeSpan(Refresh), TimeSpan(Refresh), false, std::nullopt, TimeSpan(Refresh));
   animationError.AddDisplayTime(1, TickCount(0));
   animationError.AddDisplayTime(2, TickCount(2 * Refresh));
   ASSERT_TRUE(TryPopJudged(animationError, record));

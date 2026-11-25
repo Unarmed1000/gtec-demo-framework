@@ -44,6 +44,7 @@ namespace Fsl
     SampleBoxAnimationSpeed m_boxAnimation{SampleBoxAnimationSpeed::Off};
     int32_t m_timedRunSeconds{SampleConfig::TimedRunSeconds.Get()};
     bool m_pacerEnabled{false};
+    bool m_animateByRefreshPeriod{false};
     //! The best tier the samples reach: a app that lacks what it uses is paced with the best kind of what it has
     SamplePacerKind m_pacerKind{SamplePacerKind::VBlankWaitForPresent};
     SamplePacerAim m_pacerAim{SamplePacerAim::Smoothness};
@@ -93,6 +94,12 @@ namespace Fsl
     [[nodiscard]] bool IsAnimationErrorChartHidden() const noexcept
     {
       return m_hideAnimationErrorChart;
+    }
+
+    //! @brief Check if the sample starts with the animation stepped one refresh period per frame while the frame pacer is off.
+    [[nodiscard]] bool IsAnimateByRefreshPeriod() const noexcept
+    {
+      return m_animateByRefreshPeriod;
     }
 
     //! @brief Check if the sample starts with the test pattern (the moving bar and box) hidden.

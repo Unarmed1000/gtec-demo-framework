@@ -42,6 +42,7 @@ namespace Fsl
         BoxAnimation,
         TimedRunDuration,
         Pacer,
+        AnimateByRefreshPeriod,
         PacerKind,
         PacerAim,
         PacerWaitingPresents,
@@ -98,7 +99,8 @@ namespace Fsl
                           "Start with the chart of the work per frame hidden (the UI has a switch for it).");
     rOptions.emplace_back("HideAnimationErrorChart", OptionArgument::OptionNone, CommandId::HideAnimationErrorChart,
                           "Start with the chart of the animation error hidden (the UI has a switch for it). The chart is only there where "
-                          "the app is told when its frames were shown.");
+                          "the app is told when its frames were shown: where the system has no display times (Vulkan without "
+                          "VK_EXT_present_timing, and OpenGL ES) the switch is off and disabled.");
     rOptions.emplace_back("HideTestPattern", OptionArgument::OptionNone, CommandId::HideTestPattern,
                           "Start with the test pattern (the moving bar and box) hidden (the UI has a switch for it).");
     rOptions.emplace_back("BoxAnimation", OptionArgument::OptionRequired, CommandId::BoxAnimation,
@@ -109,6 +111,10 @@ namespace Fsl
                           "The duration in seconds of a timed run that is started in the UI (1 to 120, the default is 10).");
     rOptions.emplace_back("Pacer", OptionArgument::OptionNone, CommandId::Pacer,
                           "Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).");
+    rOptions.emplace_back("AnimateByRefreshPeriod", OptionArgument::OptionNone, CommandId::AnimateByRefreshPeriod,
+                          "Start with the switch on that steps the animation one refresh period per frame while the frame pacer is off, "
+                          "in place of the time of the framework (vsync holds every frame for one refresh). The switch is disabled while "
+                          "the pacer is on, the refresh period is not known or a variable refresh rate was seen.");
     rOptions.emplace_back("Pacer.Kind", OptionArgument::OptionRequired, CommandId::PacerKind,
                           "What the pacer of the library paces the frames with: the tier that is asked for. The pacer says what to wait "
                           "for before a frame starts and before it is presented, and the sample only does that. vblank-present-wait (the "
@@ -223,6 +229,9 @@ namespace Fsl
       return OptionParseResult::Parsed;
     case CommandId::HideAnimationErrorChart:
       m_hideAnimationErrorChart = true;
+      return OptionParseResult::Parsed;
+    case CommandId::AnimateByRefreshPeriod:
+      m_animateByRefreshPeriod = true;
       return OptionParseResult::Parsed;
     case CommandId::HideTestPattern:
       m_hideTestPattern = true;

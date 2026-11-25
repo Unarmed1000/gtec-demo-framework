@@ -218,6 +218,7 @@ namespace Fsl
       std::shared_ptr<UI::BackgroundLabelButton> ButtonTimedRun;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderDuration;
       std::shared_ptr<UI::Switch> SwitchPacer;
+      std::shared_ptr<UI::Switch> SwitchAnimateByRefreshPeriod;
       std::shared_ptr<UI::Label> LabelRefreshRate;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderRefreshRate;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderTargetFps;
@@ -355,9 +356,15 @@ namespace Fsl
     TickCount m_stutterLegendTime;
     //! The time the current frame is animated for
     NanosecondTimeSpan m_animationTime;
-    //! The animation time minus the time of the framework (zero until the frame pacer was used), so the animation does not jump when the
-    //! frame pacer is switched off
+    //! The animation time minus the time of the framework (zero until the frame pacer or the refresh period step was used), so the
+    //! animation does not jump when either is switched off
     NanosecondTimeSpan m_animationOffset;
+    //! The animation steps one refresh period per frame while the frame pacer is off (the switch is on and can be used), and the step of
+    //! the current frame when it does (zero for a paused app)
+    bool m_animateByRefreshPeriod{false};
+    NanosecondTimeSpan m_refreshAnimationStep;
+    //! The animation error chart is wanted (--HideAnimationErrorChart): it is shown where the system has display times
+    bool m_animationErrorChartWanted{true};
     //! Relates the presents the app measured to the frames of the sample
     SampleMeasuredPresents m_measuredPresents;
     //! True if the app measures when its frames are presented
@@ -497,6 +504,7 @@ namespace Fsl
     struct LogColumns
     {
       TraceValue PacerOn;
+      TraceValue AnimateByRefreshPeriod;
       TraceValue PreferredSwapInterval;
       TraceValue AnimationStep;
       TraceValue WindowFrames;
@@ -952,6 +960,7 @@ namespace Fsl
     //!         period of the rate of the command line or the slider
     [[nodiscard]] NanosecondTimeSpan GetRefreshPeriod() const;
     void UpdateRefreshRateUI();
+    void UpdateAnimationErrorChartSupport();
     //! Work out the tiers of the pacer library the run uses and the best this system reaches, and show and log them if they changed
     void UpdateTier();
     //! Update the frame pacing section of the stats panel

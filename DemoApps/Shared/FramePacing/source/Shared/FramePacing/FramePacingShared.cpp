@@ -460,7 +460,9 @@ namespace Fsl
     m_ui.SwitchPacerStats = uiFactory->CreateSwitch("Show the frame pacing", !options->IsPacingStatsHidden());
     // The chart of the work per frame and the test pattern
     m_ui.SwitchWorkChart = uiFactory->CreateSwitch("Show the work chart", !options->IsWorkChartHidden());
-    m_ui.SwitchAnimationErrorChart = uiFactory->CreateSwitch("Show the animation error chart", !options->IsAnimationErrorChartHidden());
+    // Only where the system has display times (UpdateAnimationErrorChartSupport)
+    m_animationErrorChartWanted = !options->IsAnimationErrorChartHidden();
+    m_ui.SwitchAnimationErrorChart = uiFactory->CreateSwitch("Show the animation error chart", m_animationErrorChartWanted);
     m_ui.SwitchTestPattern = uiFactory->CreateSwitch("Show the test pattern", !options->IsTestPatternHidden());
     // The box animation of the mb-framepacing-explained videos, to compare the motion of the sample with them by eye
     m_ui.SwitchBoxAnimation = uiFactory->CreateSwitch("Show the box animation", options->GetBoxAnimation() != SampleBoxAnimationSpeed::Off);
@@ -479,6 +481,9 @@ namespace Fsl
     const bool pacerSupported = SamplePacer::IsSupported();
     m_ui.SwitchPacer = uiFactory->CreateSwitch("Frame pacer (experimental)", pacerSupported && options->IsPacerEnabled());
     m_ui.SwitchPacer->SetEnabled(pacerSupported);
+    // Without the pacer the animation can step one refresh period per frame in place of the time of the framework. UpdatePacer enables
+    // it while the pacer is off and the refresh period is the display's cadence.
+    m_ui.SwitchAnimateByRefreshPeriod = uiFactory->CreateSwitch("Animate by refresh period", options->IsAnimateByRefreshPeriod());
     m_ui.LabelRefreshRate = uiFactory->CreateLabel("");
     m_ui.SliderRefreshRate = uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, SampleConfig::RefreshRateHz);
     m_ui.SliderRefreshRate->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -558,6 +563,7 @@ namespace Fsl
     stackLayout->AddChild(m_keyboardMenu.AddButton(*uiFactory, m_ui.ButtonTimedRun, [this]() { StartTimedRun(); }));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPacer));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchAnimateByRefreshPeriod));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     if (SamplePacer::IsSupported())
     {
@@ -720,6 +726,8 @@ namespace Fsl
       m_keyboardMenu.ResetToDefaults();
       // The slider of the refresh rate shows the rate that is used while it is known, which is not the value it was created with
       UpdateRefreshRateUI();
+      // and a chart the system has no display times for stays off
+      UpdateAnimationErrorChartSupport();
       break;
     default:
       break;
@@ -742,6 +750,8 @@ namespace Fsl
       const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.KeyboardMenu);
       m_keyboardMenu.Update(demoTime.ElapsedTime);
     }
+    // The app said what it can measure before its first frame (SetMeasurementSupport)
+    UpdateAnimationErrorChartSupport();
     {
       const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.PacerUpdate);
       UpdatePacer();
@@ -1084,8 +1094,9 @@ namespace Fsl
     if (m_presentsMeasured)
     {
       // The moment the frame is drawn for, to be held against the time it is shown at, and when the pacer meant it to be shown
-      m_animationError.AddFrame(presentId, NanosecondTimeSpanUtil::ToTimeSpan(m_animationTime), GetTargetFrameTime(), intendedDisplayTime,
-                                NanosecondTimeSpanUtil::ToTimeSpan(GetRefreshPeriod()));
+      // The target frame time is the pacer's (the marker carries it) only while the pacer is on
+      m_animationError.AddFrame(presentId, NanosecondTimeSpanUtil::ToTimeSpan(m_animationTime), GetTargetFrameTime(), m_pacer != nullptr,
+                                intendedDisplayTime, NanosecondTimeSpanUtil::ToTimeSpan(GetRefreshPeriod()));
     }
 
     {    // So the frame pacer can be told about the frame when its display time arrives, a few frames from now
@@ -1738,6 +1749,42 @@ namespace Fsl
     pacerConfig.StartupPauseRefreshes = static_cast<uint32_t>(std::max(m_startupPauseRefreshes, 0));
 
     const bool pacerOn = SamplePacer::IsSupported() && m_ui.SwitchPacer->IsChecked();
+    // Without the pacer the animation can step one refresh period per frame: vsync holds every frame for one refresh. That needs a
+    // refresh period that is the display's cadence: a known one, on a display that was not seen to refresh at a variable rate.
+    {
+      const bool refreshPeriodKnown = pacerConfig.RefreshPeriod.TotalNanoseconds() > 0;
+      const bool refreshStepAvailable = !pacerOn && refreshPeriodKnown && !m_variableRefreshSeen;
+      if (m_ui.SwitchAnimateByRefreshPeriod->IsEnabled() != refreshStepAvailable)
+      {
+        m_ui.SwitchAnimateByRefreshPeriod->SetEnabled(refreshStepAvailable);
+      }
+      const bool animateByRefreshPeriod = refreshStepAvailable && m_ui.SwitchAnimateByRefreshPeriod->IsChecked();
+      if (animateByRefreshPeriod != m_animateByRefreshPeriod)
+      {
+        m_animateByRefreshPeriod = animateByRefreshPeriod;
+        if (animateByRefreshPeriod)
+        {
+          FSLLOG3_VERBOSE("FramePacing: the animation steps one refresh period per frame ({} ns)", pacerConfig.RefreshPeriod.TotalNanoseconds());
+        }
+        else
+        {
+          std::string_view reason("the switch is off");
+          if (pacerOn)
+          {
+            reason = "the frame pacer gives the step";
+          }
+          else if (!refreshPeriodKnown)
+          {
+            reason = "the refresh period is not known";
+          }
+          else if (m_variableRefreshSeen)
+          {
+            reason = "a variable refresh rate was seen";
+          }
+          FSLLOG3_VERBOSE("FramePacing: the animation no longer steps one refresh period per frame: {}", reason);
+        }
+      }
+    }
     // The settings of the pacer do nothing while it is off, so they can only be changed while it is on
     if (m_ui.SliderTargetFps->IsEnabled() != pacerOn)
     {
@@ -1892,6 +1939,15 @@ namespace Fsl
       }
       m_animationOffset = m_animationTime - frameworkTime;
     }
+    else if (m_animateByRefreshPeriod)
+    {
+      m_schedule = {};
+      // Without the pacer vsync holds every frame for one refresh, so the frame is animated one refresh period on in place of the time
+      // of the framework (UpdatePacer). A paused app still stands still.
+      m_refreshAnimationStep = m_updateTime.ElapsedTime.Ticks() != 0 ? m_pacerConfig.RefreshPeriod : NanosecondTimeSpan();
+      m_animationTime += m_refreshAnimationStep;
+      m_animationOffset = m_animationTime - frameworkTime;
+    }
     else
     {
       m_schedule = {};
@@ -1916,6 +1972,10 @@ namespace Fsl
     ITraceService& rLog = *m_trace;
     LogColumns& rColumns = m_logColumns;
     rColumns.PacerOn = rLog.RegisterValue("pacerOn", TraceUnit::Flag, "1 if the frame pacer of the sample paced the frame");
+    rColumns.AnimateByRefreshPeriod =
+      rLog.RegisterValue("animateByRefreshPeriod", TraceUnit::Flag,
+                         "1 if the frame pacer was off and the frame was animated one refresh period on from the frame before (vsync holds "
+                         "every frame for one refresh), in place of the time of the framework (--AnimateByRefreshPeriod)");
     rColumns.PreferredSwapInterval =
       rLog.RegisterValue("preferredSwapInterval", TraceUnit::Count, "The swap interval of the target frame rate, the pacer never runs faster");
     rColumns.AnimationStep =
@@ -1977,10 +2037,12 @@ namespace Fsl
                                                  "frames old) or not newer than the one before");
     rColumns.DisplayJudgedFrames =
       rLog.RegisterValue("pacerDisplayJudgedFrames", TraceUnit::Count,
-                         "The frames the pacer judged from the display reports: the frame and the frame before it both have a display time");
+                         "The frames the pacer judged from the display reports: the frame and the last frame shown before it have a display "
+                         "time, with every frame between them reported as never shown");
     rColumns.DisplayErrorFrames = rLog.RegisterValue("pacerDisplayErrorFrames", TraceUnit::Count,
-                                                     "The judged frames with a animation error of more than a millisecond: their animation "
-                                                     "time step less the time between the two display times");
+                                                     "The judged frames with a animation error of more than a millisecond (their animation "
+                                                     "time step less the time between the two display times), or with a part of it "
+                                                     "against the frame's intended period that far off: the stop or rush and the step");
     rColumns.DisplayOffTargetFrames = rLog.RegisterValue("pacerDisplayOffTargetFrames", TraceUnit::Count,
                                                          "The judged frames shown half a refresh or more off where their animation time "
                                                          "step put them: at another refresh");
@@ -2060,7 +2122,9 @@ namespace Fsl
     rColumns.AnimationError = rLog.RegisterValue(
       "animationErrorTicks", TraceUnit::DurationTicks,
       "The animation error of the frame by the display times the system reports: how far the animation moved from the frame presented "
-      "before it, less how long after that frame it was shown. Negative: shown too late. Empty unless both frames have a display time");
+      "before it, less how long after that frame it was shown. Negative: shown too late. Empty unless both frames have a display time. "
+      "With the pacer on a frame also counts as a error by the two parts against its intended period (the stop or rush and the "
+      "step), which the sum can cancel");
     rLog.SetFact("sample.presentMethod", m_presentMethod == SamplePresentMethod::WaitThenPresent ? "WaitThenPresent" : "SwapInterval");
     rLog.SetFact("sample.pacerKind", ToString(m_pacerKind));
     rLog.SetFact("sample.pacerKindChangeFrames", fmt::format("{}", m_kindChangeFrames));
@@ -2124,6 +2188,11 @@ namespace Fsl
     }
 
     rLog.SetValue(columns.PacerOn, pacerOn);
+    rLog.SetValue(columns.AnimateByRefreshPeriod, !pacerOn && m_animateByRefreshPeriod);
+    if (!pacerOn && m_animateByRefreshPeriod)
+    {
+      rLog.SetValue(columns.AnimationStep, m_refreshAnimationStep);
+    }
     if (m_details)
     {
       if (m_frameStartLogTargetTime.Ticks() != 0)
@@ -2289,6 +2358,25 @@ namespace Fsl
       return m_refreshRateOverrideHz.value();
     }
     return m_detectedRefreshRateHz > 0.0 ? m_detectedRefreshRateHz : static_cast<double>(m_ui.SliderRefreshRate->GetValue());
+  }
+
+
+  void FramePacingShared::UpdateAnimationErrorChartSupport()
+  {
+    // The chart needs the display time of every frame, which only a system that measures its presents has (VK_EXT_present_timing).
+    // Without it the chart is off and its switch disabled; a system that has them shows it as the options asked.
+    const bool supported = m_presentTimingSupported;
+    if (m_ui.SwitchAnimationErrorChart->IsEnabled() != supported)
+    {
+      m_ui.SwitchAnimationErrorChart->SetEnabled(supported);
+      m_ui.SwitchAnimationErrorChart->SetIsChecked(supported && m_animationErrorChartWanted);
+      FSLLOG3_VERBOSE("FramePacing: the animation error chart is {}", supported ? "available" : "off: the system has no display times");
+    }
+    if (!supported && m_ui.SwitchAnimationErrorChart->IsChecked())
+    {
+      // Set back to what it started with (the reset of the settings)
+      m_ui.SwitchAnimationErrorChart->SetIsChecked(false);
+    }
   }
 
 

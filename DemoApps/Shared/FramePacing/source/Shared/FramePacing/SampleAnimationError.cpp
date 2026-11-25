@@ -48,7 +48,8 @@ namespace Fsl
 
 
   void SampleAnimationError::AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime,
-                                      const std::optional<TickCount> intendedDisplayTime, const TimeSpan refreshPeriod) noexcept
+                                      const bool isTargetGiven, const std::optional<TickCount> intendedDisplayTime,
+                                      const TimeSpan refreshPeriod) noexcept
   {
     if (m_count == Capacity)
     {
@@ -63,6 +64,7 @@ namespace Fsl
     rFrame.PresentId = presentId;
     rFrame.AnimationTime = animationTime;
     rFrame.TargetFrameTime = targetFrameTime;
+    rFrame.IsTargetGiven = isTargetGiven;
     rFrame.RefreshPeriod = refreshPeriod;
     rFrame.IntendedDisplayTime = intendedDisplayTime;
     ++m_count;
@@ -110,7 +112,8 @@ namespace Fsl
     rRecord.PresentId = frame.PresentId;
     if (!frame.DisplayTime.has_value())
     {
-      // Not shown, or not known when: the step into it and the step out of it are not judged
+      // Not known when it was shown: a present the system has no display time for may have been shown, so, as the tools do with a
+      // frame without a report, nothing is judged across it (the step into it and the step out of it are not judged)
       m_hasShown = false;
       m_lastStepUneven = false;
       return true;
@@ -141,7 +144,13 @@ namespace Fsl
       const int64_t offIntendedTicks = std::abs((rRecord.DisplayStep - rRecord.IntendedPeriod).Ticks());
       const bool isStepUneven = refreshTicks <= 0 || offIntendedTicks >= halfRefreshTicks;
       const int64_t absErrorTicks = std::abs(rRecord.Error.Ticks());
-      if (absErrorTicks > ErrorThreshold.Ticks())
+      // The sum cancels a stop against a jump (a frame shown a refresh late that moved a refresh more has no error by it), so where the
+      // pacer gave the frame a target the two parts against it count as well: the stop or rush (the target less the display step) and
+      // the step (the animation step less the target), each past the threshold by more than the rounding of the tools
+      const int64_t partLimitTicks = ErrorThreshold.Ticks() + PartRounding.Ticks();
+      const bool isPartError = frame.IsTargetGiven && (std::abs((rRecord.IntendedPeriod - rRecord.DisplayStep).Ticks()) > partLimitTicks ||
+                                                       std::abs((rRecord.AnimationStep - rRecord.IntendedPeriod).Ticks()) > partLimitTicks);
+      if (absErrorTicks > ErrorThreshold.Ticks() || isPartError)
       {
         bool isPacing = true;
         if (refreshTicks > 0)

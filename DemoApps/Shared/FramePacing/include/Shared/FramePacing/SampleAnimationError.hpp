@@ -113,9 +113,14 @@ namespace Fsl
   //! The display time of a frame comes a few frames after the frame, and a frame can be reported as not shown, or not be reported at
   //! all (it is given up on when MaxWaitFrames frames have been added since). So the frames are held here until they are known,
   //! and are then given in the order they were presented in.
-  //! A step is only judged between two frames that were presented one after the other and that both have a display time: a frame
-  //! without one is not judged, and neither is the frame after it, as the mb-framepacing report does it (a step over a frame that is
-  //! not known would be half a guess). The first frame has nothing to be compared with and is not judged either.
+  //! A step is only judged between two frames that were presented one after the other and that both have a display time. The tools
+  //! judge a frame across frames that were never shown, but a present the system has no display time for may have been shown, which
+  //! is the tools' frame without a report: a frame without a display time is not judged, and neither is the frame after it (a step
+  //! over a frame that is not known would be half a guess). The first frame has nothing to be compared with and is not judged either.
+  //!
+  //! A error counts, as the tools count it, when it is larger than ErrorThreshold, or where the pacer gave the frame a target, when
+  //! one of its two parts against that target is: the stop or rush (the intended period less the display step) and the step (the
+  //! animation step less the intended period), by more than PartRounding. The sum alone cancels a stop against a jump.
   class SampleAnimationError final
   {
   public:
@@ -128,6 +133,9 @@ namespace Fsl
     //! What counts as a error in the numbers: one that is larger than this, in either direction (1 ms, the threshold of the
     //! mb-framepacing tools)
     static constexpr TimeSpan ErrorThreshold = TimeSpan::FromMilliseconds(1);
+    //! What a part of the error may be past ErrorThreshold by and still be no error (1 microsecond, the rounding of the
+    //! mb-framepacing tools)
+    static constexpr TimeSpan PartRounding = TimeSpan::FromMicroseconds(1);
     //! The largest value of ToRefreshThousandths, in either direction (32 refreshes)
     static constexpr int32_t MaxRefreshThousandths = 32000;
     //! The frames with a error that the count of the last second can hold
@@ -142,6 +150,8 @@ namespace Fsl
       TimeSpan AnimationTime;
       //! The time from the frame before to this one the pacer aims for, and the refresh period of the display when it was presented
       TimeSpan TargetFrameTime;
+      //! The pacer gave the target frame time (the marker carries it), so the error has parts against it
+      bool IsTargetGiven{false};
       TimeSpan RefreshPeriod;
       //! When the pacer meant the frame to be shown, if it said
       std::optional<TickCount> IntendedDisplayTime;
@@ -185,10 +195,12 @@ namespace Fsl
     //! @param animationTime the moment the frame was drawn for
     //! @param targetFrameTime the time from the frame before to this one the pacer aims for (its swap interval in time, one refresh
     //!        without the pacer), as the target frame time of the frame pacing marker
+    //! @param isTargetGiven true if the pacer gave the target frame time (the marker carries it): the error then also counts by its two
+    //!        parts against it. Without the pacer the tools have no target and judge the sum only.
     //! @param intendedDisplayTime when the pacer meant the frame to be shown, if it said
     //! @param refreshPeriod the time between two refreshes of the display (zero: not known, a error then counts as pacing and no frame
     //!        is late)
-    void AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime,
+    void AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime, const bool isTargetGiven,
                   const std::optional<TickCount> intendedDisplayTime, const TimeSpan refreshPeriod) noexcept;
 
     //! @brief When the frame was shown.
