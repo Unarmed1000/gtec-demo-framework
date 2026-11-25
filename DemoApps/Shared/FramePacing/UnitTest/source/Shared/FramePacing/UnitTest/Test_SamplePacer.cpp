@@ -223,6 +223,26 @@ TEST(TestSamplePacer, TimerPeriodOnly_AFrameOfFourRefreshesIsPresentedOnATimer)
 }
 
 
+// A present whose shortest swap interval is two (EGL_MIN_SWAP_INTERVAL): the pacer never paces or presents faster, also at the
+// display rate
+TEST(TestSamplePacer, TimerPeriodOnly_ThePresentsShortestSwapIntervalIsNeverPacedFaster)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  SamplePacerConfig config = Config(SamplePacerKind::TimerPeriodOnly);
+  config.Capabilities.PresentSwapIntervalMax = 4;
+  config.Capabilities.PresentSwapIntervalMin = 2;
+  SamplePacer pacer(config);
+
+  const SamplePacerSchedule schedule = pacer.BeginFrame(At(0));
+  EXPECT_EQ(2u, schedule.SwapInterval);
+  const SamplePacerPresentPlan presentPlan = pacer.EndFrame(At(PeriodTicks / 5));
+  EXPECT_EQ(2u, presentPlan.SwapInterval);
+}
+
+
 TEST(TestSamplePacer, TimerPeriodOnly_NeverAsksForAPresentWait)
 {
   if (!SamplePacer::IsSupported())

@@ -47,8 +47,9 @@ namespace Fsl
   {
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_shared.GetUIDemoAppExtension());
-    // What the swap interval can hold a frame for is up to the EGL config
+    // What the swap interval can hold a frame for, the shortest and the longest, is up to the EGL config
     m_shared.SetPresentSwapIntervalMax(m_swapInterval.Max());
+    m_shared.SetPresentSwapIntervalMin(m_swapInterval.Min());
   }
 
 

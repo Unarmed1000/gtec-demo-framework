@@ -270,7 +270,11 @@ namespace Fsl
       {
         bits = bits | PC::PacerCapability::GpuWorkDurations;
       }
-      return PC::PacerCapabilities(bits, std::max(capabilities.PresentSwapIntervalMax, 1u));
+      // The longest and the shortest swap interval the present takes (only kept with PresentSwapInterval), the shortest no longer
+      // than the longest
+      const uint32_t maxSwapInterval = std::max(capabilities.PresentSwapIntervalMax, 1u);
+      const uint32_t minSwapInterval = std::min(std::max(capabilities.PresentSwapIntervalMin, 1u), maxSwapInterval);
+      return PC::PacerCapabilities(bits, maxSwapInterval, minSwapInterval);
     }
 
     //! What of it the pacer is to use with the given config: the vertical blank times and the wait for a present where the kind is

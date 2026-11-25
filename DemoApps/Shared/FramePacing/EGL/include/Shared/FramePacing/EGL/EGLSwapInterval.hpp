@@ -35,21 +35,28 @@ namespace Fsl
   class EGLSwapInterval final
   {
     std::shared_ptr<IEGLHostInfo> m_hostInfo;
+    //! The shortest swap interval the EGL config supports that waits for a refresh (EGL_MIN_SWAP_INTERVAL, at least 1)
+    uint32_t m_minSwapInterval{1};
     //! The longest swap interval the EGL config supports
     uint32_t m_maxSwapInterval{1};
-    //! The swap interval that is set (the EGL default is 1)
+    //! The swap interval that is set (the EGL default is 1, kept within the range of the config)
     uint32_t m_swapInterval{1};
 
   public:
     explicit EGLSwapInterval(std::shared_ptr<IEGLHostInfo> hostInfo);
 
     //! @brief Set the swap interval of the following eglSwapBuffers calls (call it with the context of the host current).
-    //! @return the swap interval that is set: the requested one limited to what the EGL config supports.
+    //! @return the swap interval that is set: the requested one kept within what the EGL config supports (Min to Max).
     uint32_t Set(const uint32_t swapInterval);
 
     [[nodiscard]] uint32_t Get() const noexcept
     {
       return m_swapInterval;
+    }
+
+    [[nodiscard]] uint32_t Min() const noexcept
+    {
+      return m_minSwapInterval;
     }
 
     [[nodiscard]] uint32_t Max() const noexcept

@@ -62,6 +62,7 @@
 #include <Shared/FramePacing/SampleStatsLevel.hpp>
 #include <Shared/FramePacing/SampleSwapchainRefresh.hpp>
 #include <fmt/format.h>
+#include <algorithm>
 #include <array>
 #include <iterator>
 #include <memory>
@@ -397,6 +398,8 @@ namespace Fsl
     bool m_tierFactsReady{false};
     //! The longest swap interval the present of the app can hold a frame for (zero: not known, or the present has none)
     uint32_t m_presentSwapIntervalMax{0};
+    //! The shortest swap interval the present of the app takes (zero: not known, or the present has none)
+    uint32_t m_presentSwapIntervalMin{0};
     //! What the window system said when the sample started: what is certain about explicit sync, and the name of its vsync source
     SampleExplicitSync m_explicitSync{SampleExplicitSync::NotApplicable};
     std::string m_vsyncSourceName;
@@ -802,6 +805,13 @@ namespace Fsl
     {
       m_presentSwapIntervalMax = maxSwapInterval;
     }
+
+    //! @brief A app that presents with a swap interval says what the shortest one is that it can set (EGL_MIN_SWAP_INTERVAL, at least
+    //!        1): the pacer never paces faster than it, and without the pacer the present holds every frame for that many refreshes.
+    void SetPresentSwapIntervalMin(const uint32_t minSwapInterval) noexcept
+    {
+      m_presentSwapIntervalMin = minSwapInterval;
+    }
     //! The time the present of the current frame is to be given, after WaitForPresent: the frame is not to be shown before this long
     //! after the frame before it was shown. Zero if the frame pacer gave none.
     [[nodiscard]] TimeSpan GetPresentRelativeTarget() const noexcept
@@ -904,14 +914,20 @@ namespace Fsl
     }
 
     //! The swap interval the present of the frame that just ended is to be given, for a present that takes one: what the frame
-    //! pacer says, which is never more than the longest one the app said its present takes (SetPresentSwapIntervalMax). 1 if the
-    //! frame pacer is off. Valid once the frame ended (EndFrame).
+    //! pacer says, which is within the shortest and the longest one the app said its present takes (SetPresentSwapIntervalMin,
+    //! SetPresentSwapIntervalMax). The shortest one (at least 1) if the frame pacer is off. Valid once the frame ended (EndFrame).
     [[nodiscard]] uint32_t GetSwapInterval() const noexcept
     {
-      return m_pacer != nullptr ? m_presentPlan.SwapInterval : 1u;
+      return m_pacer != nullptr ? m_presentPlan.SwapInterval : GetPacerOffSwapInterval();
     }
 
   private:
+    //! The refreshes the present holds a frame for without the frame pacer: one, or the shortest swap interval of a present that takes
+    //! one
+    [[nodiscard]] uint32_t GetPacerOffSwapInterval() const noexcept
+    {
+      return m_presentMethod == SamplePresentMethod::SwapInterval ? std::max(m_presentSwapIntervalMin, 1u) : 1u;
+    }
     void ToggleRun();
     void StartTimedRun();
     void UpdateUI();

@@ -35,6 +35,9 @@ namespace Fsl
     //! The longest swap interval the present takes (zero: the present takes none). It only holds a frame for more than one refresh
     //! when it can be two or more.
     uint32_t PresentSwapIntervalMax{0};
+    //! The shortest swap interval the present takes (EGL_MIN_SWAP_INTERVAL; zero: the present takes none, else 1 to
+    //! PresentSwapIntervalMax). The pacer never paces or presents faster than it.
+    uint32_t PresentSwapIntervalMin{0};
     //! The present takes a time before which the frame is not shown, so the display places the frame
     bool PresentAtTime{false};
     //! Of two presents whose times have both passed the display side shows the later one and never the earlier one: a fact of the

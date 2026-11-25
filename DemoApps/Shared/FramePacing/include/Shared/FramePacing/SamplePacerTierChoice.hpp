@@ -212,6 +212,7 @@ namespace Fsl::SamplePacerTierChoiceUtil
     uses.PresentAfterDuration = has.PresentAfterDuration && presentAfterDuration && !uses.PresentAtTime;
     // A swap interval is how such a app presents, and the display times where the run gives them to the pacer
     uses.PresentSwapIntervalMax = has.PresentSwapIntervalMax;
+    uses.PresentSwapIntervalMin = has.PresentSwapIntervalMin;
     uses.DisplayTimes = has.DisplayTimes && displayTimes;
     // What the display does with a frame that is overdue is a fact of the system, not something a run chooses
     uses.PresentSkipsOverdue = has.PresentSkipsOverdue;

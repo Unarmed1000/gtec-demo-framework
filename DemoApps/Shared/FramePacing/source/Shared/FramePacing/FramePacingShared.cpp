@@ -919,6 +919,7 @@ namespace Fsl
     // Everything the app can do and can tell the pacer right now. What of it a run uses is the pacer's config.
     SamplePacerCapabilities has;
     has.PresentSwapIntervalMax = m_presentMethod == SamplePresentMethod::SwapInterval ? m_presentSwapIntervalMax : 0u;
+    has.PresentSwapIntervalMin = m_presentMethod == SamplePresentMethod::SwapInterval ? m_presentSwapIntervalMin : 0u;
     has.PresentAtTime = m_presentAtTimeSupported;
     // What the display does with presents whose time has passed is only something where a present has a time
     has.PresentSkipsOverdue = m_presentSkipsOverdue;
@@ -1749,7 +1750,8 @@ namespace Fsl
     pacerConfig.StartupPauseRefreshes = static_cast<uint32_t>(std::max(m_startupPauseRefreshes, 0));
 
     const bool pacerOn = SamplePacer::IsSupported() && m_ui.SwitchPacer->IsChecked();
-    // Without the pacer the animation can step one refresh period per frame: vsync holds every frame for one refresh. That needs a
+    // Without the pacer the animation can step the refresh period times the swap interval per frame: vsync holds every frame for its
+    // swap interval (one refresh, or the shortest swap interval of a present that takes one). That needs a
     // refresh period that is the display's cadence: a known one, on a display that was not seen to refresh at a variable rate.
     {
       const bool refreshPeriodKnown = pacerConfig.RefreshPeriod.TotalNanoseconds() > 0;
@@ -1764,7 +1766,8 @@ namespace Fsl
         m_animateByRefreshPeriod = animateByRefreshPeriod;
         if (animateByRefreshPeriod)
         {
-          FSLLOG3_VERBOSE("FramePacing: the animation steps one refresh period per frame ({} ns)", pacerConfig.RefreshPeriod.TotalNanoseconds());
+          FSLLOG3_VERBOSE("FramePacing: the animation steps the refresh period ({} ns) times the swap interval ({}) per frame",
+                          pacerConfig.RefreshPeriod.TotalNanoseconds(), GetPacerOffSwapInterval());
         }
         else
         {
@@ -1905,11 +1908,12 @@ namespace Fsl
     m_frameStartTime = frameStartTime;
     m_frameWork.BeginFrame(m_frameId, frameStartTime);
 
-    // The frame that just ended was held for the swap interval of its schedule (one refresh without the pacer)
+    // The frame that just ended was held for the swap interval of its schedule (the pacer off: GetPacerOffSwapInterval)
     if (m_frameInterval.Ticks() > 0 && m_pacerConfig.RefreshPeriod.TotalNanoseconds() > 0)
     {
       const TimeSpan refreshPeriod = NanosecondTimeSpanUtil::ToTimeSpan(m_pacerConfig.RefreshPeriod);
-      m_frameStats.AddFrame(frameStartTime, m_frameInterval, refreshPeriod, std::max(m_schedule.SwapInterval, 1u));
+      m_frameStats.AddFrame(frameStartTime, m_frameInterval, refreshPeriod,
+                            m_pacer ? std::max(m_schedule.SwapInterval, 1u) : GetPacerOffSwapInterval());
     }
 
     // The animation clock counts nanoseconds, as the steps of the pacer are in them: a step that was rounded to a tick of 100ns would
@@ -1942,9 +1946,13 @@ namespace Fsl
     else if (m_animateByRefreshPeriod)
     {
       m_schedule = {};
-      // Without the pacer vsync holds every frame for one refresh, so the frame is animated one refresh period on in place of the time
-      // of the framework (UpdatePacer). A paused app still stands still.
-      m_refreshAnimationStep = m_updateTime.ElapsedTime.Ticks() != 0 ? m_pacerConfig.RefreshPeriod : NanosecondTimeSpan();
+      // Without the pacer vsync holds every frame for its swap interval (one refresh, or the shortest swap interval of a present that
+      // takes one), so the frame is animated that many refresh periods on in place of the time of the framework (UpdatePacer). A paused
+      // app still stands still.
+      m_refreshAnimationStep =
+        m_updateTime.ElapsedTime.Ticks() != 0
+          ? NanosecondTimeSpan(m_pacerConfig.RefreshPeriod.TotalNanoseconds() * static_cast<int64_t>(GetPacerOffSwapInterval()))
+          : NanosecondTimeSpan();
       m_animationTime += m_refreshAnimationStep;
       m_animationOffset = m_animationTime - frameworkTime;
     }
@@ -2462,8 +2470,9 @@ namespace Fsl
     {
       return NanosecondTimeSpanUtil::ToTimeSpan(m_schedule.TargetFrameTime);
     }
-    // Without the frame pacer every frame is held for one refresh
-    return NanosecondTimeSpanUtil::ToTimeSpan(m_pacerConfig.RefreshPeriod);
+    // Without the frame pacer every frame is held for its swap interval: one refresh, or the shortest swap interval of a present that
+    // takes one
+    return NanosecondTimeSpanUtil::ToTimeSpan(m_pacerConfig.RefreshPeriod) * static_cast<int32_t>(GetPacerOffSwapInterval());
   }
 
 
@@ -2552,11 +2561,14 @@ namespace Fsl
 
     if (!m_pacer)
     {
-      // Without the pacer every frame is held for one refresh and the sample counts the late frames
+      // Without the pacer every frame is held for its swap interval (one refresh, or the shortest swap interval of a present that takes
+      // one) and the sample counts the late frames
       const uint32_t frames = m_frameStats.FrameCount();
       const uint32_t lateFrames = m_frameStats.LateFrameCount();
-      SetFormattedContent(*rStats.PacedRate, "{:.2f} Hz ({})", refreshRateHz, SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
-      SetFormattedContent(*rStats.SwapInterval, "1 ({})", SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
+      const uint32_t swapInterval = GetPacerOffSwapInterval();
+      SetFormattedContent(*rStats.PacedRate, "{:.2f} Hz ({})", refreshRateHz / static_cast<double>(swapInterval),
+                          SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
+      SetFormattedContent(*rStats.SwapInterval, "{} ({})", swapInterval, SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
       SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", lateFrames, frames, frames > 0u ? ((100.0 * lateFrames) / frames) : 0.0);
       m_pacerStatsLevels.LateFrames = SampleStatsLevelUtil::RateLateFrames(lateFrames, frames);
       for (UI::Label* pLabel : {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get(),

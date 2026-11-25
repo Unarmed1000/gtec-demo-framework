@@ -113,8 +113,9 @@ namespace Fsl
                           "Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).");
     rOptions.emplace_back("AnimateByRefreshPeriod", OptionArgument::OptionNone, CommandId::AnimateByRefreshPeriod,
                           "Start with the switch on that steps the animation one refresh period per frame while the frame pacer is off, "
-                          "in place of the time of the framework (vsync holds every frame for one refresh). The switch is disabled while "
-                          "the pacer is on, the refresh period is not known or a variable refresh rate was seen.");
+                          "in place of the time of the framework (vsync holds every frame for one refresh; OpenGL ES with a shortest swap "
+                          "interval of the EGL config above one: that many). The switch is disabled while the pacer is on, the refresh "
+                          "period is not known or a variable refresh rate was seen.");
     rOptions.emplace_back("Pacer.Kind", OptionArgument::OptionRequired, CommandId::PacerKind,
                           "What the pacer of the library paces the frames with: the tier that is asked for. The pacer says what to wait "
                           "for before a frame starts and before it is presented, and the sample only does that. vblank-present-wait (the "
