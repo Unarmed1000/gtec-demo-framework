@@ -119,7 +119,7 @@ namespace Fsl
     rOptions.emplace_back("Pacer.Kind", OptionArgument::OptionRequired, CommandId::PacerKind,
                           "What the pacer of the library paces the frames with: the tier that is asked for. The pacer says what to wait "
                           "for before a frame starts and before it is presented, and the sample only does that. vblank-present-wait (the "
-                          "default and the best tier the samples reach: the pacer is told when the display of the window refreshes, so "
+                          "default: the pacer is told when the display of the window refreshes, so "
                           "it aims a frame at a vertical blank, and before a frame it names a earlier present to wait for until it was "
                           "shown: Vulkan with VK_KHR_present_wait2, where the sample asks for a swapchain that can be waited on; with "
                           "--VkPresentWait n, n is the number of presents the pacer lets wait and no longer a wait of the host. From the "
@@ -127,7 +127,7 @@ namespace Fsl
                           "vertical blank times without the wait), timer-present-wait (the wait, on a timer and without the vertical "
                           "blank times) or timer-period (a timer and the refresh period of the display, which every app has). A app "
                           "that lacks what a kind uses is paced with the best kind of what it has, so the default is the best tier "
-                          "that is available.");
+                          "that is available. Where the system holds the loop (tier 3, --Pacer.SystemHoldsLoop) no kind is used.");
     rOptions.emplace_back("Pacer.Aim", OptionArgument::OptionRequired, CommandId::PacerAim,
                           "What the pacer optimizes for: smoothness (the default: at one refresh per frame the pacer keeps frames that "
                           "wait to be shown as a reserve, --Pacer.WaitingPresents less one, so a frame that runs a little long is "
@@ -171,11 +171,13 @@ namespace Fsl
                           "acquire of a Vulkan app) are reported to the pacer. On a timer the pacer then does not take a frame "
                           "the system held for a late one, and on vertical blank times a start the side of the display held is not "
                           "stepped over by the animation time. false: they are not reported, for a run to hold a run with them against.");
-    rOptions.emplace_back("Pacer.SystemHoldsLoop", OptionArgument::OptionNone, CommandId::PacerSystemHoldsLoop,
-                          "Tell the pacer timer-period that the system holds the frame loop while its queue of frames is full (a acquire "
-                          "or a present that waits for the display). With the aim of smoothness the pacer then lets the system pace the "
-                          "loop, and a frame the system held is not late. Only for a system that does hold the loop. The Vulkan sample "
-                          "reports its wait for the frame slot and its acquire to the pacer with or without it.");
+    rOptions.emplace_back("Pacer.SystemHoldsLoop", OptionArgument::OptionRequired, CommandId::PacerSystemHoldsLoop,
+                          "true (default): tell the pacer that the present or the call for the next image waits while the swap chain's "
+                          "queue is full, where the app has that (Vulkan: vkAcquireNextImageKHR; OpenGL ES: eglSwapBuffers): the system "
+                          "holds the loop, tier 3, where no time on the present puts the run in a better tier. The pacer gives no time to "
+                          "wait for while the system holds, checks the hold against the starts of the frames and limits the frame time "
+                          "itself where it does not hold; the aim of smoothness only. false: the frame loop's tiers 4.1 to 4.4 "
+                          "(--Pacer.Kind).");
     rOptions.emplace_back("Pacer.RefreshRate", OptionArgument::OptionRequired, CommandId::PacerRefreshRate,
                           "The refresh rate of the display in Hz the frame pacer uses, decimals are allowed (59.94). Defaults to the "
                           "rate the window system reports, and to the UI slider if it does not know it.");
@@ -313,7 +315,7 @@ namespace Fsl
       StringParseUtil::Parse(m_pacerSystemWaits, strOptArg);
       return OptionParseResult::Parsed;
     case CommandId::PacerSystemHoldsLoop:
-      m_pacerSystemHoldsLoop = true;
+      StringParseUtil::Parse(m_pacerSystemHoldsLoop, strOptArg);
       return OptionParseResult::Parsed;
     case CommandId::PacerKindChange:
       return TryParseInRange(m_pacerKindChangeFrames, strOptArg, SampleConfig::KindChangeFrames, "Pacer.KindChange") ? OptionParseResult::Parsed

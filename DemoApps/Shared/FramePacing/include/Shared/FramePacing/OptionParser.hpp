@@ -51,7 +51,7 @@ namespace Fsl
     int32_t m_pacerWaitingPresents{SampleConfig::WaitingPresents.Get()};
     int32_t m_pacerReadyPlacePercent{SampleConfig::ReadyPlacePercent.Get()};
     int32_t m_pacerKindChangeFrames{SampleConfig::KindChangeFrames.Get()};
-    bool m_pacerSystemHoldsLoop{false};
+    bool m_pacerSystemHoldsLoop{true};
     bool m_pacerPresentAtTime{true};
     bool m_pacerTimedPresent{true};
     bool m_pacerGpuWait{true};
@@ -181,7 +181,8 @@ namespace Fsl
       return m_pacerSystemWaits;
     }
 
-    //! @brief True if the pacer is told that the system holds the frame loop while its queue of frames is full.
+    //! @brief True if the pacer is told that the present or the call for the next image waits while the swap chain's queue is full
+    //!        (the system's hold, tier "3"), where the app has that.
     [[nodiscard]] bool IsPacerSystemHoldsLoop() const noexcept
     {
       return m_pacerSystemHoldsLoop;

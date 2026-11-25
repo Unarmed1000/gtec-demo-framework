@@ -94,6 +94,10 @@ class RunConfig:
     # None: the run is not one of an idle and loaded pair
     Loaded: bool | None
     RefreshRateHz: float | None
+    # Seconds after the app was started at which its window is covered and shown again (WindowCover.py), or None, and how: covered by
+    # another window or minimized
+    CoverSeconds: tuple[float, float] | None = None
+    CoverMode: str = "cover"
 
 
 @dataclass
@@ -194,14 +198,23 @@ def LoadPlan(path: Path, overrides: PlanOverrides) -> Plan:
         refreshRateHz = planRefreshRateHz if overrides.RefreshRateHz is not None else runTable.get("expected_refresh_hz", planRefreshRateHz)
         refreshRateHz = float(refreshRateHz) if refreshRateHz is not None else None
         what = _ApplyVariables([str(runTable.get("what", ""))], variables, where)[0]
+        coverSeconds: tuple[float, float] | None = None
+        if "cover_seconds" in runTable:
+            cover = runTable["cover_seconds"]
+            if not isinstance(cover, list) or len(cover) != 2 or not 0.0 <= float(cover[0]) < float(cover[1]):
+                raise CaptureError(f"{where}: 'cover_seconds' needs two times in seconds, the cover and the show again: [10, 15]")
+            coverSeconds = (float(cover[0]), float(cover[1]))
+        coverMode = str(runTable.get("cover_mode", "cover"))
+        if coverMode not in ("cover", "minimize"):
+            raise CaptureError(f"{where}: 'cover_mode' is cover (another window over it) or minimize")
         if bool(runTable.get("loaded", False)) and overrides.ExternalLoad:
-            plan.Runs.append(RunConfig(name, what + " (machine under an external load)", arguments, frames, None, True, refreshRateHz))
+            plan.Runs.append(RunConfig(name, what + " (machine under an external load)", arguments, frames, None, True, refreshRateHz, coverSeconds, coverMode))
         elif bool(runTable.get("loaded", False)):
             # The idle twin is always taken right before the loaded run, so the two differ in the load only
-            plan.Runs.append(RunConfig(name + _g_idleSuffix, what + " (idle machine)", arguments, frames, None, False, refreshRateHz))
-            plan.Runs.append(RunConfig(name + _g_loadedSuffix, what + " (machine under load)", arguments, frames, load, True, refreshRateHz))
+            plan.Runs.append(RunConfig(name + _g_idleSuffix, what + " (idle machine)", arguments, frames, None, False, refreshRateHz, coverSeconds, coverMode))
+            plan.Runs.append(RunConfig(name + _g_loadedSuffix, what + " (machine under load)", arguments, frames, load, True, refreshRateHz, coverSeconds, coverMode))
         else:
-            plan.Runs.append(RunConfig(name, what, arguments, frames, None, None, refreshRateHz))
+            plan.Runs.append(RunConfig(name, what, arguments, frames, None, None, refreshRateHz, coverSeconds, coverMode))
     if len(plan.Runs) == 0:
         raise CaptureError(f"{path}: the plan has no runs")
     return plan
@@ -383,10 +396,13 @@ class RunFiles:
     TracePath: Path
     AppOutputPath: Path
     NotesPath: Path
+    # When the window was covered and shown again, for a run that covers it
+    CoverPath: Path
 
 
 def GetRunFiles(outputPath: Path, runName: str) -> RunFiles:
-    return RunFiles(outputPath / f"{runName}{g_traceFileSuffix}", outputPath / f"{runName}.app.log", outputPath / f"{runName}.run.txt")
+    return RunFiles(outputPath / f"{runName}{g_traceFileSuffix}", outputPath / f"{runName}.app.log", outputPath / f"{runName}.run.txt",
+                    outputPath / f"{runName}.cover.txt")
 
 
 def RunApp(exePath: Path, workingDirectory: Path, files: RunFiles, run: RunConfig, timeoutSeconds: float, hardwareNames: bool) -> RunResult:
@@ -402,6 +418,11 @@ def RunApp(exePath: Path, workingDirectory: Path, files: RunFiles, run: RunConfi
         process = subprocess.Popen(commandLine, cwd=workingDirectory, stdin=subprocess.DEVNULL, stdout=appOutput, stderr=subprocess.STDOUT)
         # A window that opens behind another one is not shown, and then the run measures nothing
         windowOnTop = WindowOnTop(process.pid)
+        # A run that measures a covered window covers it from one time to another, in a process of its own
+        cover = None
+        if run.CoverSeconds is not None:
+            cover = subprocess.Popen([sys.executable, str(_g_toolDirectory / "WindowCover.py"), str(process.pid), str(run.CoverSeconds[0]),
+                                      str(run.CoverSeconds[1]), str(files.CoverPath), run.CoverMode], stdin=subprocess.DEVNULL)
         try:
             exitCode = process.wait(timeoutSeconds)
         except subprocess.TimeoutExpired:
@@ -414,6 +435,12 @@ def RunApp(exePath: Path, workingDirectory: Path, files: RunFiles, run: RunConfi
             raise
         finally:
             windowOnTop.Stop()
+            if cover is not None:
+                try:
+                    cover.wait(10.0)
+                except subprocess.TimeoutExpired:
+                    cover.kill()
+                    cover.wait()
     return RunResult(exitCode, timedOut, commandLine, startTime, datetime.datetime.now(datetime.timezone.utc),
                      windowOnTop.Done if WindowOnTop.IsSupported() else None)
 
@@ -436,6 +463,10 @@ def _WriteNotes(notesPath: Path, plan: Plan | None, run: RunConfig | None, resul
         if result.WindowOnTop is not None:
             lines.append("window: kept on top of the other windows by the tool" if result.WindowOnTop else
                          "window: THE TOOL FOUND NO WINDOW OF THE APP TO KEEP ON TOP, it can have been covered")
+    if run is not None and run.CoverSeconds is not None:
+        lines.append(f"window {'minimized' if run.CoverMode == 'minimize' else 'covered'}: on purpose, from {run.CoverSeconds[0]:g} s to "
+                     f"{run.CoverSeconds[1]:g} s after the start, by WindowCover.py "
+                     f"(when it really was: the run's .cover.txt)")
     if run is not None:
         lines.append(f"external load: {run.Load.Describe() if run.Load is not None else 'none'}")
     lines.append(f"log: {log.DescribeFiles()}")

@@ -38,6 +38,10 @@ namespace Fsl
     //! The shortest swap interval the present takes (EGL_MIN_SWAP_INTERVAL; zero: the present takes none, else 1 to
     //! PresentSwapIntervalMax). The pacer never paces or presents faster than it.
     uint32_t PresentSwapIntervalMin{0};
+    //! The present waits while the swap chain's queue is full (eglSwapBuffers with a swap interval), so the system can hold the loop
+    bool PresentWaits{false};
+    //! The call for the next image waits while the swap chain's queue is full (vkAcquireNextImageKHR), so the system can hold the loop
+    bool AcquireWaits{false};
     //! The present takes a time before which the frame is not shown, so the display places the frame
     bool PresentAtTime{false};
     //! Of two presents whose times have both passed the display side shows the later one and never the earlier one: a fact of the

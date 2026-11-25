@@ -10,7 +10,7 @@
     <Platform Name="Apple;RDK_Yocto;Ubuntu;QNX;Emscripten" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="e15c586a8dad2811d3f27cbbd3b73e859de45f41"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="c29b0c91e33de3ceaf94a496139a70a4b5d3158e"/>
           <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=ON -DMB_FRAMEPACING_BUILD_TRACE=ON -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -32,7 +32,7 @@
     <Platform Name="Android" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="e15c586a8dad2811d3f27cbbd3b73e859de45f41"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="c29b0c91e33de3ceaf94a496139a70a4b5d3158e"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/android-cmake-minimum-version.patch"/>
           </Copy>
@@ -55,7 +55,7 @@
     <Platform Name="Windows" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="e15c586a8dad2811d3f27cbbd3b73e859de45f41"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="c29b0c91e33de3ceaf94a496139a70a4b5d3158e"/>
           <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="debug;release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=ON -DMB_FRAMEPACING_BUILD_TRACE=ON -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF -DCMAKE_DEBUG_POSTFIX=d" OutputPath="_Install"/>
         </Pipeline>
         <Installation>

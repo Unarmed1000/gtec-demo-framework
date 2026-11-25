@@ -82,7 +82,7 @@ namespace
 
   constexpr SamplePacerCapabilities UsedOf(const SamplePacerCapabilities& has, const SamplePacerKind kind) noexcept
   {
-    return SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, false, false, false);
+    return SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, false, false, false, false);
   }
 }
 
@@ -90,15 +90,16 @@ namespace
 TEST(TestSamplePacerTierChoice, Tiers_TheBestFirstAndEachOnce)
 {
   const auto& tiers = SamplePacerTierChoiceUtil::Tiers;
-  ASSERT_EQ(12u, tiers.size());
+  ASSERT_EQ(13u, tiers.size());
   EXPECT_EQ(SamplePacerTier::AtTimeVBlankWaitForPresent, tiers[0]);
   EXPECT_EQ(SamplePacerTier::AtTimeTimerPeriodOnly, tiers[3]);
   EXPECT_EQ(SamplePacerTier::AfterDurationVBlankWaitForPresent, tiers[4]);
   EXPECT_EQ(SamplePacerTier::AfterDurationTimerDisplayTimes, tiers[7]);
-  EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, tiers[8]);
-  EXPECT_EQ(SamplePacerTier::VBlankPeriodOnly, tiers[9]);
-  EXPECT_EQ(SamplePacerTier::TimerWaitForPresent, tiers[10]);
-  EXPECT_EQ(SamplePacerTier::TimerPeriodOnly, tiers[11]);
+  EXPECT_EQ(SamplePacerTier::SystemHoldsLoop, tiers[8]);
+  EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, tiers[9]);
+  EXPECT_EQ(SamplePacerTier::VBlankPeriodOnly, tiers[10]);
+  EXPECT_EQ(SamplePacerTier::TimerWaitForPresent, tiers[11]);
+  EXPECT_EQ(SamplePacerTier::TimerPeriodOnly, tiers[12]);
   for (std::size_t i = 0; i < tiers.size(); ++i)
   {
     for (std::size_t j = i + 1u; j < tiers.size(); ++j)
@@ -115,7 +116,7 @@ TEST(TestSamplePacerTierChoice, Tiers_AreInTheOrderTheLibraryNumbersThem)
   {
     return;
   }
-  const std::array<std::string_view, 12> numbers = {"1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "3.1", "3.2", "3.3", "3.4"};
+  const std::array<std::string_view, 13> numbers = {"1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "3", "4.1", "4.2", "4.3", "4.4"};
   for (std::size_t i = 0; i < numbers.size(); ++i)
   {
     EXPECT_EQ(numbers[i], SamplePacer::GetTierNumber(SamplePacerTierChoiceUtil::Tiers[i]));
@@ -128,12 +129,35 @@ TEST(TestSamplePacerTierChoice, SubTierKinds_TheSameInEveryMajorTier)
   // The side bar has a group for the major tier and one for the sub tier: a sub tier is what the frame loop paces with in every one
   for (std::size_t major = 0; major < SamplePacerTierChoiceUtil::MajorTierCount; ++major)
   {
-    for (std::size_t sub = 0; sub < SamplePacerTierChoiceUtil::SubTierCount; ++sub)
+    for (std::size_t sub = 0; sub < SamplePacerTierChoiceUtil::SubTierCountOf(major); ++sub)
     {
-      const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[(major * SamplePacerTierChoiceUtil::SubTierCount) + sub];
+      const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[SamplePacerTierChoiceUtil::ToTierIndex(major, sub)];
       EXPECT_EQ(SamplePacerTierChoiceUtil::SubTierKinds[sub], SamplePacerTierChoiceUtil::ToKind(tier));
     }
   }
+}
+
+
+TEST(TestSamplePacerTierChoice, MajorTiers_TheSystemsHoldIsTheThirdWithoutSubTiers)
+{
+  EXPECT_EQ(4u, SamplePacerTierChoiceUtil::SubTierCountOf(0));
+  EXPECT_EQ(4u, SamplePacerTierChoiceUtil::SubTierCountOf(1));
+  EXPECT_EQ(0u, SamplePacerTierChoiceUtil::SubTierCountOf(2));
+  EXPECT_EQ(4u, SamplePacerTierChoiceUtil::SubTierCountOf(3));
+  EXPECT_EQ(SamplePacerTier::SystemHoldsLoop, SamplePacerTierChoiceUtil::FirstTierOf(2));
+  EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, SamplePacerTierChoiceUtil::FirstTierOf(3));
+  // Every tier is found again from its major tier and its sub tier
+  for (std::size_t i = 0; i < SamplePacerTierChoiceUtil::Tiers.size(); ++i)
+  {
+    const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
+    const std::size_t major = SamplePacerTierChoiceUtil::ToMajorIndex(tier);
+    const std::size_t sub = SamplePacerTierChoiceUtil::ToSubIndex(tier);
+    EXPECT_EQ(i, SamplePacerTierChoiceUtil::ToTierIndex(major, sub));
+    EXPECT_EQ(SamplePacerTierChoiceUtil::SubTierCountOf(major) == 0u, sub == SamplePacerTierChoiceUtil::SubTierCount);
+  }
+  EXPECT_EQ(2u, SamplePacerTierChoiceUtil::ToMajorIndex(SamplePacerTier::SystemHoldsLoop));
+  EXPECT_TRUE(SamplePacerTierChoiceUtil::IsSystemHoldTier(SamplePacerTier::SystemHoldsLoop));
+  EXPECT_FALSE(SamplePacerTierChoiceUtil::IsSystemHoldTier(SamplePacerTier::TimerPeriodOnly));
 }
 
 
@@ -172,7 +196,8 @@ TEST(TestSamplePacerTierChoice, ToLoopPlacedTier_IsTheTierOfTheKindInTheLastMajo
     EXPECT_FALSE(SamplePacerTierChoiceUtil::IsPresentAtTimeTier(loopPlacedTier));
     EXPECT_FALSE(SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(loopPlacedTier));
     EXPECT_EQ(SamplePacerTierChoiceUtil::ToKind(tier), SamplePacerTierChoiceUtil::ToKind(loopPlacedTier));
-    if (!SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier) && !SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier))
+    if (!SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier) && !SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier) &&
+        !SamplePacerTierChoiceUtil::IsSystemHoldTier(tier))
     {
       EXPECT_EQ(tier, loopPlacedTier);
     }
@@ -234,14 +259,14 @@ TEST(TestSamplePacerTierChoice, ToUsedCapabilities_TheTimesOnThePresentWhereThey
   const SamplePacerCapabilities has = Has(Set{true, true, true, true});
   const SamplePacerKind kind = SamplePacerKind::VBlankPeriodOnly;
   // The time before which the frame is not shown, asked for and there
-  EXPECT_EQ(Uses(Set{true, false, true}), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, true, false, false));
+  EXPECT_EQ(Uses(Set{true, false, true}), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, true, false, false, false));
   // A present takes one of the two times: with both asked for it is that one
-  EXPECT_EQ(Uses(Set{true, false, true}), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, true, true, false));
+  EXPECT_EQ(Uses(Set{true, false, true}), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, true, true, false, false));
   // The time the frame before stays on screen
-  EXPECT_EQ(Uses(Set{true, false, false, true}), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, false, true, false));
+  EXPECT_EQ(Uses(Set{true, false, false, true}), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, false, true, false, false));
   // Not asked for, or not there
-  EXPECT_EQ(Uses(true, false), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, false, false, false));
-  EXPECT_EQ(Uses(true, false), SamplePacerTierChoiceUtil::ToUsedCapabilities(Has(true, true), kind, true, true, false));
+  EXPECT_EQ(Uses(true, false), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, false, false, false, false));
+  EXPECT_EQ(Uses(true, false), SamplePacerTierChoiceUtil::ToUsedCapabilities(Has(true, true), kind, true, true, false, false));
 }
 
 
@@ -261,8 +286,8 @@ TEST(TestSamplePacerTierChoice, ToUsedCapabilities_TheDisplayTimesWhereTheRunGiv
 {
   const SamplePacerCapabilities has = Has(Set{false, false, false, false, true});
   EXPECT_EQ(Uses(Set{false, false, false, false, true}),
-            SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerKind::TimerPeriodOnly, false, false, true));
-  EXPECT_EQ(Uses(false, false), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerKind::TimerPeriodOnly, false, false, false));
+            SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerKind::TimerPeriodOnly, false, false, true, false));
+  EXPECT_EQ(Uses(false, false), SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerKind::TimerPeriodOnly, false, false, false, false));
 }
 
 
@@ -271,7 +296,7 @@ TEST(TestSamplePacerTierChoice, ToUsedCapabilities_WhatTheDisplayDoesWithAFrameT
   // A run does not choose it, and it comes with or without a time on the present
   const SamplePacerCapabilities has = Has(Set{false, false, true, false, false, true});
   EXPECT_EQ(Uses(Set{false, false, true, false, false, true}),
-            SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerKind::TimerPeriodOnly, true, false, false));
+            SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerKind::TimerPeriodOnly, true, false, false, false));
   EXPECT_EQ(Uses(Set{false, false, false, false, false, true}), UsedOf(has, SamplePacerKind::TimerPeriodOnly));
 }
 
@@ -283,16 +308,29 @@ TEST(TestSamplePacerTierChoice, RatedUse_ThePacerThatWasAskedForOrThePacerOfWhat
     return;
   }
   const auto tierOf = [](const SamplePacerCapabilities& has, const SamplePacerKind kind, const bool presentAtTime = false,
-                         const bool presentAfterDuration = false, const bool displayTimes = false)
-  { return SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, presentAtTime, presentAfterDuration, displayTimes)).Tier; };
+                         const bool presentAfterDuration = false, const bool displayTimes = false, const bool systemHolds = false)
+  {
+    return SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind, presentAtTime, presentAfterDuration, displayTimes, systemHolds))
+      .Tier;
+  };
 
   // A app with everything is in the tier that was asked for, whichever it is
-  const SamplePacerCapabilities everything = Has(Set{true, true, true, true, true});
+  SamplePacerCapabilities everything = Has(Set{true, true, true, true, true});
+  everything.AcquireWaits = true;
   for (const SamplePacerTier tier : SamplePacerTierChoiceUtil::Tiers)
   {
     EXPECT_EQ(tier, tierOf(everything, SamplePacerTierChoiceUtil::ToKind(tier), SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier),
-                           SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier), true));
+                           SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier), true, SamplePacerTierChoiceUtil::IsSystemHoldTier(tier)));
   }
+  // The system's hold where it is asked for and the app's present or acquire waits, whatever the kind
+  SamplePacerCapabilities presentWaits = Has(true, true);
+  presentWaits.PresentWaits = true;
+  EXPECT_EQ(SamplePacerTier::SystemHoldsLoop, tierOf(presentWaits, SamplePacerKind::VBlankWaitForPresent, false, false, false, true));
+  EXPECT_EQ(SamplePacerTier::SystemHoldsLoop, tierOf(presentWaits, SamplePacerKind::TimerPeriodOnly, false, false, false, true));
+  // Not asked for: the frame loop's tier of the kind
+  EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, tierOf(presentWaits, SamplePacerKind::VBlankWaitForPresent, false, false, false, false));
+  // A app without such a wait has no system's hold to ask for
+  EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, tierOf(Has(true, true), SamplePacerKind::VBlankWaitForPresent, false, false, false, true));
   // Without a time on the present: the tier where the frame loop places the frame, whatever was asked for
   EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, tierOf(Has(true, true), SamplePacerKind::VBlankWaitForPresent, true, true));
   EXPECT_EQ(SamplePacerTier::TimerPeriodOnly, tierOf(Has(true, true), SamplePacerKind::TimerPeriodOnly, true, true));

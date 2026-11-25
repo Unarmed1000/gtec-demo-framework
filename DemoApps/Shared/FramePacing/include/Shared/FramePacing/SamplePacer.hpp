@@ -32,6 +32,7 @@
 #include <Shared/FramePacing/SamplePacerKind.hpp>
 #include <Shared/FramePacing/SamplePacerPlan.hpp>
 #include <Shared/FramePacing/SamplePacerRating.hpp>
+#include <Shared/FramePacing/SamplePacerSystemHold.hpp>
 #include <Shared/FramePacing/SamplePacerSystemWait.hpp>
 #include <Shared/FramePacing/SamplePacerTier.hpp>
 #include <cstdint>
@@ -97,9 +98,9 @@ namespace Fsl
     //! The images the swapchain of the app has (zero: not known). One is on screen and one is drawn into, so the pacer keeps no more
     //! frames ahead of the display than that many less two.
     uint32_t SwapChainImages{0};
-    //! True where the system holds the frame loop while its queue of frames is full (a acquire or a present that waits for the
-    //! display) and the app reports those waits (AddSystemWait). SamplePacerKind::TimerPeriodOnly with SamplePacerAim::Smoothness
-    //! then lets the system pace the loop, and a frame the system held is not late.
+    //! True if the run tells the pacer that the present or the call for the next image waits while the swap chain's queue is full,
+    //! where the app has that (Capabilities.PresentWaits, AcquireWaits): the system then holds the loop, the third major tier "3"
+    //! unless a time on the present puts the run in a better one. False takes them out of the active set (the frame loop's tiers).
     bool SystemHoldsLoop{false};
 
     constexpr bool operator==(const SamplePacerConfig&) const noexcept = default;
@@ -214,8 +215,8 @@ namespace Fsl
     //!        Without the pacer library it is the baseline.
     [[nodiscard]] static SamplePacerRating Rate(const SamplePacerCapabilities& capabilities) noexcept;
 
-    //! @brief How the pacer library writes a tier: its major tier and its sub tier. "1.1" is the best and "3.4" the baseline every
-    //!        app reaches. Empty without the pacer library.
+    //! @brief How the pacer library writes a tier: its major tier and its sub tier. "1.1" is the best and "4.4" the baseline every
+    //!        app reaches; the system's hold, a major tier without sub tiers, is "3". Empty without the pacer library.
     [[nodiscard]] static std::string_view GetTierNumber(const SamplePacerTier tier) noexcept;
 
     //! @brief How the pacer library writes a rating: the number of its tier and its marks after it, "+" where the app reports when its
@@ -229,7 +230,7 @@ namespace Fsl
     //! @brief The capabilities a pacer with the config uses of those the app has, the same way.
     [[nodiscard]] static std::string GetActiveCapabilityNames(const SamplePacerConfig& config);
 
-    //! @brief How the pacer library writes the major tier of a tier ("1" to "3"), and its words for it: who places a frame on its
+    //! @brief How the pacer library writes the major tier of a tier ("1" to "4"), and its words for it: who places a frame on its
     //!        refresh. Empty without the pacer library.
     [[nodiscard]] static std::string_view GetMajorTierNumber(const SamplePacerTier tier) noexcept;
     [[nodiscard]] static std::string_view GetMajorTierName(const SamplePacerTier tier) noexcept;
@@ -361,6 +362,19 @@ namespace Fsl
 
     //! @brief True if a frame callback of the window system holds the loop, so a wait for a present is to be made with that
     [[nodiscard]] bool IsHeldByFrameCallback() const noexcept;
+
+    //! @brief SamplePacerTier::SystemHoldsLoop: whether the system holds the loop, as the pacer reads it from the starts of the frames.
+    //!        Holding in the other tiers and without the pacer library.
+    [[nodiscard]] SamplePacerSystemHold GetSystemHold() const noexcept;
+
+    //! @brief SamplePacerTier::SystemHoldsLoop: the times the frames were found to start faster than the display can show them, and the
+    //!        frames the pacer limited (not holding, or a swap interval the present can not give), counted since the pacer was made.
+    [[nodiscard]] uint64_t GetSystemHoldLosses() const noexcept;
+    [[nodiscard]] uint64_t GetSystemLimitedFrames() const noexcept;
+
+    //! @brief True if a tier has the aim of low latency next to smoothness: every tier but SamplePacerTier::SystemHoldsLoop, where low
+    //!        latency would need a timer (the library paces it as smoothness there). True without the pacer library.
+    [[nodiscard]] static bool HasLowLatencyAim(const SamplePacerTier tier) noexcept;
 
     //! @brief How long the present of the last frame that was reported blocked the loop
     [[nodiscard]] TimeSpan GetLastPresentBlocked() const noexcept;

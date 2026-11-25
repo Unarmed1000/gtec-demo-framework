@@ -59,6 +59,7 @@
 #include <mb/framepacing/pacer/frame/VBlankReading.hpp>
 #include <mb/framepacing/pacer/rule/FrameWindowState.hpp>
 #include <mb/framepacing/pacer/rule/SwapIntervalChange.hpp>
+#include <mb/framepacing/pacer/tier/SystemHoldState.hpp>
 #include <mb/framepacing/pacer/tier/TierPacer.hpp>
 #endif
 
@@ -84,6 +85,8 @@ namespace Fsl
       return "atTimeVBlankPeriodOnly";
     case SamplePacerTier::AtTimeTimerPeriodOnly:
       return "atTimeTimerPeriodOnly";
+    case SamplePacerTier::SystemHoldsLoop:
+      return "systemHoldsLoop";
     case SamplePacerTier::VBlankWaitForPresent:
       return "vblankWaitForPresent";
     case SamplePacerTier::VBlankPeriodOnly:
@@ -123,6 +126,8 @@ namespace Fsl
         return SamplePacerTier::AtTimeVBlankPeriodOnly;
       case PC::PacerTier::AtTimeTimerPeriodOnly:
         return SamplePacerTier::AtTimeTimerPeriodOnly;
+      case PC::PacerTier::SystemHoldsLoop:
+        return SamplePacerTier::SystemHoldsLoop;
       case PC::PacerTier::VBlankWaitForPresent:
         return SamplePacerTier::VBlankWaitForPresent;
       case PC::PacerTier::VBlankPeriodOnly:
@@ -155,6 +160,8 @@ namespace Fsl
         return PC::PacerTier::AtTimeVBlankPeriodOnly;
       case SamplePacerTier::AtTimeTimerPeriodOnly:
         return PC::PacerTier::AtTimeTimerPeriodOnly;
+      case SamplePacerTier::SystemHoldsLoop:
+        return PC::PacerTier::SystemHoldsLoop;
       case SamplePacerTier::VBlankWaitForPresent:
         return PC::PacerTier::VBlankWaitForPresent;
       case SamplePacerTier::VBlankPeriodOnly:
@@ -230,6 +237,14 @@ namespace Fsl
       {
         bits = bits | PC::PacerCapability::PresentSwapInterval;
       }
+      if (capabilities.PresentWaits)
+      {
+        bits = bits | PC::PacerCapability::PresentWaits;
+      }
+      if (capabilities.AcquireWaits)
+      {
+        bits = bits | PC::PacerCapability::AcquireWaits;
+      }
       if (capabilities.PresentAtTime)
       {
         bits = bits | PC::PacerCapability::PresentAtTime;
@@ -286,6 +301,9 @@ namespace Fsl
       active.WaitForPresent = config.Capabilities.WaitForPresent && SamplePacerTierChoiceUtil::IsPresentWaitKind(config.Kind);
       active.FrameCallback = config.Capabilities.FrameCallback && SamplePacerTierChoiceUtil::IsPresentWaitKind(config.Kind);
       active.PresentAtTime = config.Capabilities.PresentAtTime && config.PresentAtTime;
+      // The waits of the system's hold where the run tells the pacer about them: the system then holds the loop
+      active.PresentWaits = config.Capabilities.PresentWaits && config.SystemHoldsLoop;
+      active.AcquireWaits = config.Capabilities.AcquireWaits && config.SystemHoldsLoop;
       // What the display does with a frame that is overdue is a fact of the system, on every tier
       active.PresentSkipsOverdue = config.Capabilities.PresentSkipsOverdue;
       // A present takes one time: the time the frame before stays on screen is for a present without a time of its own
@@ -335,7 +353,6 @@ namespace Fsl
       settings.SetStartupPauseRefreshes(std::min(config.StartupPauseRefreshes, PC::PacerSettings::MaxStartupPauseRefreshes));
       settings.SetReadyPlacePercent(std::min(config.ReadyPlacePercent, PC::PacerSettings::MaxReadyPlacePercent));
       settings.SetSwapChainImages(std::min(config.SwapChainImages, PC::PacerSettings::MaxSwapChainImages));
-      settings.SetSystemHoldsLoop(config.SystemHoldsLoop);
       return settings;
     }
 
@@ -733,6 +750,39 @@ namespace Fsl
   }
 
 
+  SamplePacerSystemHold SamplePacer::GetSystemHold() const noexcept
+  {
+    switch (m_impl->Pacer.SystemHold())
+    {
+    case PC::SystemHoldState::NotHolding:
+      return SamplePacerSystemHold::NotHolding;
+    case PC::SystemHoldState::Limited:
+      return SamplePacerSystemHold::Limited;
+    case PC::SystemHoldState::Holding:
+      break;
+    }
+    return SamplePacerSystemHold::Holding;
+  }
+
+
+  uint64_t SamplePacer::GetSystemHoldLosses() const noexcept
+  {
+    return m_impl->Pacer.SystemHoldLosses();
+  }
+
+
+  uint64_t SamplePacer::GetSystemLimitedFrames() const noexcept
+  {
+    return m_impl->Pacer.SystemLimitedFrames();
+  }
+
+
+  bool SamplePacer::HasLowLatencyAim(const SamplePacerTier tier) noexcept
+  {
+    return PC::PacerTierUtil::HasLowLatencyAim(ToLibraryTier(tier));
+  }
+
+
   TimeSpan SamplePacer::GetLastPresentBlocked() const noexcept
   {
     return ToFramework(m_impl->Pacer.LastPresentBlocked());
@@ -1083,6 +1133,31 @@ namespace Fsl
   bool SamplePacer::IsHeldByFrameCallback() const noexcept
   {
     return false;
+  }
+
+
+  SamplePacerSystemHold SamplePacer::GetSystemHold() const noexcept
+  {
+    return SamplePacerSystemHold::Holding;
+  }
+
+
+  uint64_t SamplePacer::GetSystemHoldLosses() const noexcept
+  {
+    return 0;
+  }
+
+
+  uint64_t SamplePacer::GetSystemLimitedFrames() const noexcept
+  {
+    return 0;
+  }
+
+
+  bool SamplePacer::HasLowLatencyAim(const SamplePacerTier tier) noexcept
+  {
+    FSL_PARAM_NOT_USED(tier);
+    return true;
   }
 
 

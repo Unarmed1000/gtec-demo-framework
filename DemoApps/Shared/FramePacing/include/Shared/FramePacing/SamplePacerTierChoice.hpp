@@ -33,8 +33,9 @@
 //! the pacer uses for it. Which tier a set of capabilities is worth is the library's rule (SamplePacer::Rate), not these.
 namespace Fsl::SamplePacerTierChoiceUtil
 {
-  //! The tiers, the best first: four sub tiers for each major tier, in the same order in every one (SubTierKinds)
-  inline constexpr std::array<SamplePacerTier, 12> Tiers = {SamplePacerTier::AtTimeVBlankWaitForPresent,
+  //! The tiers, the best first: four sub tiers for each major tier that has them, in the same order in every one (SubTierKinds),
+  //! and the system's hold, a major tier of one tier without sub tiers
+  inline constexpr std::array<SamplePacerTier, 13> Tiers = {SamplePacerTier::AtTimeVBlankWaitForPresent,
                                                             SamplePacerTier::AtTimeVBlankPeriodOnly,
                                                             SamplePacerTier::AtTimeTimerWaitForPresent,
                                                             SamplePacerTier::AtTimeTimerPeriodOnly,
@@ -42,6 +43,7 @@ namespace Fsl::SamplePacerTierChoiceUtil
                                                             SamplePacerTier::AfterDurationVBlankDisplayTimes,
                                                             SamplePacerTier::AfterDurationTimerWaitForPresent,
                                                             SamplePacerTier::AfterDurationTimerDisplayTimes,
+                                                            SamplePacerTier::SystemHoldsLoop,
                                                             SamplePacerTier::VBlankWaitForPresent,
                                                             SamplePacerTier::VBlankPeriodOnly,
                                                             SamplePacerTier::TimerWaitForPresent,
@@ -51,9 +53,37 @@ namespace Fsl::SamplePacerTierChoiceUtil
   inline constexpr std::array<SamplePacerKind, 4> SubTierKinds = {SamplePacerKind::VBlankWaitForPresent, SamplePacerKind::VBlankPeriodOnly,
                                                                   SamplePacerKind::TimerWaitForPresent, SamplePacerKind::TimerPeriodOnly};
 
-  //! The tiers of a major tier and the sub tiers in it
-  inline constexpr std::size_t MajorTierCount = 3;
+  //! The major tiers, and the most sub tiers a major tier has (the system's hold has none: SubTierCountOf)
+  inline constexpr std::size_t MajorTierCount = 4;
   inline constexpr std::size_t SubTierCount = 4;
+
+  //! The index in Tiers of the first tier of each major tier, and the sub tiers each has
+  inline constexpr std::array<std::size_t, MajorTierCount> MajorTierFirstIndex = {0, 4, 8, 9};
+  inline constexpr std::array<std::size_t, MajorTierCount> MajorTierSubTierCount = {4, 4, 0, 4};
+
+  //! The sub tiers of a major tier (index 0 to MajorTierCount - 1): four, and none for the system's hold
+  constexpr std::size_t SubTierCountOf(const std::size_t majorIndex) noexcept
+  {
+    return majorIndex < MajorTierCount ? MajorTierSubTierCount[majorIndex] : 0u;
+  }
+
+  //! The first tier of a major tier (the tier itself where it has no sub tiers)
+  constexpr SamplePacerTier FirstTierOf(const std::size_t majorIndex) noexcept
+  {
+    return Tiers[MajorTierFirstIndex[majorIndex < MajorTierCount ? majorIndex : MajorTierCount - 1u]];
+  }
+
+  //! The index in Tiers of a sub tier of a major tier, the major tier's own tier where it has no sub tiers
+  constexpr std::size_t ToTierIndex(const std::size_t majorIndex, const std::size_t subIndex) noexcept
+  {
+    const std::size_t major = majorIndex < MajorTierCount ? majorIndex : MajorTierCount - 1u;
+    const std::size_t subTiers = MajorTierSubTierCount[major];
+    if (subTiers == 0u)
+    {
+      return MajorTierFirstIndex[major];
+    }
+    return MajorTierFirstIndex[major] + (subIndex < subTiers ? subIndex : subTiers - 1u);
+  }
 
   //! The index in Tiers of a tier
   constexpr std::size_t ToTierIndex(const SamplePacerTier tier) noexcept
@@ -66,6 +96,34 @@ namespace Fsl::SamplePacerTierChoiceUtil
       }
     }
     return Tiers.size() - 1u;
+  }
+
+  //! The major tier of a tier, 0 to MajorTierCount - 1
+  constexpr std::size_t ToMajorIndex(const SamplePacerTier tier) noexcept
+  {
+    const std::size_t index = ToTierIndex(tier);
+    std::size_t major = 0;
+    for (std::size_t i = 1; i < MajorTierCount; ++i)
+    {
+      if (index >= MajorTierFirstIndex[i])
+      {
+        major = i;
+      }
+    }
+    return major;
+  }
+
+  //! The sub tier of a tier, 0 to SubTierCount - 1, or SubTierCount for a tier whose major tier has no sub tiers
+  constexpr std::size_t ToSubIndex(const SamplePacerTier tier) noexcept
+  {
+    const std::size_t major = ToMajorIndex(tier);
+    return MajorTierSubTierCount[major] > 0u ? ToTierIndex(tier) - MajorTierFirstIndex[major] : SubTierCount;
+  }
+
+  //! True for the tier where the system holds the loop (the third major tier, no sub tiers)
+  constexpr bool IsSystemHoldTier(const SamplePacerTier tier) noexcept
+  {
+    return tier == SamplePacerTier::SystemHoldsLoop;
   }
 
   //! True for the tiers where the display places the frame against a clock: the present is given a time before which the frame is
@@ -83,6 +141,7 @@ namespace Fsl::SamplePacerTierChoiceUtil
     case SamplePacerTier::AfterDurationTimerWaitForPresent:
     case SamplePacerTier::AfterDurationVBlankDisplayTimes:
     case SamplePacerTier::AfterDurationTimerDisplayTimes:
+    case SamplePacerTier::SystemHoldsLoop:
     case SamplePacerTier::VBlankWaitForPresent:
     case SamplePacerTier::VBlankPeriodOnly:
     case SamplePacerTier::TimerWaitForPresent:
@@ -107,6 +166,7 @@ namespace Fsl::SamplePacerTierChoiceUtil
     case SamplePacerTier::AtTimeTimerWaitForPresent:
     case SamplePacerTier::AtTimeVBlankPeriodOnly:
     case SamplePacerTier::AtTimeTimerPeriodOnly:
+    case SamplePacerTier::SystemHoldsLoop:
     case SamplePacerTier::VBlankWaitForPresent:
     case SamplePacerTier::VBlankPeriodOnly:
     case SamplePacerTier::TimerWaitForPresent:
@@ -136,6 +196,8 @@ namespace Fsl::SamplePacerTierChoiceUtil
     case SamplePacerTier::AfterDurationTimerDisplayTimes:
     case SamplePacerTier::AtTimeTimerPeriodOnly:
     case SamplePacerTier::TimerPeriodOnly:
+    // Where the system holds the loop the loop paces with neither vertical blank times nor a wait for a present
+    case SamplePacerTier::SystemHoldsLoop:
       break;
     }
     return SamplePacerKind::TimerPeriodOnly;
@@ -192,7 +254,8 @@ namespace Fsl::SamplePacerTierChoiceUtil
   }
 
   //! What a run uses of what the app has, of what a tier is made of: the vertical blank times and the wait for a present, each
-  //! where the kind is one that uses it, and the time on the present where the run is asked to use it. The tier the pacer library
+  //! where the kind is one that uses it, the time on the present where the run is asked to use it, and the waits of the system's
+  //! hold where the run is asked to use them. The tier the pacer library
   //! gives the result is the tier such a run is in: the one that was asked for where the app has what it takes, else the tier of
   //! what is left of it (the vertical blank times without a present to wait for, the wait without a window system that tells when
   //! the display refreshes, the timer without both, the frame loop placing the frame without a time on the present).
@@ -200,10 +263,15 @@ namespace Fsl::SamplePacerTierChoiceUtil
   //! @param presentAfterDuration true if the run is to use the time the frame before stays on screen, where the app has it and the
   //!        present is not given the other time (a present takes one of the two)
   //! @param displayTimes true if the run gives the pacer the display times, where the app has them
+  //! @param systemHolds true if the run tells the pacer that its present or its call for the next image waits while the swap chain's
+  //!        queue is full, where the app has that: the system then holds the loop (the third major tier, where no time on the present
+  //!        puts the run in a better one)
   constexpr SamplePacerCapabilities ToUsedCapabilities(const SamplePacerCapabilities& has, const SamplePacerKind kind, const bool presentAtTime,
-                                                       const bool presentAfterDuration, const bool displayTimes) noexcept
+                                                       const bool presentAfterDuration, const bool displayTimes, const bool systemHolds) noexcept
   {
     SamplePacerCapabilities uses;
+    uses.PresentWaits = has.PresentWaits && systemHolds;
+    uses.AcquireWaits = has.AcquireWaits && systemHolds;
     uses.VBlankTimes = has.VBlankTimes && IsVBlankKind(kind);
     uses.WaitForPresent = has.WaitForPresent && IsPresentWaitKind(kind);
     // The kinds that wait for a present can do it with a frame callback. The library says when it is used for that.

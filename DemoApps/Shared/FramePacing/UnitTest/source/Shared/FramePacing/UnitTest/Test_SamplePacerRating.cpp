@@ -60,7 +60,7 @@ TEST(TestSamplePacerRating, Rate_Baseline_IsTheLastTier)
   EXPECT_EQ(SamplePacerTier::TimerPeriodOnly, rating.Tier);
   EXPECT_FALSE(rating.DisplaySideHolds);
   // The last sub tier of the last major tier
-  EXPECT_EQ("3.4", SamplePacer::GetTierNumber(rating.Tier));
+  EXPECT_EQ("4.4", SamplePacer::GetTierNumber(rating.Tier));
 }
 
 
@@ -77,7 +77,7 @@ TEST(TestSamplePacerRating, Rate_FrameCallback_HoldsTheLoopAtTheTierOfAWaitForAP
 
   EXPECT_EQ(SamplePacerTier::TimerWaitForPresent, rating.Tier);
   EXPECT_TRUE(rating.HoldsByFrameCallback);
-  EXPECT_EQ("3.3c", SamplePacer::GetRatingText(rating));
+  EXPECT_EQ("4.3c", SamplePacer::GetRatingText(rating));
 }
 
 
@@ -177,7 +177,7 @@ TEST(TestSamplePacerRating, Rate_VBlankTimesAndWaitForPresent_IsTheBestTier)
   capabilities.WaitForPresent = true;
 
   EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, SamplePacer::Rate(capabilities).Tier);
-  EXPECT_EQ("3.1", SamplePacer::GetTierNumber(SamplePacer::Rate(capabilities).Tier));
+  EXPECT_EQ("4.1", SamplePacer::GetTierNumber(SamplePacer::Rate(capabilities).Tier));
 }
 
 
@@ -203,10 +203,11 @@ TEST(TestSamplePacerRating, GetTierNumber_IsTheMajorTierAndTheSubTierOfTheLibrar
     return;
   }
   // The major tier where the frame loop places the frame
-  EXPECT_EQ("3.1", SamplePacer::GetTierNumber(SamplePacerTier::VBlankWaitForPresent));
-  EXPECT_EQ("3.2", SamplePacer::GetTierNumber(SamplePacerTier::VBlankPeriodOnly));
-  EXPECT_EQ("3.3", SamplePacer::GetTierNumber(SamplePacerTier::TimerWaitForPresent));
-  EXPECT_EQ("3.4", SamplePacer::GetTierNumber(SamplePacerTier::TimerPeriodOnly));
+  EXPECT_EQ("3", SamplePacer::GetTierNumber(SamplePacerTier::SystemHoldsLoop));
+  EXPECT_EQ("4.1", SamplePacer::GetTierNumber(SamplePacerTier::VBlankWaitForPresent));
+  EXPECT_EQ("4.2", SamplePacer::GetTierNumber(SamplePacerTier::VBlankPeriodOnly));
+  EXPECT_EQ("4.3", SamplePacer::GetTierNumber(SamplePacerTier::TimerWaitForPresent));
+  EXPECT_EQ("4.4", SamplePacer::GetTierNumber(SamplePacerTier::TimerPeriodOnly));
   // Where the display places the frame against a clock the order is the library's: what holds the loop first, then where the
   // refreshes are
   EXPECT_EQ("1.1", SamplePacer::GetTierNumber(SamplePacerTier::AtTimeVBlankWaitForPresent));
@@ -227,16 +228,16 @@ TEST(TestSamplePacerRating, GetMajorTierNumber_IsTheFirstNumberOfTheTier)
   {
     return;
   }
-  for (std::size_t i = 0; i < SamplePacerTierChoiceUtil::Tiers.size(); ++i)
+  for (const SamplePacerTier tier : SamplePacerTierChoiceUtil::Tiers)
   {
-    const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
     EXPECT_EQ(SamplePacer::GetTierNumber(tier).substr(0, 1), SamplePacer::GetMajorTierNumber(tier));
     EXPECT_FALSE(SamplePacer::GetMajorTierName(tier).empty());
-    // The four of a major tier have its words, and the next major tier has other ones
-    EXPECT_EQ(SamplePacer::GetMajorTierName(SamplePacerTierChoiceUtil::Tiers[(i / 4u) * 4u]), SamplePacer::GetMajorTierName(tier));
-    if (i >= 4u)
+    // The tiers of a major tier have its words, and the major tier before has other ones
+    const std::size_t major = SamplePacerTierChoiceUtil::ToMajorIndex(tier);
+    EXPECT_EQ(SamplePacer::GetMajorTierName(SamplePacerTierChoiceUtil::FirstTierOf(major)), SamplePacer::GetMajorTierName(tier));
+    if (major > 0u)
     {
-      EXPECT_NE(SamplePacer::GetMajorTierName(SamplePacerTierChoiceUtil::Tiers[i - 4u]), SamplePacer::GetMajorTierName(tier));
+      EXPECT_NE(SamplePacer::GetMajorTierName(SamplePacerTierChoiceUtil::FirstTierOf(major - 1u)), SamplePacer::GetMajorTierName(tier));
     }
   }
 }
@@ -289,7 +290,9 @@ TEST(TestSamplePacerRating, GetTier_EveryKindSaysItsTierOnceItHasAVerticalBlank)
   }
   for (const SamplePacerTier tier : SamplePacerTierChoiceUtil::Tiers)
   {
-    if (SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier) || SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier))
+    // The system's hold is no kind: it is asked for with the waits of the app (SystemHoldsLoop_TheRunIsInTheThirdMajorTier)
+    if (SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier) || SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier) ||
+        SamplePacerTierChoiceUtil::IsSystemHoldTier(tier))
     {
       continue;
     }
@@ -326,7 +329,8 @@ TEST(TestSamplePacerRating, GetTier_WithATimeOnThePresentTheDisplayPlacesTheFram
     SamplePacerConfig skipConfig = config;
     skipConfig.Capabilities.PresentSkipsOverdue = true;
     // What the run uses of what the app has: the timer, the time on the present and what the display does with a late frame
-    const SamplePacerCapabilities uses = SamplePacerTierChoiceUtil::ToUsedCapabilities(skipConfig.Capabilities, skipConfig.Kind, true, false, false);
+    const SamplePacerCapabilities uses =
+      SamplePacerTierChoiceUtil::ToUsedCapabilities(skipConfig.Capabilities, skipConfig.Kind, true, false, false, false);
     EXPECT_EQ(SamplePacerTier::AtTimeTimerPeriodOnly, SamplePacer::Rate(uses).Tier);
     EXPECT_TRUE(SamplePacer::Rate(uses).SkipsOverdue);
     const SamplePacer pacer(skipConfig);
@@ -383,9 +387,9 @@ TEST(TestSamplePacerRating, GetRatingText_TheNumberAndItsMarks)
   {
     return;
   }
-  EXPECT_EQ("3.1", SamplePacer::GetRatingText({SamplePacerTier::VBlankWaitForPresent, false, false, false}));
+  EXPECT_EQ("4.1", SamplePacer::GetRatingText({SamplePacerTier::VBlankWaitForPresent, false, false, false}));
   EXPECT_EQ("2.1+", SamplePacer::GetRatingText({SamplePacerTier::AfterDurationVBlankWaitForPresent, true, true, false}));
-  EXPECT_EQ("3.1s", SamplePacer::GetRatingText({SamplePacerTier::VBlankWaitForPresent, false, false, true}));
+  EXPECT_EQ("4.1s", SamplePacer::GetRatingText({SamplePacerTier::VBlankWaitForPresent, false, false, true}));
   EXPECT_EQ("1.3+s", SamplePacer::GetRatingText({SamplePacerTier::AtTimeTimerWaitForPresent, true, true, true}));
 }
 
@@ -444,5 +448,35 @@ TEST(TestSamplePacerRating, Rate_APresentThatTakesADuration_ChangesNoTier)
   // Only a present at a time lets the display place the frame. The duration holds a frame of two refreshes or more.
   EXPECT_EQ(SamplePacerTier::VBlankPeriodOnly, rating.Tier);
   EXPECT_TRUE(rating.DisplaySideHolds);
-  EXPECT_EQ("3.2", SamplePacer::GetTierNumber(rating.Tier));
+  EXPECT_EQ("4.2", SamplePacer::GetTierNumber(rating.Tier));
+}
+
+
+// A app whose call for the next image (or present) waits while the swap chain's queue is full is in the system's hold, "3",
+// where the run asks for it and no time on the present puts it in a better major tier
+TEST(TestSamplePacerRating, SystemHoldsLoop_TheRunIsInTheThirdMajorTier)
+{
+  if (!SamplePacer::IsSupported())
+  {
+    return;
+  }
+  SamplePacerConfig config = Config(SamplePacerKind::VBlankWaitForPresent);
+  config.Capabilities.AcquireWaits = true;
+  config.SystemHoldsLoop = true;
+  {
+    const SamplePacer pacer(config);
+    EXPECT_EQ(SamplePacerTier::SystemHoldsLoop, pacer.GetTier());
+    EXPECT_EQ("3", SamplePacer::GetTierNumber(pacer.GetTier()));
+    EXPECT_EQ(SamplePacerSystemHold::Holding, pacer.GetSystemHold());
+    EXPECT_FALSE(SamplePacer::HasLowLatencyAim(pacer.GetTier()));
+  }
+  {    // Not asked for: the frame loop's tier
+    SamplePacerConfig loopConfig = config;
+    loopConfig.SystemHoldsLoop = false;
+    SamplePacer pacer(loopConfig);
+    // The vertical blank times are used once the pacer was given one
+    pacer.AddVBlank(NanosecondTickCount(1000000000), NanosecondTimeSpan(16666667), TickCount(10010000));
+    EXPECT_EQ(SamplePacerTier::VBlankWaitForPresent, pacer.GetTier());
+    EXPECT_TRUE(SamplePacer::HasLowLatencyAim(pacer.GetTier()));
+  }
 }

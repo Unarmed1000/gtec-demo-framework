@@ -117,6 +117,9 @@ namespace Fsl
                                                           : 0u);
     // The app base can wait until the GPU is done with a frame the pacer names: it is its wait for a frame slot
     m_shared.SetGpuWaitSupport(true);
+    // The app base asks for the next image without a timeout, so the acquire waits while the swap chain's queue is full: the system
+    // can hold the loop. Whether the present waits as well is left to the driver, so it is not said.
+    m_shared.SetSystemHoldSupport(false, true);
     m_shared.Update(demoTime);
     // Follow the switch of the UI (a change recreates the swapchain before the next frame)
     SetPresentTimingRequested(m_shared.IsPresentTimingWanted());

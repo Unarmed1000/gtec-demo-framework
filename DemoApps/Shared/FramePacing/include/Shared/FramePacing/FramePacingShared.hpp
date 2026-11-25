@@ -57,6 +57,7 @@
 #include <Shared/FramePacing/SamplePacerKind.hpp>
 #include <Shared/FramePacing/SamplePacerPlan.hpp>
 #include <Shared/FramePacing/SamplePacerRating.hpp>
+#include <Shared/FramePacing/SamplePacerSystemHold.hpp>
 #include <Shared/FramePacing/SamplePacerTierChoice.hpp>
 #include <Shared/FramePacing/SamplePresentWaitRequest.hpp>
 #include <Shared/FramePacing/SampleStatsLevel.hpp>
@@ -231,7 +232,7 @@ namespace Fsl
       //! radio buttons, the best first: the major tier (who places a frame on its refresh) and the sub tier (what the frame loop
       //! paces with), which mean the same in every major tier. A choice that can not be used here is disabled, and the ones that
       //! are checked are the tier the run is paced by.
-      std::array<std::shared_ptr<UI::RadioButton>, 3> RadioMajorTiers;
+      std::array<std::shared_ptr<UI::RadioButton>, 4> RadioMajorTiers;
       std::array<std::shared_ptr<UI::RadioButton>, 4> RadioSubTiers;
       //! What the pacer that is checked does, below the group: a line of the pacer library for a tier. The label has the line of
       //! every pacer and is as wide as the longest, so the side bar keeps its width when another one is checked.
@@ -375,6 +376,11 @@ namespace Fsl
     //! True if the app can give a present a time before which the frame is not shown, and if its display side leaves out a frame
     //! that is overdue (SetPresentAtTimeSupport)
     bool m_presentAtTimeSupported{false};
+    //! The present, and the call for the next image, wait while the swap chain's queue is full (SetSystemHoldSupport)
+    bool m_presentWaitsSupported{false};
+    bool m_acquireWaitsSupported{false};
+    //! The hold state of the system's hold that was logged last (only where the pacer is in that tier)
+    std::optional<SamplePacerSystemHold> m_loggedSystemHold;
     bool m_presentSkipsOverdue{false};
     //! True once the app reported when the GPU worked on a frame, and how long it worked on one (AddGpuInterval, AddGpuTime)
     bool m_gpuWorkTimesReported{false};
@@ -443,7 +449,8 @@ namespace Fsl
     uint32_t m_kindChangeFrameCount{0};
     //! Where in SamplePacerTierChoiceUtil::KindChangeOrder the run is
     std::size_t m_kindChangeIndex{0};
-    //! The pacer is told that the system holds the frame loop while its queue is full (--Pacer.SystemHoldsLoop)
+    //! The run tells the pacer that its present or its call for the next image waits while the swap chain's queue is full, where
+    //! the app has that: the system's hold, tier "3" (--Pacer.SystemHoldsLoop, the major tier radio buttons)
     bool m_systemHoldsLoop{false};
     //! The pacer is to hold the loop with a wait for the GPU's work where the app can make it, as the command line said
     //! (--Pacer.GpuWait)
@@ -467,7 +474,7 @@ namespace Fsl
     //! The tiers that can be used right now, in the order of SamplePacerTierChoiceUtil::Tiers (the radio buttons that are
     //! enabled), and the tier the run is to be in with its kind: the one that was asked for (m_pacerKind, m_pacerPresentAtTime)
     //! or the one that comes closest to it. They are what Update decided.
-    std::array<bool, 12> m_tierOffered{};
+    std::array<bool, 13> m_tierOffered{};
     SamplePacerTier m_selectedTier{SamplePacerTier::TimerPeriodOnly};
     SamplePacerKind m_selectedKind{SamplePacerKind::TimerPeriodOnly};
     //! The tier the radio buttons were last set to (empty: not yet). A button that is checked and is not its button was checked
@@ -811,6 +818,15 @@ namespace Fsl
     void SetPresentSwapIntervalMin(const uint32_t minSwapInterval) noexcept
     {
       m_presentSwapIntervalMin = minSwapInterval;
+    }
+
+    //! @brief A app says which of its calls wait while the swap chain's queue is full, as its API documents it: the present
+    //!        (eglSwapBuffers with a swap interval) and the call for the next image (vkAcquireNextImageKHR). With either the system can
+    //!        hold the loop (the pacer's tier "3"), which the pacer checks against the starts of the frames.
+    void SetSystemHoldSupport(const bool presentWaits, const bool acquireWaits) noexcept
+    {
+      m_presentWaitsSupported = presentWaits;
+      m_acquireWaitsSupported = acquireWaits;
     }
     //! The time the present of the current frame is to be given, after WaitForPresent: the frame is not to be shown before this long
     //! after the frame before it was shown. Zero if the frame pacer gave none.

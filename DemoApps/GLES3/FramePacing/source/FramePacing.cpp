@@ -50,6 +50,8 @@ namespace Fsl
     // What the swap interval can hold a frame for, the shortest and the longest, is up to the EGL config
     m_shared.SetPresentSwapIntervalMax(m_swapInterval.Max());
     m_shared.SetPresentSwapIntervalMin(m_swapInterval.Min());
+    // eglSwapBuffers with a swap interval waits while the queue of frames is full: the system can hold the loop
+    m_shared.SetSystemHoldSupport(true, false);
   }
 
 

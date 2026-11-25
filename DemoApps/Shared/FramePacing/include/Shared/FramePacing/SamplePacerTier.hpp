@@ -26,16 +26,18 @@
 namespace Fsl
 {
   //! The tiers of the pacer library (its PacerTier), the best first. A tier is the capabilities a app needs to reach it, and the
-  //! definition is the library's: the sample has none of its own. There are three major tiers, by who places a frame on its
-  //! refresh, of four sub tiers each, and a tier is written as the two numbers ("3.1", SamplePacer::GetTierNumber):
+  //! definition is the library's: the sample has none of its own. There are four major tiers, by who places a frame on its
+  //! refresh, three of them of four sub tiers each, and a tier is written as the two numbers ("4.1", SamplePacer::GetTierNumber):
   //! - 1: the display places the frame against a clock, from a time on the present before which the frame is not shown.
   //! - 2: the display places the frame relative to the one before, from a time the frame before stays on screen at least (or a
   //!   swap interval of two or more): the loop may present early. It needs a wait for a present or display times, so the pacer sees
   //!   a late frame.
-  //! - 3: the frame loop places the frame: it has to make the present at the right moment. Every app reaches its last sub tier.
-  //! A sub tier is what the loop paces with, the same in every major tier: .1 the vertical blank times of the window system and a
-  //! wait for a present, .2 the vertical blank times, .3 a wait for a present on a timer, .4 a timer (in major tier 2 the display
-  //! times take the place of the wait in .2 and .4).
+  //! - 3: the system holds the loop: the present or the call for the next image waits while the swap chain's queue is full. No sub
+  //!   tiers, written "3", and the aim of smoothness only.
+  //! - 4: the frame loop places the frame: it has to make the present at the right moment. Every app reaches its last sub tier.
+  //! A sub tier is what the loop paces with, the same in every major tier that has them: .1 the vertical blank times of the window
+  //! system and a wait for a present, .2 the vertical blank times, .3 a wait for a present on a timer, .4 a timer (in major tier 2
+  //! the display times take the place of the wait in .2 and .4).
   enum class SamplePacerTier
   {
     //! 1.1: a time on the present, vertical blank times and a wait for a present
@@ -54,13 +56,15 @@ namespace Fsl
     AfterDurationTimerWaitForPresent,
     //! 2.4: a duration on the present and display times, on a timer
     AfterDurationTimerDisplayTimes,
-    //! 3.1: vertical blank times and a wait for a present
+    //! 3: the system holds the loop while the swap chain's queue is full (a present or a call for the next image that waits)
+    SystemHoldsLoop,
+    //! 4.1: vertical blank times and a wait for a present
     VBlankWaitForPresent,
-    //! 3.2: vertical blank times
+    //! 4.2: vertical blank times
     VBlankPeriodOnly,
-    //! 3.3: a wait for a present, on a timer
+    //! 4.3: a wait for a present, on a timer
     TimerWaitForPresent,
-    //! 3.4: a timer and the refresh period only: every app reaches this
+    //! 4.4: a timer and the refresh period only: every app reaches this
     TimerPeriodOnly
   };
 }

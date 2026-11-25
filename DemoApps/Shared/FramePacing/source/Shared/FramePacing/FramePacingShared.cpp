@@ -164,9 +164,28 @@ namespace Fsl
     using SamplePacerTierChoiceUtil::IsPresentWaitKind;
     using SamplePacerTierChoiceUtil::IsVBlankKind;
 
-    //! The value of pacerKind in the trace
-    int64_t ToLogCode(const SamplePacerKind kind) noexcept
+    //! The hold state of the system's hold as it is logged
+    const char* ToLogName(const SamplePacerSystemHold hold) noexcept
     {
+      switch (hold)
+      {
+      case SamplePacerSystemHold::NotHolding:
+        return "notHolding";
+      case SamplePacerSystemHold::Limited:
+        return "limited";
+      case SamplePacerSystemHold::Holding:
+        break;
+      }
+      return "holding";
+    }
+
+    //! The value of pacerKind in the trace (5: the system holds the loop, which no kind paces)
+    int64_t ToLogCode(const SamplePacerKind kind, const SamplePacerTier tier) noexcept
+    {
+      if (SamplePacerTierChoiceUtil::IsSystemHoldTier(tier))
+      {
+        return 5;
+      }
       switch (kind)
       {
       case SamplePacerKind::TimerWaitForPresent:
@@ -189,7 +208,7 @@ namespace Fsl
     {
       const SamplePacerKind kind = SamplePacerTierChoiceUtil::ToKind(tier);
       const std::string_view name = SamplePacer::GetTierName(SamplePacerTierChoiceUtil::ToLoopPlacedTier(kind));
-      const std::size_t subTierNumber = (SamplePacerTierChoiceUtil::ToTierIndex(tier) % SamplePacerTierChoiceUtil::SubTierCount) + 1u;
+      const std::size_t subTierNumber = SamplePacerTierChoiceUtil::ToSubIndex(tier) + 1u;
       if (SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier) && !SamplePacerTierChoiceUtil::IsPresentWaitKind(kind))
       {
         SamplePacerCapabilities displayTimes;
@@ -257,18 +276,15 @@ namespace Fsl
     //! The colors of the major tiers, the best first: the display places the frame against a clock, the display places it relative
     //! to the one before, the frame loop places it. They are the ones a well known game gives the quality of its items (legendary,
     //! epic, rare), the last two a little lighter so they can be read on the side bar.
-    constexpr std::array<UI::UIColor, 3> MajorTierColors = {UI::UIColor(PackedColor32(0xFFFF8000)),     // orange
+    constexpr std::array<UI::UIColor, 4> MajorTierColors = {UI::UIColor(PackedColor32(0xFFFF8000)),     // orange
                                                             UI::UIColor(PackedColor32(0xFFC27CFF)),     // purple
+                                                            UI::UIColor(PackedColor32(0xFF3DC97A)),     // green
                                                             UI::UIColor(PackedColor32(0xFF4FA3FF))};    // blue
 
     //! The color of the major tier of a tier. Only the line of the major tier has it, its sub tiers have none
     constexpr UI::UIColor ToMajorTierColor(const SamplePacerTier tier) noexcept
     {
-      if (SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier))
-      {
-        return MajorTierColors[0];
-      }
-      return SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier) ? MajorTierColors[1] : MajorTierColors[2];
+      return MajorTierColors[SamplePacerTierChoiceUtil::ToMajorIndex(tier)];
     }
 
     constexpr UI::UIColor ToColor(const SampleStatsLevel level, const UI::UIColor normalColor) noexcept
@@ -509,7 +525,7 @@ namespace Fsl
       for (std::size_t i = 0; i < m_ui.RadioMajorTiers.size(); ++i)
       {
         // The first tier of every four, in the color of its major tier
-        const SamplePacerTier firstTier = SamplePacerTierChoiceUtil::Tiers[i * SamplePacerTierChoiceUtil::SubTierCount];
+        const SamplePacerTier firstTier = SamplePacerTierChoiceUtil::FirstTierOf(i);
         m_ui.RadioMajorTiers[i] = uiFactory->CreateRadioButton(majorTierGroup, ToMajorTierLabel(firstTier), i + 1u == m_ui.RadioMajorTiers.size());
         m_ui.RadioMajorTiers[i]->SetFontColorChecked(ToMajorTierColor(firstTier));
         m_ui.RadioMajorTiers[i]->SetFontColorUnchecked(ToMajorTierColor(firstTier));
@@ -921,6 +937,9 @@ namespace Fsl
     has.PresentSwapIntervalMax = m_presentMethod == SamplePresentMethod::SwapInterval ? m_presentSwapIntervalMax : 0u;
     has.PresentSwapIntervalMin = m_presentMethod == SamplePresentMethod::SwapInterval ? m_presentSwapIntervalMin : 0u;
     has.PresentAtTime = m_presentAtTimeSupported;
+    // The present or the call for the next image waits while the swap chain's queue is full: the system can hold the loop
+    has.PresentWaits = m_presentWaitsSupported;
+    has.AcquireWaits = m_acquireWaitsSupported;
     // What the display does with presents whose time has passed is only something where a present has a time
     has.PresentSkipsOverdue = m_presentSkipsOverdue;
     has.PresentAfterDuration = m_timedPresentSupported;
@@ -962,17 +981,31 @@ namespace Fsl
     }
     // A radio button that is checked and is not the one the sample checked: the user asks for that major tier (if the display
     // places the frame, and how) or that sub tier (what the frame loop paces with)
-    const std::size_t shownIndex = SamplePacerTierChoiceUtil::ToTierIndex(*m_shownTier);
-    const std::size_t shownMajor = shownIndex / SamplePacerTierChoiceUtil::SubTierCount;
-    const std::size_t shownSub = shownIndex % SamplePacerTierChoiceUtil::SubTierCount;
+    const std::size_t shownMajor = SamplePacerTierChoiceUtil::ToMajorIndex(*m_shownTier);
+    const std::size_t shownSub = SamplePacerTierChoiceUtil::ToSubIndex(*m_shownTier);
     for (std::size_t i = 0; i < m_ui.RadioMajorTiers.size(); ++i)
     {
       if (i != shownMajor && m_ui.RadioMajorTiers[i]->IsChecked())
       {
-        const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i * SamplePacerTierChoiceUtil::SubTierCount];
+        const SamplePacerTier tier = SamplePacerTierChoiceUtil::FirstTierOf(i);
         m_pacerPresentAtTime = SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier);
         m_pacerTimedPresent = SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier);
+        // The system's hold is asked for with its major tier, and the frame loop's tiers without it. The display placing the frame
+        // leaves it as it is: what is left when the present loses its time.
+        if (SamplePacerTierChoiceUtil::IsSystemHoldTier(tier))
+        {
+          m_systemHoldsLoop = true;
+        }
+        else if (i + 1u == SamplePacerTierChoiceUtil::MajorTierCount)
+        {
+          m_systemHoldsLoop = false;
+        }
       }
+    }
+    // A major tier without sub tiers has nothing to ask for there (its sub tiers are disabled)
+    if (SamplePacerTierChoiceUtil::SubTierCountOf(shownMajor) == 0u)
+    {
+      return;
     }
     for (std::size_t i = 0; i < m_ui.RadioSubTiers.size(); ++i)
     {
@@ -999,13 +1032,13 @@ namespace Fsl
       const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
       const SamplePacerCapabilities uses = SamplePacerTierChoiceUtil::ToUsedCapabilities(
         has, SamplePacerTierChoiceUtil::ToKind(tier), SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier),
-        SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier), displayTimes);
+        SamplePacerTierChoiceUtil::IsPresentAfterDurationTier(tier), displayTimes, SamplePacerTierChoiceUtil::IsSystemHoldTier(tier));
       m_tierOffered[i] = SamplePacer::Rate(uses).Tier == tier;
     }
 
     // The tier the run is to be in: the one that was asked for where the app has what it takes, else the tier of what is left of it
-    m_selectedTier = SamplePacer::Rate(
-                       SamplePacerTierChoiceUtil::ToUsedCapabilities(has, m_pacerKind, m_pacerPresentAtTime, IsTimedPresentRequested(), displayTimes))
+    m_selectedTier = SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, m_pacerKind, m_pacerPresentAtTime,
+                                                                                     IsTimedPresentRequested(), displayTimes, m_systemHoldsLoop))
                        .Tier;
     m_selectedKind = SamplePacerTierChoiceUtil::ToKind(m_selectedTier);
   }
@@ -1018,22 +1051,29 @@ namespace Fsl
     // that is checked.
     const bool isSupported = SamplePacer::IsSupported();
     const std::size_t shownIndex = SamplePacerTierChoiceUtil::ToTierIndex(tier);
-    const std::size_t shownMajor = shownIndex / SamplePacerTierChoiceUtil::SubTierCount;
-    const std::size_t shownSub = shownIndex % SamplePacerTierChoiceUtil::SubTierCount;
+    const std::size_t shownMajor = SamplePacerTierChoiceUtil::ToMajorIndex(tier);
+    const std::size_t shownSub = SamplePacerTierChoiceUtil::ToSubIndex(tier);
     for (std::size_t i = 0; i < m_ui.RadioMajorTiers.size(); ++i)
     {
       bool isOffered = false;
-      for (std::size_t j = 0; j < SamplePacerTierChoiceUtil::SubTierCount; ++j)
+      const std::size_t tierCount = std::max(SamplePacerTierChoiceUtil::SubTierCountOf(i), std::size_t{1});
+      for (std::size_t j = 0; j < tierCount; ++j)
       {
-        isOffered = isOffered || m_tierOffered[(i * SamplePacerTierChoiceUtil::SubTierCount) + j];
+        isOffered = isOffered || m_tierOffered[SamplePacerTierChoiceUtil::ToTierIndex(i, j)];
       }
       SetTierRadioButton(*m_ui.RadioMajorTiers[i], isSupported && (i == shownMajor || isOffered), i == shownMajor);
     }
-    const bool isNewMajorTier =
-      !m_shownTier.has_value() || (SamplePacerTierChoiceUtil::ToTierIndex(*m_shownTier) / SamplePacerTierChoiceUtil::SubTierCount) != shownMajor;
+    const bool isNewMajorTier = !m_shownTier.has_value() || SamplePacerTierChoiceUtil::ToMajorIndex(*m_shownTier) != shownMajor;
+    const bool hasSubTiers = SamplePacerTierChoiceUtil::SubTierCountOf(shownMajor) > 0u;
     for (std::size_t i = 0; i < m_ui.RadioSubTiers.size(); ++i)
     {
-      const std::size_t tierIndex = (shownMajor * SamplePacerTierChoiceUtil::SubTierCount) + i;
+      if (!hasSubTiers)
+      {
+        // The system's hold has no sub tiers: they are disabled, never hidden
+        SetTierRadioButton(*m_ui.RadioSubTiers[i], false, false);
+        continue;
+      }
+      const std::size_t tierIndex = SamplePacerTierChoiceUtil::ToTierIndex(shownMajor, i);
       if (isNewMajorTier)
       {
         // What a sub tier is made of in the major tier that is checked (the display times in the second)
@@ -1797,9 +1837,11 @@ namespace Fsl
     {
       m_ui.SwitchAdaptive->SetEnabled(pacerOn);
     }
-    if (m_ui.SwitchLowLatency->IsEnabled() != pacerOn)
+    // The system's hold has the aim of smoothness only (the library paces low latency as smoothness there)
+    const bool lowLatencyAvailable = pacerOn && SamplePacer::HasLowLatencyAim(m_selectedTier);
+    if (m_ui.SwitchLowLatency->IsEnabled() != lowLatencyAvailable)
     {
-      m_ui.SwitchLowLatency->SetEnabled(pacerOn);
+      m_ui.SwitchLowLatency->SetEnabled(lowLatencyAvailable);
     }
     // The display reports are the display times of the presents, so they are only offered while the app is asked to measure them and
     // only given while the swapchain does. The pacer counts the animation error from them and paces by none of it. A display that
@@ -1820,6 +1862,7 @@ namespace Fsl
     else if (!m_pacer)
     {
       m_pacer = std::make_unique<SamplePacer>(pacerConfig);
+      m_loggedSystemHold.reset();
       // A new pacer counts its frames from one again, so what is remembered about the frames of the one before must not reach it
       m_pacerPresentFrames = {};
       m_pacerFramePresents = {};
@@ -1923,6 +1966,24 @@ namespace Fsl
     {
       m_schedule = m_pacer->BeginFrame(frameStartTime);
       m_pacerFrames[m_frameId % m_pacerFrames.size()] = {m_frameId, m_schedule.FrameId};
+      {    // Where the system holds the loop: whether it does, as the pacer reads it from the starts of the frames
+        const std::optional<SamplePacerSystemHold> hold =
+          m_pacer->GetTier() == SamplePacerTier::SystemHoldsLoop ? std::optional<SamplePacerSystemHold>(m_pacer->GetSystemHold()) : std::nullopt;
+        if (hold != m_loggedSystemHold)
+        {
+          m_loggedSystemHold = hold;
+          if (hold.has_value())
+          {
+            FSLLOG3_VERBOSE("FramePacing: the system's hold is {} (lost {} times, {} frames limited)", ToLogName(*hold),
+                            m_pacer->GetSystemHoldLosses(), m_pacer->GetSystemLimitedFrames());
+            if (m_trace)
+            {
+              m_trace->AddEvent("systemHold", fmt::format("state={};losses={};limitedFrames={}", ToLogName(*hold), m_pacer->GetSystemHoldLosses(),
+                                                          m_pacer->GetSystemLimitedFrames()));
+            }
+          }
+        }
+      }
       if (m_schedule.Change != SamplePacerChange::Unchanged)
       {
         if (m_schedule.Change == SamplePacerChange::Slower)
@@ -2228,7 +2289,7 @@ namespace Fsl
       rLog.SetValue(columns.WindowFull, status.WindowFull);
       rLog.SetId(columns.PacerFrameId, m_schedule.FrameId);
       rLog.SetValue(columns.NextFrameStart, m_schedule.NextFrameStartTime);
-      rLog.SetCode(columns.PacerKind, ToLogCode(m_pacerConfig.Kind));
+      rLog.SetCode(columns.PacerKind, ToLogCode(m_pacerConfig.Kind, m_selectedTier));
       rLog.SetCount(columns.RefreshesBehindClock, m_pacer->GetRefreshesBehindClock());
       rLog.SetValue(columns.PacerGpuTime, m_pacer->GetGpuTime());
       if (m_pacerConfig.Kind == SamplePacerKind::TimerPeriodOnly || m_pacerConfig.Kind == SamplePacerKind::VBlankPeriodOnly)

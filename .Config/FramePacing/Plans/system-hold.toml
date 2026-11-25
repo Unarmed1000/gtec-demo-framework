@@ -1,0 +1,43 @@
+# The system holds the loop (tier 3 of mb-framepacing, decision 24): the pacer gives no time to wait for while the acquire is held by the
+# full queue of the swapchain, checks the hold against the starts of the frames, and limits the frame time itself where the system does not
+# hold. These runs check that on a fixed refresh rate with variable refresh off:
+# - hold: the window is shown the whole run, the system holds the loop (the log has no systemHold event after "holding")
+# - cover: the window is covered after 10 s and shown again after 20 s (WindowCover.py): where a covered window presents without being held
+#   the hold is lost while it is covered and comes back after it is shown again; the systemHold events say when, the .cover.txt when the
+#   window really was covered. On Windows with a NVIDIA driver (2026-11-25) a covered window was still held: the hold was not lost
+# - cover_loop: the same with the frame loop's tier 4.1, to hold the hold's run against
+# - minimize: the window minimized from 10 s to 20 s: where covering it does not stop the hold (seen on Windows with a NVIDIA driver,
+#   2026-11-25), a minimized window is the other way the window is not shown. The framework draws nothing while its window is minimized,
+#   so this measures the hold before and after (the swapchain is made again when the window comes back)
+#
+#   FramePacingCapture run system-hold -o <dir> --refresh-hz <rate> --fact gsync=off
+#
+# The frames are counted, not the seconds: at 240 Hz 7200 frames are 30 s, at 60 Hz 120 s. A display that runs slower than 240 Hz covers
+# the window at the same seconds, so the run is longer than it needs to be there, not shorter.
+
+description = "The system holds the loop (tier 3): the hold on a shown window, lost on a covered one and back once it is shown again"
+app = "Vulkan.FramePacing"
+frames = 7200
+# Tier 3 on a machine whose swapchain takes a time: the times on the present are switched off, so the run is in the system's hold
+args = ["--Pacer", "--Pacer.TimedPresent", "false", "--Pacer.PresentAtTime", "false", "--Pacer.DisplayReports", "false", "--Window", "[0,0,1600,900]", "--GpuLoad", "0"]
+
+[[run]]
+name = "hold"
+what = "the system holds the loop (tier 3), the window shown the whole run"
+
+[[run]]
+name = "cover"
+what = "the system holds the loop (tier 3), the window covered from 10 s to 20 s"
+cover_seconds = [10, 20]
+
+[[run]]
+name = "cover_loop"
+what = "the frame loop's tier (--Pacer.SystemHoldsLoop false), the window covered from 10 s to 20 s"
+args = ["--Pacer.SystemHoldsLoop", "false"]
+cover_seconds = [10, 20]
+
+[[run]]
+name = "minimize"
+what = "the system holds the loop (tier 3), the window minimized from 10 s to 20 s"
+cover_seconds = [10, 20]
+cover_mode = "minimize"
